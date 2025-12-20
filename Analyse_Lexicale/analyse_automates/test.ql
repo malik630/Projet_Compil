@@ -1,0 +1,6 @@
+BEGIN PROGRAM TestRapide
+SET x INTEGER = 42;
+SET nom STRING = 'Ahmed';
+PRINT 'Resultat: ';
+PRINT x;
+END PROGRAM;
