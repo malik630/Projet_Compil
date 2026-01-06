@@ -551,14 +551,14 @@ char *yytext;
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "ast.h"           /* Include ast.h BEFORE parser.tab.h */
+#include "ast.h"          
 #include "parser.tab.h"
 
 int line_num = 1;
 int col_num = 1;
 
 #line 560 "lex.yy.c"
-/* Definitions */
+/* Definitions of the Tokens */
 #line 562 "lex.yy.c"
 
 #define INITIAL 0

@@ -5,12 +5,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-/* ========================================================================== */
-/*                         AST NODE TYPES                                     */
-/* ========================================================================== */
+/*les types des noeuds*/
 
 typedef enum {
-    NODE_PROGRAM,
+    NODE_PROGRAM, 
     NODE_DECL_LIST,
     NODE_DECL,
     NODE_STMT_LIST,
@@ -23,7 +21,7 @@ typedef enum {
     NODE_CONDITION
 } NodeType;
 
-/* Renamed to avoid conflict with Bison tokens */
+/* Renomer pour eviter les conflicts */
 typedef enum {
     AST_OP_ADD,
     AST_OP_SUB,
@@ -45,9 +43,7 @@ typedef enum {
     TYPE_BOOLEAN
 } DataType;
 
-/* ========================================================================== */
-/*                         AST NODE STRUCTURES                                */
-/* ========================================================================== */
+/*La structure des noeuds sur l'arbre*/
 
 typedef struct ASTNode {
     NodeType type;
@@ -55,14 +51,14 @@ typedef struct ASTNode {
     int column;
     
     union {
-        /* Program node */
+        /* Program */
         struct {
             char* name;
             struct ASTNode* declarations;
             struct ASTNode* statements;
         } program;
         
-        /* Declaration node */
+        /* Declaration  */
         struct {
             char* identifier;
             DataType dataType;
@@ -70,32 +66,32 @@ typedef struct ASTNode {
             struct ASTNode* next;         /* Next declaration in list */
         } declaration;
         
-        /* Assignment node */
+        /* Assignment  */
         struct {
             char* identifier;
             struct ASTNode* expression;
         } assignment;
         
-        /* Print node */
+        /* Print  */
         struct {
             struct ASTNode* expression;
         } print;
         
-        /* If node */
+        /* If */
         struct {
             struct ASTNode* condition;
             struct ASTNode* then_block;
             struct ASTNode* else_block;  /* NULL if no else */
         } ifStmt;
         
-        /* Binary operation node */
+        /* Binary operation */
         struct {
             OperatorType op;
             struct ASTNode* left;
             struct ASTNode* right;
         } binOp;
         
-        /* Literal node */
+        /* Literal  */
         struct {
             union {
                 int intValue;
@@ -105,12 +101,12 @@ typedef struct ASTNode {
             DataType literalType;
         } literal;
         
-        /* Identifier node */
+        /* Identifier  */
         struct {
             char* name;
         } identifier;
         
-        /* Statement list */
+        /* Statement  */
         struct {
             struct ASTNode* statement;
             struct ASTNode* next;
@@ -118,9 +114,7 @@ typedef struct ASTNode {
     } data;
 } ASTNode;
 
-/* ========================================================================== */
-/*                         AST CREATION FUNCTIONS                             */
-/* ========================================================================== */
+/*Creation des fonctions de creation des noeuds*/
 
 /* Program */
 ASTNode* createProgramNode(char* name, ASTNode* decls, ASTNode* stmts);
@@ -142,9 +136,7 @@ ASTNode* createFloatLiteralNode(float value);
 ASTNode* createStringLiteralNode(char* value);
 ASTNode* createIdentifierNode(char* name);
 
-/* ========================================================================== */
-/*                         AST UTILITY FUNCTIONS                              */
-/* ========================================================================== */
+/* AST UTILITY FUNCTIONS  */
 
 void printAST(ASTNode* node, int indent);
 void freeAST(ASTNode* node);

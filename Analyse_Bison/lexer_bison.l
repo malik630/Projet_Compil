@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "ast.h"           /* Include ast.h BEFORE parser.tab.h */
+#include "ast.h"          
 #include "parser.tab.h"
 
 int line_num = 1;
@@ -10,7 +10,7 @@ int col_num = 1;
 
 %}
 
-/* Definitions */
+/* Definitions of the Tokens */
 DIGIT           [0-9]
 LETTER          [a-zA-Z]
 IDENTIFIER      {LETTER}({LETTER}|{DIGIT}|_)*
