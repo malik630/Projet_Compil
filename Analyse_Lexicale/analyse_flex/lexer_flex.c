@@ -2590,7 +2590,7 @@ int main(int argc, char** argv) {
             return 1;
         }
         yyin = input_file;
-        printf("📄 Analyse du fichier: %s\n\n", argv[1]);
+        printf("Analyse du fichier: %s\n\n", argv[1]);
     } else {
         printf("Usage: %s <fichier_source.ql>\n", argv[0]);
         printf("Mode interactif: Entrez votre code (Ctrl+D pour terminer)\n\n");
@@ -2616,15 +2616,15 @@ int main(int argc, char** argv) {
     printf("╔════════════════════════════════════════════════════════════════════════════════════╗\n");
     printf("║                                  STATISTIQUES                                      ║\n");
     printf("╚════════════════════════════════════════════════════════════════════════════════════╝\n\n");
-    printf("📊 Lignes analysées: %d\n", line_num);
-    printf("📊 Symboles dans la table: %d\n", symTable.count);
-    printf("📊 Erreurs lexicales: %d\n\n", errorMgr.count);
+    printf("Lignes analysées: %d\n", line_num);
+    printf("Symboles dans la table: %d\n", symTable.count);
+    printf("Erreurs lexicales: %d\n\n", errorMgr.count);
     
     if (errorMgr.count == 0) {
-        printf("✅ Analyse lexicale terminée avec succès!\n\n");
+        printf("nalyse lexicale terminée avec succès!\n\n");
         return 0;
     } else {
-        printf("❌ Analyse lexicale terminée avec %d erreur(s).\n\n", errorMgr.count);
+        printf("Analyse lexicale terminée avec %d erreur(s).\n\n", errorMgr.count);
         return 1;
     }
 }
