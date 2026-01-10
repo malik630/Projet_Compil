@@ -26,4 +26,6 @@ gcc -Wall -g -c *.c
 
 gcc -o lexer *.o
 
+./lexer test.ql
+
 #Remarque : Le fichier test.ql est un programme de test écrit dans notre langage QueryLang.

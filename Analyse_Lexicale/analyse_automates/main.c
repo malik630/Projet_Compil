@@ -98,4 +98,8 @@ int main(int argc, char* argv[]) {
     free(source);
     
     return errorMgr.count > 0 ? 1 : 0;
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 7b21bb8af311c4791099870cbf9491af590c6a6c
