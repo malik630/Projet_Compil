@@ -30,114 +30,118 @@ Grammar
 
     0 $accept: Program $end
 
-    1 Program: KW_BEGIN KW_PROGRAM IDENTIFIER SEP_SEMICOLON Decls Instrs KW_END KW_PROGRAM SEP_SEMICOLON
+    1 $@1: ε
 
-    2 Decls: Decls Decl
-    3      | ε
+    2 Program: KW_BEGIN KW_PROGRAM IDENTIFIER SEP_SEMICOLON $@1 Decls Instrs KW_END KW_PROGRAM SEP_SEMICOLON
 
-    4 Decl: KW_SET IDENTIFIER Type OptInit SEP_SEMICOLON
+    3 Decls: Decls Decl
+    4      | ε
 
-    5 OptInit: OP_EQ Expr
-    6        | ε
+    5 Decl: KW_SET IDENTIFIER Type OptInit SEP_SEMICOLON
 
-    7 Type: KW_INTEGER
-    8     | KW_STRING
-    9     | KW_FLOAT
-   10     | KW_BOOLEAN
+    6 OptInit: OP_EQ Expr
+    7        | ε
 
-   11 Instrs: Instrs Instr
-   12       | ε
+    8 Type: KW_INTEGER
+    9     | KW_STRING
+   10     | KW_FLOAT
+   11     | KW_BOOLEAN
 
-   13 Instr: Assign
-   14      | Print
-   15      | If
+   12 Instrs: Instrs Instr
+   13       | ε
 
-   16 Assign: IDENTIFIER OP_EQ Expr SEP_SEMICOLON
+   14 Instr: Assign
+   15      | Print
+   16      | If
 
-   17 Print: KW_PRINT Expr SEP_SEMICOLON
+   17 Assign: IDENTIFIER OP_EQ Expr SEP_SEMICOLON
 
-   18 If: KW_WHEN Cond KW_THEN Instrs OptElse KW_END KW_WHEN SEP_SEMICOLON
+   18 Print: KW_PRINT Expr SEP_SEMICOLON
 
-   19 OptElse: KW_ELSE Instrs
-   20        | ε
+   19 $@2: ε
 
-   21 Expr: Expr OP_PLUS Term
-   22     | Expr OP_MINUS Term
-   23     | Term
+   20 If: KW_WHEN $@2 Cond KW_THEN Instrs OptElse KW_END KW_WHEN SEP_SEMICOLON
 
-   24 Term: Term OP_MULT Factor
-   25     | Term OP_DIV Factor
-   26     | Factor
+   21 OptElse: KW_ELSE Instrs
+   22        | ε
 
-   27 Factor: INT_LITERAL
-   28       | FLOAT_LITERAL
-   29       | STRING_LITERAL
-   30       | IDENTIFIER
-   31       | SEP_LPAREN Expr SEP_RPAREN
+   23 Expr: Expr OP_PLUS Term
+   24     | Expr OP_MINUS Term
+   25     | Term
 
-   32 Cond: Expr OP_EQ Expr
-   33     | Expr OP_NEQ Expr
-   34     | Expr OP_LT Expr
-   35     | Expr OP_GT Expr
-   36     | Expr OP_LTE Expr
-   37     | Expr OP_GTE Expr
+   26 Term: Term OP_MULT Factor
+   27     | Term OP_DIV Factor
+   28     | Factor
+
+   29 Factor: INT_LITERAL
+   30       | FLOAT_LITERAL
+   31       | STRING_LITERAL
+   32       | IDENTIFIER
+   33       | SEP_LPAREN Expr SEP_RPAREN
+
+   34 Cond: Expr OP_EQ Expr
+   35     | Expr OP_NEQ Expr
+   36     | Expr OP_LT Expr
+   37     | Expr OP_GT Expr
+   38     | Expr OP_LTE Expr
+   39     | Expr OP_GTE Expr
 
 
 Terminals, with rules where they appear
 
     $end (0) 0
     error (256)
-    IDENTIFIER <str> (258) 1 4 16 30
-    STRING_LITERAL <str> (259) 29
-    INT_LITERAL <ival> (260) 27
-    FLOAT_LITERAL <fval> (261) 28
-    KW_BEGIN (262) 1
-    KW_PROGRAM (263) 1
-    KW_END (264) 1 18
-    KW_SET (265) 4
+    IDENTIFIER <str> (258) 2 5 17 32
+    STRING_LITERAL <str> (259) 31
+    INT_LITERAL <ival> (260) 29
+    FLOAT_LITERAL <fval> (261) 30
+    KW_BEGIN (262) 2
+    KW_PROGRAM (263) 2
+    KW_END (264) 2 20
+    KW_SET (265) 5
     KW_CREATE (266)
     KW_RECORD (267)
     KW_ARRAY (268)
     KW_DICTIONARY (269)
-    KW_INTEGER (270) 7
-    KW_STRING (271) 8
-    KW_FLOAT (272) 9
-    KW_BOOLEAN (273) 10
+    KW_INTEGER (270) 8
+    KW_STRING (271) 9
+    KW_FLOAT (272) 10
+    KW_BOOLEAN (273) 11
     KW_TRUE (274)
     KW_FALSE (275)
-    KW_WHEN (276) 18
-    KW_THEN (277) 18
+    KW_WHEN (276) 20
+    KW_THEN (277) 20
     KW_OTHERWISE (278)
     KW_CASE (279)
-    KW_ELSE (280) 19
+    KW_ELSE (280) 21
     KW_LOOP (281)
     KW_ITERATE (282)
     KW_FROM (283)
     KW_TO (284)
-    KW_PRINT (285) 17
+    KW_PRINT (285) 18
     KW_INPUT (286)
     OP_AND (287)
     OP_OR (288)
     OP_NOT (289)
-    OP_EQ (290) 5 16 32
-    OP_NEQ (291) 33
-    OP_LT (292) 34
-    OP_GT (293) 35
-    OP_LTE (294) 36
-    OP_GTE (295) 37
-    OP_PLUS (296) 21
-    OP_MINUS (297) 22
-    OP_MULT (298) 24
-    OP_DIV (299) 25
+    OP_EQ (290) 6 17 34
+    OP_NEQ (291) 35
+    OP_LT (292) 36
+    OP_GT (293) 37
+    OP_LTE (294) 38
+    OP_GTE (295) 39
+    OP_PLUS (296) 23
+    OP_MINUS (297) 24
+    OP_MULT (298) 26
+    OP_DIV (299) 27
     OP_MOD (300)
-    SEP_LPAREN (301) 31
-    SEP_RPAREN (302) 31
+    SEP_LPAREN (301) 33
+    SEP_RPAREN (302) 33
     SEP_LBRACKET (303)
     SEP_RBRACKET (304)
     SEP_LBRACE (305)
     SEP_RBRACE (306)
     SEP_COMMA (307)
-    SEP_SEMICOLON (308) 1 4 16 17 18
+    SEP_SEMICOLON (308) 2 5 17 18 20
     SEP_DOT (309)
     UMINUS (310)
 
@@ -147,50 +151,56 @@ Nonterminals, with rules where they appear
     $accept (56)
         on left: 0
     Program <node> (57)
-        on left: 1
+        on left: 2
         on right: 0
-    Decls <node> (58)
-        on left: 2 3
-        on right: 1 2
-    Decl <node> (59)
-        on left: 4
+    $@1 (58)
+        on left: 1
         on right: 2
-    OptInit <node> (60)
-        on left: 5 6
-        on right: 4
-    Type <dtype> (61)
-        on left: 7 8 9 10
-        on right: 4
-    Instrs <node> (62)
-        on left: 11 12
-        on right: 1 11 18 19
-    Instr <node> (63)
-        on left: 13 14 15
-        on right: 11
-    Assign <node> (64)
-        on left: 16
-        on right: 13
-    Print <node> (65)
+    Decls <node> (59)
+        on left: 3 4
+        on right: 2 3
+    Decl <node> (60)
+        on left: 5
+        on right: 3
+    OptInit <node> (61)
+        on left: 6 7
+        on right: 5
+    Type <dtype> (62)
+        on left: 8 9 10 11
+        on right: 5
+    Instrs <node> (63)
+        on left: 12 13
+        on right: 2 12 20 21
+    Instr <node> (64)
+        on left: 14 15 16
+        on right: 12
+    Assign <node> (65)
         on left: 17
         on right: 14
-    If <node> (66)
+    Print <node> (66)
         on left: 18
         on right: 15
-    OptElse <node> (67)
-        on left: 19 20
-        on right: 18
-    Expr <node> (68)
-        on left: 21 22 23
-        on right: 5 16 17 21 22 31 32 33 34 35 36 37
-    Term <node> (69)
-        on left: 24 25 26
-        on right: 21 22 23 24 25
-    Factor <node> (70)
-        on left: 27 28 29 30 31
-        on right: 24 25 26
-    Cond <node> (71)
-        on left: 32 33 34 35 36 37
-        on right: 18
+    If <node> (67)
+        on left: 20
+        on right: 16
+    $@2 (68)
+        on left: 19
+        on right: 20
+    OptElse <node> (69)
+        on left: 21 22
+        on right: 20
+    Expr <node> (70)
+        on left: 23 24 25
+        on right: 6 17 18 23 24 33 34 35 36 37 38 39
+    Term <node> (71)
+        on left: 26 27 28
+        on right: 23 24 25 26 27
+    Factor <node> (72)
+        on left: 29 30 31 32 33
+        on right: 26 27 28
+    Cond <node> (73)
+        on left: 34 35 36 37 38 39
+        on right: 20
 
 
 State 0
@@ -204,7 +214,7 @@ State 0
 
 State 1
 
-    1 Program: KW_BEGIN • KW_PROGRAM IDENTIFIER SEP_SEMICOLON Decls Instrs KW_END KW_PROGRAM SEP_SEMICOLON
+    2 Program: KW_BEGIN • KW_PROGRAM IDENTIFIER SEP_SEMICOLON $@1 Decls Instrs KW_END KW_PROGRAM SEP_SEMICOLON
 
     KW_PROGRAM  shift, and go to state 3
 
@@ -218,7 +228,7 @@ State 2
 
 State 3
 
-    1 Program: KW_BEGIN KW_PROGRAM • IDENTIFIER SEP_SEMICOLON Decls Instrs KW_END KW_PROGRAM SEP_SEMICOLON
+    2 Program: KW_BEGIN KW_PROGRAM • IDENTIFIER SEP_SEMICOLON $@1 Decls Instrs KW_END KW_PROGRAM SEP_SEMICOLON
 
     IDENTIFIER  shift, and go to state 5
 
@@ -232,732 +242,750 @@ State 4
 
 State 5
 
-    1 Program: KW_BEGIN KW_PROGRAM IDENTIFIER • SEP_SEMICOLON Decls Instrs KW_END KW_PROGRAM SEP_SEMICOLON
+    2 Program: KW_BEGIN KW_PROGRAM IDENTIFIER • SEP_SEMICOLON $@1 Decls Instrs KW_END KW_PROGRAM SEP_SEMICOLON
 
     SEP_SEMICOLON  shift, and go to state 6
 
 
 State 6
 
-    1 Program: KW_BEGIN KW_PROGRAM IDENTIFIER SEP_SEMICOLON • Decls Instrs KW_END KW_PROGRAM SEP_SEMICOLON
+    2 Program: KW_BEGIN KW_PROGRAM IDENTIFIER SEP_SEMICOLON • $@1 Decls Instrs KW_END KW_PROGRAM SEP_SEMICOLON
 
-    $default  reduce using rule 3 (Decls)
+    $default  reduce using rule 1 ($@1)
 
-    Decls  go to state 7
+    $@1  go to state 7
 
 
 State 7
 
-    1 Program: KW_BEGIN KW_PROGRAM IDENTIFIER SEP_SEMICOLON Decls • Instrs KW_END KW_PROGRAM SEP_SEMICOLON
-    2 Decls: Decls • Decl
+    2 Program: KW_BEGIN KW_PROGRAM IDENTIFIER SEP_SEMICOLON $@1 • Decls Instrs KW_END KW_PROGRAM SEP_SEMICOLON
 
-    KW_SET  shift, and go to state 8
+    $default  reduce using rule 4 (Decls)
 
-    $default  reduce using rule 12 (Instrs)
-
-    Decl    go to state 9
-    Instrs  go to state 10
+    Decls  go to state 8
 
 
 State 8
 
-    4 Decl: KW_SET • IDENTIFIER Type OptInit SEP_SEMICOLON
+    2 Program: KW_BEGIN KW_PROGRAM IDENTIFIER SEP_SEMICOLON $@1 Decls • Instrs KW_END KW_PROGRAM SEP_SEMICOLON
+    3 Decls: Decls • Decl
 
-    IDENTIFIER  shift, and go to state 11
+    KW_SET  shift, and go to state 9
+
+    $default  reduce using rule 13 (Instrs)
+
+    Decl    go to state 10
+    Instrs  go to state 11
 
 
 State 9
 
-    2 Decls: Decls Decl •
+    5 Decl: KW_SET • IDENTIFIER Type OptInit SEP_SEMICOLON
 
-    $default  reduce using rule 2 (Decls)
+    IDENTIFIER  shift, and go to state 12
 
 
 State 10
 
-    1 Program: KW_BEGIN KW_PROGRAM IDENTIFIER SEP_SEMICOLON Decls Instrs • KW_END KW_PROGRAM SEP_SEMICOLON
-   11 Instrs: Instrs • Instr
+    3 Decls: Decls Decl •
 
-    IDENTIFIER  shift, and go to state 12
-    KW_END      shift, and go to state 13
-    KW_WHEN     shift, and go to state 14
-    KW_PRINT    shift, and go to state 15
-
-    Instr   go to state 16
-    Assign  go to state 17
-    Print   go to state 18
-    If      go to state 19
+    $default  reduce using rule 3 (Decls)
 
 
 State 11
 
-    4 Decl: KW_SET IDENTIFIER • Type OptInit SEP_SEMICOLON
+    2 Program: KW_BEGIN KW_PROGRAM IDENTIFIER SEP_SEMICOLON $@1 Decls Instrs • KW_END KW_PROGRAM SEP_SEMICOLON
+   12 Instrs: Instrs • Instr
 
-    KW_INTEGER  shift, and go to state 20
-    KW_STRING   shift, and go to state 21
-    KW_FLOAT    shift, and go to state 22
-    KW_BOOLEAN  shift, and go to state 23
+    IDENTIFIER  shift, and go to state 13
+    KW_END      shift, and go to state 14
+    KW_WHEN     shift, and go to state 15
+    KW_PRINT    shift, and go to state 16
 
-    Type  go to state 24
+    Instr   go to state 17
+    Assign  go to state 18
+    Print   go to state 19
+    If      go to state 20
 
 
 State 12
 
-   16 Assign: IDENTIFIER • OP_EQ Expr SEP_SEMICOLON
+    5 Decl: KW_SET IDENTIFIER • Type OptInit SEP_SEMICOLON
 
-    OP_EQ  shift, and go to state 25
+    KW_INTEGER  shift, and go to state 21
+    KW_STRING   shift, and go to state 22
+    KW_FLOAT    shift, and go to state 23
+    KW_BOOLEAN  shift, and go to state 24
+
+    Type  go to state 25
 
 
 State 13
 
-    1 Program: KW_BEGIN KW_PROGRAM IDENTIFIER SEP_SEMICOLON Decls Instrs KW_END • KW_PROGRAM SEP_SEMICOLON
+   17 Assign: IDENTIFIER • OP_EQ Expr SEP_SEMICOLON
 
-    KW_PROGRAM  shift, and go to state 26
+    OP_EQ  shift, and go to state 26
 
 
 State 14
 
-   18 If: KW_WHEN • Cond KW_THEN Instrs OptElse KW_END KW_WHEN SEP_SEMICOLON
+    2 Program: KW_BEGIN KW_PROGRAM IDENTIFIER SEP_SEMICOLON $@1 Decls Instrs KW_END • KW_PROGRAM SEP_SEMICOLON
 
-    IDENTIFIER      shift, and go to state 27
-    STRING_LITERAL  shift, and go to state 28
-    INT_LITERAL     shift, and go to state 29
-    FLOAT_LITERAL   shift, and go to state 30
-    SEP_LPAREN      shift, and go to state 31
-
-    Expr    go to state 32
-    Term    go to state 33
-    Factor  go to state 34
-    Cond    go to state 35
+    KW_PROGRAM  shift, and go to state 27
 
 
 State 15
 
-   17 Print: KW_PRINT • Expr SEP_SEMICOLON
+   20 If: KW_WHEN • $@2 Cond KW_THEN Instrs OptElse KW_END KW_WHEN SEP_SEMICOLON
 
-    IDENTIFIER      shift, and go to state 27
-    STRING_LITERAL  shift, and go to state 28
-    INT_LITERAL     shift, and go to state 29
-    FLOAT_LITERAL   shift, and go to state 30
-    SEP_LPAREN      shift, and go to state 31
+    $default  reduce using rule 19 ($@2)
 
-    Expr    go to state 36
-    Term    go to state 33
-    Factor  go to state 34
+    $@2  go to state 28
 
 
 State 16
 
-   11 Instrs: Instrs Instr •
+   18 Print: KW_PRINT • Expr SEP_SEMICOLON
 
-    $default  reduce using rule 11 (Instrs)
+    IDENTIFIER      shift, and go to state 29
+    STRING_LITERAL  shift, and go to state 30
+    INT_LITERAL     shift, and go to state 31
+    FLOAT_LITERAL   shift, and go to state 32
+    SEP_LPAREN      shift, and go to state 33
+
+    Expr    go to state 34
+    Term    go to state 35
+    Factor  go to state 36
 
 
 State 17
 
-   13 Instr: Assign •
+   12 Instrs: Instrs Instr •
 
-    $default  reduce using rule 13 (Instr)
+    $default  reduce using rule 12 (Instrs)
 
 
 State 18
 
-   14 Instr: Print •
+   14 Instr: Assign •
 
     $default  reduce using rule 14 (Instr)
 
 
 State 19
 
-   15 Instr: If •
+   15 Instr: Print •
 
     $default  reduce using rule 15 (Instr)
 
 
 State 20
 
-    7 Type: KW_INTEGER •
+   16 Instr: If •
 
-    $default  reduce using rule 7 (Type)
+    $default  reduce using rule 16 (Instr)
 
 
 State 21
 
-    8 Type: KW_STRING •
+    8 Type: KW_INTEGER •
 
     $default  reduce using rule 8 (Type)
 
 
 State 22
 
-    9 Type: KW_FLOAT •
+    9 Type: KW_STRING •
 
     $default  reduce using rule 9 (Type)
 
 
 State 23
 
-   10 Type: KW_BOOLEAN •
+   10 Type: KW_FLOAT •
 
     $default  reduce using rule 10 (Type)
 
 
 State 24
 
-    4 Decl: KW_SET IDENTIFIER Type • OptInit SEP_SEMICOLON
+   11 Type: KW_BOOLEAN •
 
-    OP_EQ  shift, and go to state 37
-
-    $default  reduce using rule 6 (OptInit)
-
-    OptInit  go to state 38
+    $default  reduce using rule 11 (Type)
 
 
 State 25
 
-   16 Assign: IDENTIFIER OP_EQ • Expr SEP_SEMICOLON
+    5 Decl: KW_SET IDENTIFIER Type • OptInit SEP_SEMICOLON
 
-    IDENTIFIER      shift, and go to state 27
-    STRING_LITERAL  shift, and go to state 28
-    INT_LITERAL     shift, and go to state 29
-    FLOAT_LITERAL   shift, and go to state 30
-    SEP_LPAREN      shift, and go to state 31
+    OP_EQ  shift, and go to state 37
 
-    Expr    go to state 39
-    Term    go to state 33
-    Factor  go to state 34
+    $default  reduce using rule 7 (OptInit)
+
+    OptInit  go to state 38
 
 
 State 26
 
-    1 Program: KW_BEGIN KW_PROGRAM IDENTIFIER SEP_SEMICOLON Decls Instrs KW_END KW_PROGRAM • SEP_SEMICOLON
+   17 Assign: IDENTIFIER OP_EQ • Expr SEP_SEMICOLON
 
-    SEP_SEMICOLON  shift, and go to state 40
+    IDENTIFIER      shift, and go to state 29
+    STRING_LITERAL  shift, and go to state 30
+    INT_LITERAL     shift, and go to state 31
+    FLOAT_LITERAL   shift, and go to state 32
+    SEP_LPAREN      shift, and go to state 33
+
+    Expr    go to state 39
+    Term    go to state 35
+    Factor  go to state 36
 
 
 State 27
 
-   30 Factor: IDENTIFIER •
+    2 Program: KW_BEGIN KW_PROGRAM IDENTIFIER SEP_SEMICOLON $@1 Decls Instrs KW_END KW_PROGRAM • SEP_SEMICOLON
 
-    $default  reduce using rule 30 (Factor)
+    SEP_SEMICOLON  shift, and go to state 40
 
 
 State 28
 
-   29 Factor: STRING_LITERAL •
+   20 If: KW_WHEN $@2 • Cond KW_THEN Instrs OptElse KW_END KW_WHEN SEP_SEMICOLON
 
-    $default  reduce using rule 29 (Factor)
+    IDENTIFIER      shift, and go to state 29
+    STRING_LITERAL  shift, and go to state 30
+    INT_LITERAL     shift, and go to state 31
+    FLOAT_LITERAL   shift, and go to state 32
+    SEP_LPAREN      shift, and go to state 33
+
+    Expr    go to state 41
+    Term    go to state 35
+    Factor  go to state 36
+    Cond    go to state 42
 
 
 State 29
 
-   27 Factor: INT_LITERAL •
+   32 Factor: IDENTIFIER •
 
-    $default  reduce using rule 27 (Factor)
+    $default  reduce using rule 32 (Factor)
 
 
 State 30
 
-   28 Factor: FLOAT_LITERAL •
-
-    $default  reduce using rule 28 (Factor)
-
-
-State 31
-
-   31 Factor: SEP_LPAREN • Expr SEP_RPAREN
-
-    IDENTIFIER      shift, and go to state 27
-    STRING_LITERAL  shift, and go to state 28
-    INT_LITERAL     shift, and go to state 29
-    FLOAT_LITERAL   shift, and go to state 30
-    SEP_LPAREN      shift, and go to state 31
-
-    Expr    go to state 41
-    Term    go to state 33
-    Factor  go to state 34
-
-
-State 32
-
-   21 Expr: Expr • OP_PLUS Term
-   22     | Expr • OP_MINUS Term
-   32 Cond: Expr • OP_EQ Expr
-   33     | Expr • OP_NEQ Expr
-   34     | Expr • OP_LT Expr
-   35     | Expr • OP_GT Expr
-   36     | Expr • OP_LTE Expr
-   37     | Expr • OP_GTE Expr
-
-    OP_EQ     shift, and go to state 42
-    OP_NEQ    shift, and go to state 43
-    OP_LT     shift, and go to state 44
-    OP_GT     shift, and go to state 45
-    OP_LTE    shift, and go to state 46
-    OP_GTE    shift, and go to state 47
-    OP_PLUS   shift, and go to state 48
-    OP_MINUS  shift, and go to state 49
-
-
-State 33
-
-   23 Expr: Term •
-   24 Term: Term • OP_MULT Factor
-   25     | Term • OP_DIV Factor
-
-    OP_MULT  shift, and go to state 50
-    OP_DIV   shift, and go to state 51
-
-    $default  reduce using rule 23 (Expr)
-
-
-State 34
-
-   26 Term: Factor •
-
-    $default  reduce using rule 26 (Term)
-
-
-State 35
-
-   18 If: KW_WHEN Cond • KW_THEN Instrs OptElse KW_END KW_WHEN SEP_SEMICOLON
-
-    KW_THEN  shift, and go to state 52
-
-
-State 36
-
-   17 Print: KW_PRINT Expr • SEP_SEMICOLON
-   21 Expr: Expr • OP_PLUS Term
-   22     | Expr • OP_MINUS Term
-
-    OP_PLUS        shift, and go to state 48
-    OP_MINUS       shift, and go to state 49
-    SEP_SEMICOLON  shift, and go to state 53
-
-
-State 37
-
-    5 OptInit: OP_EQ • Expr
-
-    IDENTIFIER      shift, and go to state 27
-    STRING_LITERAL  shift, and go to state 28
-    INT_LITERAL     shift, and go to state 29
-    FLOAT_LITERAL   shift, and go to state 30
-    SEP_LPAREN      shift, and go to state 31
-
-    Expr    go to state 54
-    Term    go to state 33
-    Factor  go to state 34
-
-
-State 38
-
-    4 Decl: KW_SET IDENTIFIER Type OptInit • SEP_SEMICOLON
-
-    SEP_SEMICOLON  shift, and go to state 55
-
-
-State 39
-
-   16 Assign: IDENTIFIER OP_EQ Expr • SEP_SEMICOLON
-   21 Expr: Expr • OP_PLUS Term
-   22     | Expr • OP_MINUS Term
-
-    OP_PLUS        shift, and go to state 48
-    OP_MINUS       shift, and go to state 49
-    SEP_SEMICOLON  shift, and go to state 56
-
-
-State 40
-
-    1 Program: KW_BEGIN KW_PROGRAM IDENTIFIER SEP_SEMICOLON Decls Instrs KW_END KW_PROGRAM SEP_SEMICOLON •
-
-    $default  reduce using rule 1 (Program)
-
-
-State 41
-
-   21 Expr: Expr • OP_PLUS Term
-   22     | Expr • OP_MINUS Term
-   31 Factor: SEP_LPAREN Expr • SEP_RPAREN
-
-    OP_PLUS     shift, and go to state 48
-    OP_MINUS    shift, and go to state 49
-    SEP_RPAREN  shift, and go to state 57
-
-
-State 42
-
-   32 Cond: Expr OP_EQ • Expr
-
-    IDENTIFIER      shift, and go to state 27
-    STRING_LITERAL  shift, and go to state 28
-    INT_LITERAL     shift, and go to state 29
-    FLOAT_LITERAL   shift, and go to state 30
-    SEP_LPAREN      shift, and go to state 31
-
-    Expr    go to state 58
-    Term    go to state 33
-    Factor  go to state 34
-
-
-State 43
-
-   33 Cond: Expr OP_NEQ • Expr
-
-    IDENTIFIER      shift, and go to state 27
-    STRING_LITERAL  shift, and go to state 28
-    INT_LITERAL     shift, and go to state 29
-    FLOAT_LITERAL   shift, and go to state 30
-    SEP_LPAREN      shift, and go to state 31
-
-    Expr    go to state 59
-    Term    go to state 33
-    Factor  go to state 34
-
-
-State 44
-
-   34 Cond: Expr OP_LT • Expr
-
-    IDENTIFIER      shift, and go to state 27
-    STRING_LITERAL  shift, and go to state 28
-    INT_LITERAL     shift, and go to state 29
-    FLOAT_LITERAL   shift, and go to state 30
-    SEP_LPAREN      shift, and go to state 31
-
-    Expr    go to state 60
-    Term    go to state 33
-    Factor  go to state 34
-
-
-State 45
-
-   35 Cond: Expr OP_GT • Expr
-
-    IDENTIFIER      shift, and go to state 27
-    STRING_LITERAL  shift, and go to state 28
-    INT_LITERAL     shift, and go to state 29
-    FLOAT_LITERAL   shift, and go to state 30
-    SEP_LPAREN      shift, and go to state 31
-
-    Expr    go to state 61
-    Term    go to state 33
-    Factor  go to state 34
-
-
-State 46
-
-   36 Cond: Expr OP_LTE • Expr
-
-    IDENTIFIER      shift, and go to state 27
-    STRING_LITERAL  shift, and go to state 28
-    INT_LITERAL     shift, and go to state 29
-    FLOAT_LITERAL   shift, and go to state 30
-    SEP_LPAREN      shift, and go to state 31
-
-    Expr    go to state 62
-    Term    go to state 33
-    Factor  go to state 34
-
-
-State 47
-
-   37 Cond: Expr OP_GTE • Expr
-
-    IDENTIFIER      shift, and go to state 27
-    STRING_LITERAL  shift, and go to state 28
-    INT_LITERAL     shift, and go to state 29
-    FLOAT_LITERAL   shift, and go to state 30
-    SEP_LPAREN      shift, and go to state 31
-
-    Expr    go to state 63
-    Term    go to state 33
-    Factor  go to state 34
-
-
-State 48
-
-   21 Expr: Expr OP_PLUS • Term
-
-    IDENTIFIER      shift, and go to state 27
-    STRING_LITERAL  shift, and go to state 28
-    INT_LITERAL     shift, and go to state 29
-    FLOAT_LITERAL   shift, and go to state 30
-    SEP_LPAREN      shift, and go to state 31
-
-    Term    go to state 64
-    Factor  go to state 34
-
-
-State 49
-
-   22 Expr: Expr OP_MINUS • Term
-
-    IDENTIFIER      shift, and go to state 27
-    STRING_LITERAL  shift, and go to state 28
-    INT_LITERAL     shift, and go to state 29
-    FLOAT_LITERAL   shift, and go to state 30
-    SEP_LPAREN      shift, and go to state 31
-
-    Term    go to state 65
-    Factor  go to state 34
-
-
-State 50
-
-   24 Term: Term OP_MULT • Factor
-
-    IDENTIFIER      shift, and go to state 27
-    STRING_LITERAL  shift, and go to state 28
-    INT_LITERAL     shift, and go to state 29
-    FLOAT_LITERAL   shift, and go to state 30
-    SEP_LPAREN      shift, and go to state 31
-
-    Factor  go to state 66
-
-
-State 51
-
-   25 Term: Term OP_DIV • Factor
-
-    IDENTIFIER      shift, and go to state 27
-    STRING_LITERAL  shift, and go to state 28
-    INT_LITERAL     shift, and go to state 29
-    FLOAT_LITERAL   shift, and go to state 30
-    SEP_LPAREN      shift, and go to state 31
-
-    Factor  go to state 67
-
-
-State 52
-
-   18 If: KW_WHEN Cond KW_THEN • Instrs OptElse KW_END KW_WHEN SEP_SEMICOLON
-
-    $default  reduce using rule 12 (Instrs)
-
-    Instrs  go to state 68
-
-
-State 53
-
-   17 Print: KW_PRINT Expr SEP_SEMICOLON •
-
-    $default  reduce using rule 17 (Print)
-
-
-State 54
-
-    5 OptInit: OP_EQ Expr •
-   21 Expr: Expr • OP_PLUS Term
-   22     | Expr • OP_MINUS Term
-
-    OP_PLUS   shift, and go to state 48
-    OP_MINUS  shift, and go to state 49
-
-    $default  reduce using rule 5 (OptInit)
-
-
-State 55
-
-    4 Decl: KW_SET IDENTIFIER Type OptInit SEP_SEMICOLON •
-
-    $default  reduce using rule 4 (Decl)
-
-
-State 56
-
-   16 Assign: IDENTIFIER OP_EQ Expr SEP_SEMICOLON •
-
-    $default  reduce using rule 16 (Assign)
-
-
-State 57
-
-   31 Factor: SEP_LPAREN Expr SEP_RPAREN •
+   31 Factor: STRING_LITERAL •
 
     $default  reduce using rule 31 (Factor)
 
 
+State 31
+
+   29 Factor: INT_LITERAL •
+
+    $default  reduce using rule 29 (Factor)
+
+
+State 32
+
+   30 Factor: FLOAT_LITERAL •
+
+    $default  reduce using rule 30 (Factor)
+
+
+State 33
+
+   33 Factor: SEP_LPAREN • Expr SEP_RPAREN
+
+    IDENTIFIER      shift, and go to state 29
+    STRING_LITERAL  shift, and go to state 30
+    INT_LITERAL     shift, and go to state 31
+    FLOAT_LITERAL   shift, and go to state 32
+    SEP_LPAREN      shift, and go to state 33
+
+    Expr    go to state 43
+    Term    go to state 35
+    Factor  go to state 36
+
+
+State 34
+
+   18 Print: KW_PRINT Expr • SEP_SEMICOLON
+   23 Expr: Expr • OP_PLUS Term
+   24     | Expr • OP_MINUS Term
+
+    OP_PLUS        shift, and go to state 44
+    OP_MINUS       shift, and go to state 45
+    SEP_SEMICOLON  shift, and go to state 46
+
+
+State 35
+
+   25 Expr: Term •
+   26 Term: Term • OP_MULT Factor
+   27     | Term • OP_DIV Factor
+
+    OP_MULT  shift, and go to state 47
+    OP_DIV   shift, and go to state 48
+
+    $default  reduce using rule 25 (Expr)
+
+
+State 36
+
+   28 Term: Factor •
+
+    $default  reduce using rule 28 (Term)
+
+
+State 37
+
+    6 OptInit: OP_EQ • Expr
+
+    IDENTIFIER      shift, and go to state 29
+    STRING_LITERAL  shift, and go to state 30
+    INT_LITERAL     shift, and go to state 31
+    FLOAT_LITERAL   shift, and go to state 32
+    SEP_LPAREN      shift, and go to state 33
+
+    Expr    go to state 49
+    Term    go to state 35
+    Factor  go to state 36
+
+
+State 38
+
+    5 Decl: KW_SET IDENTIFIER Type OptInit • SEP_SEMICOLON
+
+    SEP_SEMICOLON  shift, and go to state 50
+
+
+State 39
+
+   17 Assign: IDENTIFIER OP_EQ Expr • SEP_SEMICOLON
+   23 Expr: Expr • OP_PLUS Term
+   24     | Expr • OP_MINUS Term
+
+    OP_PLUS        shift, and go to state 44
+    OP_MINUS       shift, and go to state 45
+    SEP_SEMICOLON  shift, and go to state 51
+
+
+State 40
+
+    2 Program: KW_BEGIN KW_PROGRAM IDENTIFIER SEP_SEMICOLON $@1 Decls Instrs KW_END KW_PROGRAM SEP_SEMICOLON •
+
+    $default  reduce using rule 2 (Program)
+
+
+State 41
+
+   23 Expr: Expr • OP_PLUS Term
+   24     | Expr • OP_MINUS Term
+   34 Cond: Expr • OP_EQ Expr
+   35     | Expr • OP_NEQ Expr
+   36     | Expr • OP_LT Expr
+   37     | Expr • OP_GT Expr
+   38     | Expr • OP_LTE Expr
+   39     | Expr • OP_GTE Expr
+
+    OP_EQ     shift, and go to state 52
+    OP_NEQ    shift, and go to state 53
+    OP_LT     shift, and go to state 54
+    OP_GT     shift, and go to state 55
+    OP_LTE    shift, and go to state 56
+    OP_GTE    shift, and go to state 57
+    OP_PLUS   shift, and go to state 44
+    OP_MINUS  shift, and go to state 45
+
+
+State 42
+
+   20 If: KW_WHEN $@2 Cond • KW_THEN Instrs OptElse KW_END KW_WHEN SEP_SEMICOLON
+
+    KW_THEN  shift, and go to state 58
+
+
+State 43
+
+   23 Expr: Expr • OP_PLUS Term
+   24     | Expr • OP_MINUS Term
+   33 Factor: SEP_LPAREN Expr • SEP_RPAREN
+
+    OP_PLUS     shift, and go to state 44
+    OP_MINUS    shift, and go to state 45
+    SEP_RPAREN  shift, and go to state 59
+
+
+State 44
+
+   23 Expr: Expr OP_PLUS • Term
+
+    IDENTIFIER      shift, and go to state 29
+    STRING_LITERAL  shift, and go to state 30
+    INT_LITERAL     shift, and go to state 31
+    FLOAT_LITERAL   shift, and go to state 32
+    SEP_LPAREN      shift, and go to state 33
+
+    Term    go to state 60
+    Factor  go to state 36
+
+
+State 45
+
+   24 Expr: Expr OP_MINUS • Term
+
+    IDENTIFIER      shift, and go to state 29
+    STRING_LITERAL  shift, and go to state 30
+    INT_LITERAL     shift, and go to state 31
+    FLOAT_LITERAL   shift, and go to state 32
+    SEP_LPAREN      shift, and go to state 33
+
+    Term    go to state 61
+    Factor  go to state 36
+
+
+State 46
+
+   18 Print: KW_PRINT Expr SEP_SEMICOLON •
+
+    $default  reduce using rule 18 (Print)
+
+
+State 47
+
+   26 Term: Term OP_MULT • Factor
+
+    IDENTIFIER      shift, and go to state 29
+    STRING_LITERAL  shift, and go to state 30
+    INT_LITERAL     shift, and go to state 31
+    FLOAT_LITERAL   shift, and go to state 32
+    SEP_LPAREN      shift, and go to state 33
+
+    Factor  go to state 62
+
+
+State 48
+
+   27 Term: Term OP_DIV • Factor
+
+    IDENTIFIER      shift, and go to state 29
+    STRING_LITERAL  shift, and go to state 30
+    INT_LITERAL     shift, and go to state 31
+    FLOAT_LITERAL   shift, and go to state 32
+    SEP_LPAREN      shift, and go to state 33
+
+    Factor  go to state 63
+
+
+State 49
+
+    6 OptInit: OP_EQ Expr •
+   23 Expr: Expr • OP_PLUS Term
+   24     | Expr • OP_MINUS Term
+
+    OP_PLUS   shift, and go to state 44
+    OP_MINUS  shift, and go to state 45
+
+    $default  reduce using rule 6 (OptInit)
+
+
+State 50
+
+    5 Decl: KW_SET IDENTIFIER Type OptInit SEP_SEMICOLON •
+
+    $default  reduce using rule 5 (Decl)
+
+
+State 51
+
+   17 Assign: IDENTIFIER OP_EQ Expr SEP_SEMICOLON •
+
+    $default  reduce using rule 17 (Assign)
+
+
+State 52
+
+   34 Cond: Expr OP_EQ • Expr
+
+    IDENTIFIER      shift, and go to state 29
+    STRING_LITERAL  shift, and go to state 30
+    INT_LITERAL     shift, and go to state 31
+    FLOAT_LITERAL   shift, and go to state 32
+    SEP_LPAREN      shift, and go to state 33
+
+    Expr    go to state 64
+    Term    go to state 35
+    Factor  go to state 36
+
+
+State 53
+
+   35 Cond: Expr OP_NEQ • Expr
+
+    IDENTIFIER      shift, and go to state 29
+    STRING_LITERAL  shift, and go to state 30
+    INT_LITERAL     shift, and go to state 31
+    FLOAT_LITERAL   shift, and go to state 32
+    SEP_LPAREN      shift, and go to state 33
+
+    Expr    go to state 65
+    Term    go to state 35
+    Factor  go to state 36
+
+
+State 54
+
+   36 Cond: Expr OP_LT • Expr
+
+    IDENTIFIER      shift, and go to state 29
+    STRING_LITERAL  shift, and go to state 30
+    INT_LITERAL     shift, and go to state 31
+    FLOAT_LITERAL   shift, and go to state 32
+    SEP_LPAREN      shift, and go to state 33
+
+    Expr    go to state 66
+    Term    go to state 35
+    Factor  go to state 36
+
+
+State 55
+
+   37 Cond: Expr OP_GT • Expr
+
+    IDENTIFIER      shift, and go to state 29
+    STRING_LITERAL  shift, and go to state 30
+    INT_LITERAL     shift, and go to state 31
+    FLOAT_LITERAL   shift, and go to state 32
+    SEP_LPAREN      shift, and go to state 33
+
+    Expr    go to state 67
+    Term    go to state 35
+    Factor  go to state 36
+
+
+State 56
+
+   38 Cond: Expr OP_LTE • Expr
+
+    IDENTIFIER      shift, and go to state 29
+    STRING_LITERAL  shift, and go to state 30
+    INT_LITERAL     shift, and go to state 31
+    FLOAT_LITERAL   shift, and go to state 32
+    SEP_LPAREN      shift, and go to state 33
+
+    Expr    go to state 68
+    Term    go to state 35
+    Factor  go to state 36
+
+
+State 57
+
+   39 Cond: Expr OP_GTE • Expr
+
+    IDENTIFIER      shift, and go to state 29
+    STRING_LITERAL  shift, and go to state 30
+    INT_LITERAL     shift, and go to state 31
+    FLOAT_LITERAL   shift, and go to state 32
+    SEP_LPAREN      shift, and go to state 33
+
+    Expr    go to state 69
+    Term    go to state 35
+    Factor  go to state 36
+
+
 State 58
 
-   21 Expr: Expr • OP_PLUS Term
-   22     | Expr • OP_MINUS Term
-   32 Cond: Expr OP_EQ Expr •
+   20 If: KW_WHEN $@2 Cond KW_THEN • Instrs OptElse KW_END KW_WHEN SEP_SEMICOLON
 
-    OP_PLUS   shift, and go to state 48
-    OP_MINUS  shift, and go to state 49
+    $default  reduce using rule 13 (Instrs)
 
-    $default  reduce using rule 32 (Cond)
+    Instrs  go to state 70
 
 
 State 59
 
-   21 Expr: Expr • OP_PLUS Term
-   22     | Expr • OP_MINUS Term
-   33 Cond: Expr OP_NEQ Expr •
+   33 Factor: SEP_LPAREN Expr SEP_RPAREN •
 
-    OP_PLUS   shift, and go to state 48
-    OP_MINUS  shift, and go to state 49
-
-    $default  reduce using rule 33 (Cond)
+    $default  reduce using rule 33 (Factor)
 
 
 State 60
 
-   21 Expr: Expr • OP_PLUS Term
-   22     | Expr • OP_MINUS Term
-   34 Cond: Expr OP_LT Expr •
+   23 Expr: Expr OP_PLUS Term •
+   26 Term: Term • OP_MULT Factor
+   27     | Term • OP_DIV Factor
 
-    OP_PLUS   shift, and go to state 48
-    OP_MINUS  shift, and go to state 49
+    OP_MULT  shift, and go to state 47
+    OP_DIV   shift, and go to state 48
 
-    $default  reduce using rule 34 (Cond)
+    $default  reduce using rule 23 (Expr)
 
 
 State 61
 
-   21 Expr: Expr • OP_PLUS Term
-   22     | Expr • OP_MINUS Term
-   35 Cond: Expr OP_GT Expr •
+   24 Expr: Expr OP_MINUS Term •
+   26 Term: Term • OP_MULT Factor
+   27     | Term • OP_DIV Factor
 
-    OP_PLUS   shift, and go to state 48
-    OP_MINUS  shift, and go to state 49
+    OP_MULT  shift, and go to state 47
+    OP_DIV   shift, and go to state 48
 
-    $default  reduce using rule 35 (Cond)
+    $default  reduce using rule 24 (Expr)
 
 
 State 62
 
-   21 Expr: Expr • OP_PLUS Term
-   22     | Expr • OP_MINUS Term
-   36 Cond: Expr OP_LTE Expr •
+   26 Term: Term OP_MULT Factor •
 
-    OP_PLUS   shift, and go to state 48
-    OP_MINUS  shift, and go to state 49
-
-    $default  reduce using rule 36 (Cond)
+    $default  reduce using rule 26 (Term)
 
 
 State 63
 
-   21 Expr: Expr • OP_PLUS Term
-   22     | Expr • OP_MINUS Term
-   37 Cond: Expr OP_GTE Expr •
+   27 Term: Term OP_DIV Factor •
 
-    OP_PLUS   shift, and go to state 48
-    OP_MINUS  shift, and go to state 49
-
-    $default  reduce using rule 37 (Cond)
+    $default  reduce using rule 27 (Term)
 
 
 State 64
 
-   21 Expr: Expr OP_PLUS Term •
-   24 Term: Term • OP_MULT Factor
-   25     | Term • OP_DIV Factor
+   23 Expr: Expr • OP_PLUS Term
+   24     | Expr • OP_MINUS Term
+   34 Cond: Expr OP_EQ Expr •
 
-    OP_MULT  shift, and go to state 50
-    OP_DIV   shift, and go to state 51
+    OP_PLUS   shift, and go to state 44
+    OP_MINUS  shift, and go to state 45
 
-    $default  reduce using rule 21 (Expr)
+    $default  reduce using rule 34 (Cond)
 
 
 State 65
 
-   22 Expr: Expr OP_MINUS Term •
-   24 Term: Term • OP_MULT Factor
-   25     | Term • OP_DIV Factor
+   23 Expr: Expr • OP_PLUS Term
+   24     | Expr • OP_MINUS Term
+   35 Cond: Expr OP_NEQ Expr •
 
-    OP_MULT  shift, and go to state 50
-    OP_DIV   shift, and go to state 51
+    OP_PLUS   shift, and go to state 44
+    OP_MINUS  shift, and go to state 45
 
-    $default  reduce using rule 22 (Expr)
+    $default  reduce using rule 35 (Cond)
 
 
 State 66
 
-   24 Term: Term OP_MULT Factor •
+   23 Expr: Expr • OP_PLUS Term
+   24     | Expr • OP_MINUS Term
+   36 Cond: Expr OP_LT Expr •
 
-    $default  reduce using rule 24 (Term)
+    OP_PLUS   shift, and go to state 44
+    OP_MINUS  shift, and go to state 45
+
+    $default  reduce using rule 36 (Cond)
 
 
 State 67
 
-   25 Term: Term OP_DIV Factor •
+   23 Expr: Expr • OP_PLUS Term
+   24     | Expr • OP_MINUS Term
+   37 Cond: Expr OP_GT Expr •
 
-    $default  reduce using rule 25 (Term)
+    OP_PLUS   shift, and go to state 44
+    OP_MINUS  shift, and go to state 45
+
+    $default  reduce using rule 37 (Cond)
 
 
 State 68
 
-   11 Instrs: Instrs • Instr
-   18 If: KW_WHEN Cond KW_THEN Instrs • OptElse KW_END KW_WHEN SEP_SEMICOLON
+   23 Expr: Expr • OP_PLUS Term
+   24     | Expr • OP_MINUS Term
+   38 Cond: Expr OP_LTE Expr •
 
-    IDENTIFIER  shift, and go to state 12
-    KW_WHEN     shift, and go to state 14
-    KW_ELSE     shift, and go to state 69
-    KW_PRINT    shift, and go to state 15
+    OP_PLUS   shift, and go to state 44
+    OP_MINUS  shift, and go to state 45
 
-    $default  reduce using rule 20 (OptElse)
-
-    Instr    go to state 16
-    Assign   go to state 17
-    Print    go to state 18
-    If       go to state 19
-    OptElse  go to state 70
+    $default  reduce using rule 38 (Cond)
 
 
 State 69
 
-   19 OptElse: KW_ELSE • Instrs
+   23 Expr: Expr • OP_PLUS Term
+   24     | Expr • OP_MINUS Term
+   39 Cond: Expr OP_GTE Expr •
 
-    $default  reduce using rule 12 (Instrs)
+    OP_PLUS   shift, and go to state 44
+    OP_MINUS  shift, and go to state 45
 
-    Instrs  go to state 71
+    $default  reduce using rule 39 (Cond)
 
 
 State 70
 
-   18 If: KW_WHEN Cond KW_THEN Instrs OptElse • KW_END KW_WHEN SEP_SEMICOLON
+   12 Instrs: Instrs • Instr
+   20 If: KW_WHEN $@2 Cond KW_THEN Instrs • OptElse KW_END KW_WHEN SEP_SEMICOLON
 
-    KW_END  shift, and go to state 72
+    IDENTIFIER  shift, and go to state 13
+    KW_WHEN     shift, and go to state 15
+    KW_ELSE     shift, and go to state 71
+    KW_PRINT    shift, and go to state 16
+
+    $default  reduce using rule 22 (OptElse)
+
+    Instr    go to state 17
+    Assign   go to state 18
+    Print    go to state 19
+    If       go to state 20
+    OptElse  go to state 72
 
 
 State 71
 
-   11 Instrs: Instrs • Instr
-   19 OptElse: KW_ELSE Instrs •
+   21 OptElse: KW_ELSE • Instrs
 
-    IDENTIFIER  shift, and go to state 12
-    KW_WHEN     shift, and go to state 14
-    KW_PRINT    shift, and go to state 15
+    $default  reduce using rule 13 (Instrs)
 
-    $default  reduce using rule 19 (OptElse)
-
-    Instr   go to state 16
-    Assign  go to state 17
-    Print   go to state 18
-    If      go to state 19
+    Instrs  go to state 73
 
 
 State 72
 
-   18 If: KW_WHEN Cond KW_THEN Instrs OptElse KW_END • KW_WHEN SEP_SEMICOLON
+   20 If: KW_WHEN $@2 Cond KW_THEN Instrs OptElse • KW_END KW_WHEN SEP_SEMICOLON
 
-    KW_WHEN  shift, and go to state 73
+    KW_END  shift, and go to state 74
 
 
 State 73
 
-   18 If: KW_WHEN Cond KW_THEN Instrs OptElse KW_END KW_WHEN • SEP_SEMICOLON
+   12 Instrs: Instrs • Instr
+   21 OptElse: KW_ELSE Instrs •
 
-    SEP_SEMICOLON  shift, and go to state 74
+    IDENTIFIER  shift, and go to state 13
+    KW_WHEN     shift, and go to state 15
+    KW_PRINT    shift, and go to state 16
+
+    $default  reduce using rule 21 (OptElse)
+
+    Instr   go to state 17
+    Assign  go to state 18
+    Print   go to state 19
+    If      go to state 20
 
 
 State 74
 
-   18 If: KW_WHEN Cond KW_THEN Instrs OptElse KW_END KW_WHEN SEP_SEMICOLON •
+   20 If: KW_WHEN $@2 Cond KW_THEN Instrs OptElse KW_END • KW_WHEN SEP_SEMICOLON
 
-    $default  reduce using rule 18 (If)
+    KW_WHEN  shift, and go to state 75
+
+
+State 75
+
+   20 If: KW_WHEN $@2 Cond KW_THEN Instrs OptElse KW_END KW_WHEN • SEP_SEMICOLON
+
+    SEP_SEMICOLON  shift, and go to state 76
+
+
+State 76
+
+   20 If: KW_WHEN $@2 Cond KW_THEN Instrs OptElse KW_END KW_WHEN SEP_SEMICOLON •
+
+    $default  reduce using rule 20 (If)

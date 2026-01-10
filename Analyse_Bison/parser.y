@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "ast.h"
+#include "table_symboles_enrichie.h"  //  AJOUTÉ
 
 extern int yylex();
 extern int yyparse();
@@ -13,6 +14,10 @@ extern int col_num;
 void yyerror(const char* s);
 
 ASTNode* root = NULL;
+
+//  AJOUTÉ : Table des symboles globale
+TableSymboles tableGlobale;
+int adresseMemoire = 0;
 %}
 
 %union {
@@ -55,11 +60,20 @@ ASTNode* root = NULL;
 %%
 
 Program:
-    KW_BEGIN KW_PROGRAM IDENTIFIER SEP_SEMICOLON Decls Instrs KW_END KW_PROGRAM SEP_SEMICOLON
+    KW_BEGIN KW_PROGRAM IDENTIFIER SEP_SEMICOLON 
     {
-        $$ = createProgramNode($3, $5, $6);
+        //  AJOUTÉ : Initialiser la table au début du programme
+        initTable(&tableGlobale);
+    }
+    Decls Instrs KW_END KW_PROGRAM SEP_SEMICOLON
+    {
+        $$ = createProgramNode($3, $6, $7);
         root = $$;
         printf("\n✓ Program '%s' parsed successfully!\n", $3);
+        
+        //  AJOUTÉ : Afficher la table des symboles à la fin
+        afficherTable(&tableGlobale);
+        
         free($3);
     }
     ;
@@ -78,6 +92,44 @@ Decls:
 Decl:
     KW_SET IDENTIFIER Type OptInit SEP_SEMICOLON
     {
+        //  MODIFIÉ : Ajouter le symbole à la table
+        Symbole sym;
+        strcpy(sym.nom, $2);
+        sym.typeSymbole = TYPE_VARIABLE;
+        
+        // Convertir DataType en TypeDonnee
+        switch($3) {
+            case TYPE_INTEGER:
+                sym.typeDonnee = DATA_ENTIER;
+                break;
+            case TYPE_FLOAT:
+                sym.typeDonnee = DATA_REEL;
+                break;
+            case TYPE_STRING:
+                sym.typeDonnee = DATA_CHAINE;
+                break;
+            case TYPE_BOOLEAN:
+                sym.typeDonnee = DATA_BOOLEEN;
+                break;
+        }
+        
+        sym.portee = tableGlobale.niveauPortee;
+        sym.adresse = adresseMemoire++;
+        
+        // Si initialisée, marquer comme telle
+        if ($4 != NULL) {
+            sym.initialise = 1;
+        } else {
+            sym.initialise = 0;
+        }
+        
+        // Insérer dans la table
+        if (insererSymbole(&tableGlobale, sym) == -1) {
+            char msg[100];
+            sprintf(msg, "Variable '%s' déjà déclarée", $2);
+            yyerror(msg);
+        }
+        
         $$ = createDeclNode($2, $3, $4);
         free($2);
     }
@@ -121,6 +173,22 @@ Instr:
 Assign:
     IDENTIFIER OP_EQ Expr SEP_SEMICOLON
     {
+        //  AJOUTÉ : Vérifications sémantiques
+        Symbole* sym = obtenirSymbole(&tableGlobale, $1);
+        
+        if (sym == NULL) {
+            char msg[100];
+            sprintf(msg, "Variable '%s' non déclarée", $1);
+            yyerror(msg);
+        } else if (sym->typeSymbole == TYPE_CONSTANTE) {
+            char msg[100];
+            sprintf(msg, "Impossible de modifier la constante '%s'", $1);
+            yyerror(msg);
+        } else {
+            // Marquer comme initialisée
+            sym->initialise = 1;
+        }
+        
         $$ = createAssignNode($1, $3);
         free($1);
     }
@@ -134,9 +202,17 @@ Print:
     ;
 
 If:
-    KW_WHEN Cond KW_THEN Instrs OptElse KW_END KW_WHEN SEP_SEMICOLON
+    KW_WHEN 
     {
-        $$ = createIfNode($2, $4, $5);
+        //  AJOUTÉ : Entrer dans une nouvelle portée
+        entrerPortee(&tableGlobale);
+    }
+    Cond KW_THEN Instrs OptElse KW_END KW_WHEN SEP_SEMICOLON
+    {
+        $$ = createIfNode($3, $5, $6);
+        
+        //  AJOUTÉ : Sortir de la portée
+        sortirPortee(&tableGlobale);
     }
     ;
 
@@ -197,6 +273,18 @@ Factor:
     }
     | IDENTIFIER
     {
+        //  AJOUTÉ : Vérifier que la variable existe et est initialisée
+        Symbole* sym = obtenirSymbole(&tableGlobale, $1);
+        
+        if (sym == NULL) {
+            char msg[100];
+            sprintf(msg, "Variable '%s' non déclarée", $1);
+            yyerror(msg);
+        } else if (!sym->initialise && sym->typeSymbole != TYPE_CONSTANTE) {
+            printf("Attention ligne %d : variable '%s' utilisée sans initialisation\n", 
+                   line_num, $1);
+        }
+        
         $$ = createIdentifierNode($1);
         free($1);
     }
@@ -236,5 +324,5 @@ Cond:
 %%
 
 void yyerror(const char* s) {
-    fprintf(stderr, "Parse error at line %d, col %d: %s\n", line_num, col_num, s);
+    fprintf(stderr, "Erreur sémantique ligne %d, col %d: %s\n", line_num, col_num, s);
 }
