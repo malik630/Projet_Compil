@@ -20,8 +20,8 @@ typedef enum {
     NT_INSTR,        // Instr
     NT_ASSIGN,       // Assign
     NT_PRINT,        // Print
-    NT_IF,           // If
-    NT_OPTELSE,      // OptElse
+    NT_WHEN,           // If
+    NT_OPTOTHERWISE,      // OptElse
     NT_EXPR,         // Expr
     NT_EXPRPRIME,    // ExprPrime
     NT_TERM,         // Term
@@ -143,5 +143,6 @@ void recoverFromError(LL1Parser* parser);
 
 void printParseTree(ASTNode* root, int depth);
 void printLL1Table(LL1Parser* parser);
+
 
 #endif 
