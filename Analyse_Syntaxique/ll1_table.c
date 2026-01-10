@@ -11,7 +11,7 @@ static LL1TableEntry ll1_table_data[] = {
     {NT_DECLS, KW_SET, 2, "Decl Decls"},
     {NT_DECLS, IDENTIFIER, 3, "ε"},
     {NT_DECLS, KW_PRINT, 3, "ε"},
-    {NT_DECLS, KW_IF, 3, "ε"},
+    {NT_DECLS, KW_WHEN, 3, "ε"},
     {NT_DECLS, KW_END, 3, "ε"},
     
     // Decl
@@ -30,14 +30,14 @@ static LL1TableEntry ll1_table_data[] = {
     // Instrs
     {NT_INSTRS, IDENTIFIER, 11, "Instr Instrs"},
     {NT_INSTRS, KW_PRINT, 11, "Instr Instrs"},
-    {NT_INSTRS, KW_IF, 11, "Instr Instrs"},
+    {NT_INSTRS, KW_WHEN, 11, "Instr Instrs"},
     {NT_INSTRS, KW_END, 12, "ε"},
-    {NT_INSTRS, KW_ELSE, 12, "ε"},
+    {NT_INSTRS, KW_OTHERWISE, 12, "ε"},
     
     // Instr
     {NT_INSTR, IDENTIFIER, 13, "Assign"},
     {NT_INSTR, KW_PRINT, 14, "Print"},
-    {NT_INSTR, KW_IF, 15, "If"},
+    {NT_INSTR, KW_WHEN, 15, "WHEN"},
     
     // Assign
     {NT_ASSIGN, IDENTIFIER, 16, "IDENTIFIER OP_EQ_TOK Expr SEP_SEMICOLON"},
@@ -46,11 +46,11 @@ static LL1TableEntry ll1_table_data[] = {
     {NT_PRINT, KW_PRINT, 17, "KW_PRINT Expr SEP_SEMICOLON"},
     
     // If
-    {NT_IF, KW_IF, 18, "KW_IF Cond KW_THEN Instrs OptElse KW_END KW_IF SEP_SEMICOLON"},
+    {NT_WHEN, KW_WHEN, 18, "KW_WHEN Cond KW_THEN Instrs OptOTHERWISE KW_END KW_WHEN SEP_SEMICOLON"},
     
-    // OptElse
-    {NT_OPTELSE, KW_ELSE, 19, "KW_ELSE Instrs"},
-    {NT_OPTELSE, KW_END, 20, "ε"},
+    // OptOTHERWISE
+    {NT_OPTOTHERWISE, KW_OTHERWISE, 19, "KW_OTHERWISE Instrs"},
+    {NT_OPTOTHERWISE, KW_END, 20, "ε"},
     
     // Expr
     {NT_EXPR, INT_LITERAL, 21, "Term ExprPrime"},
@@ -130,4 +130,5 @@ LL1TableEntry* lookupLL1Table(LL1Parser* parser, NonTerminal nt, TokenType term)
         }
     }
     return NULL;  
+
 }
