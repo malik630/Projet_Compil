@@ -13,8 +13,8 @@ const char* nonTerminalToString(NonTerminal nt) {
         case NT_INSTR: return "Instr";
         case NT_ASSIGN: return "Assign";
         case NT_PRINT: return "Print";
-        case NT_IF: return "If";
-        case NT_OPTELSE: return "OptElse";
+        case NT_WHEN: return "WHEN";
+        case NT_OPTOTHERWISE: return "OptOTHERWISE";
         case NT_EXPR: return "Expr";
         case NT_EXPRPRIME: return "ExprPrime";
         case NT_TERM: return "Term";
@@ -36,9 +36,9 @@ TokenType stringToTokenType(const char* str) {
     if (strcmp(str, "KW_FLOAT") == 0) return KW_FLOAT;
     if (strcmp(str, "KW_BOOLEAN") == 0) return KW_BOOLEAN;
     if (strcmp(str, "KW_PRINT") == 0) return KW_PRINT;
-    if (strcmp(str, "KW_IF") == 0) return KW_IF;
+    if (strcmp(str, "KW_WHEN") == 0) return KW_WHEN;
     if (strcmp(str, "KW_THEN") == 0) return KW_THEN;
-    if (strcmp(str, "KW_ELSE") == 0) return KW_ELSE;
+    if (strcmp(str, "KW_OTHERWISE") == 0) return KW_OTHERWISE;
     if (strcmp(str, "IDENTIFIER") == 0) return IDENTIFIER;
     if (strcmp(str, "INT_LITERAL") == 0) return INT_LITERAL;
     if (strcmp(str, "FLOAT_LITERAL") == 0) return FLOAT_LITERAL;
@@ -69,8 +69,8 @@ NonTerminal stringToNonTerminal(const char* str) {
     if (strcmp(str, "Instr") == 0) return NT_INSTR;
     if (strcmp(str, "Assign") == 0) return NT_ASSIGN;
     if (strcmp(str, "Print") == 0) return NT_PRINT;
-    if (strcmp(str, "If") == 0) return NT_IF;
-    if (strcmp(str, "OptElse") == 0) return NT_OPTELSE;
+    if (strcmp(str, "WHEN") == 0) return NT_WHEN;
+    if (strcmp(str, "OptOTHERWISE") == 0) return NT_OPTOTHERWISE;
     if (strcmp(str, "Expr") == 0) return NT_EXPR;
     if (strcmp(str, "ExprPrime") == 0) return NT_EXPRPRIME;
     if (strcmp(str, "Term") == 0) return NT_TERM;
