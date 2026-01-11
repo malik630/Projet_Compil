@@ -1,0 +1,11 @@
+BEGIN PROGRAM TestSimple;
+
+SET x INTEGER = 10;
+PRINT x;
+
+WHEN x > 5
+THEN
+    PRINT 'Greater';
+END WHEN;
+
+END PROGRAM;
