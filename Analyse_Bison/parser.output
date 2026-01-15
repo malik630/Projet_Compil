@@ -1,4 +1,4 @@
-Terminals unused in grammar
+Terminaux inutilisés dans la grammaire
 
     KW_CREATE
     KW_RECORD
@@ -26,7 +26,7 @@ Terminals unused in grammar
     UMINUS
 
 
-Grammar
+Grammaire
 
     0 $accept: Program $end
 
@@ -87,7 +87,7 @@ Grammar
    39     | Expr OP_GTE Expr
 
 
-Terminals, with rules where they appear
+Terminaux, suivis des règles où ils apparaissent
 
     $end (0) 0
     error (256)
@@ -146,437 +146,437 @@ Terminals, with rules where they appear
     UMINUS (310)
 
 
-Nonterminals, with rules where they appear
+Non-terminaux, suivis des règles où ils apparaissent
 
     $accept (56)
-        on left: 0
+        à gauche: 0
     Program <node> (57)
-        on left: 2
-        on right: 0
+        à gauche: 2
+        à droite: 0
     $@1 (58)
-        on left: 1
-        on right: 2
+        à gauche: 1
+        à droite: 2
     Decls <node> (59)
-        on left: 3 4
-        on right: 2 3
+        à gauche: 3 4
+        à droite: 2 3
     Decl <node> (60)
-        on left: 5
-        on right: 3
+        à gauche: 5
+        à droite: 3
     OptInit <node> (61)
-        on left: 6 7
-        on right: 5
+        à gauche: 6 7
+        à droite: 5
     Type <dtype> (62)
-        on left: 8 9 10 11
-        on right: 5
+        à gauche: 8 9 10 11
+        à droite: 5
     Instrs <node> (63)
-        on left: 12 13
-        on right: 2 12 20 21
+        à gauche: 12 13
+        à droite: 2 12 20 21
     Instr <node> (64)
-        on left: 14 15 16
-        on right: 12
+        à gauche: 14 15 16
+        à droite: 12
     Assign <node> (65)
-        on left: 17
-        on right: 14
+        à gauche: 17
+        à droite: 14
     Print <node> (66)
-        on left: 18
-        on right: 15
+        à gauche: 18
+        à droite: 15
     If <node> (67)
-        on left: 20
-        on right: 16
+        à gauche: 20
+        à droite: 16
     $@2 (68)
-        on left: 19
-        on right: 20
+        à gauche: 19
+        à droite: 20
     OptElse <node> (69)
-        on left: 21 22
-        on right: 20
+        à gauche: 21 22
+        à droite: 20
     Expr <node> (70)
-        on left: 23 24 25
-        on right: 6 17 18 23 24 33 34 35 36 37 38 39
+        à gauche: 23 24 25
+        à droite: 6 17 18 23 24 33 34 35 36 37 38 39
     Term <node> (71)
-        on left: 26 27 28
-        on right: 23 24 25 26 27
+        à gauche: 26 27 28
+        à droite: 23 24 25 26 27
     Factor <node> (72)
-        on left: 29 30 31 32 33
-        on right: 26 27 28
+        à gauche: 29 30 31 32 33
+        à droite: 26 27 28
     Cond <node> (73)
-        on left: 34 35 36 37 38 39
-        on right: 20
+        à gauche: 34 35 36 37 38 39
+        à droite: 20
 
 
-State 0
+État 0
 
     0 $accept: • Program $end
 
-    KW_BEGIN  shift, and go to state 1
+    KW_BEGIN  décalage et aller à l'état 1
 
-    Program  go to state 2
+    Program  aller à l'état 2
 
 
-State 1
+État 1
 
     2 Program: KW_BEGIN • KW_PROGRAM IDENTIFIER SEP_SEMICOLON $@1 Decls Instrs KW_END KW_PROGRAM SEP_SEMICOLON
 
-    KW_PROGRAM  shift, and go to state 3
+    KW_PROGRAM  décalage et aller à l'état 3
 
 
-State 2
+État 2
 
     0 $accept: Program • $end
 
-    $end  shift, and go to state 4
+    $end  décalage et aller à l'état 4
 
 
-State 3
+État 3
 
     2 Program: KW_BEGIN KW_PROGRAM • IDENTIFIER SEP_SEMICOLON $@1 Decls Instrs KW_END KW_PROGRAM SEP_SEMICOLON
 
-    IDENTIFIER  shift, and go to state 5
+    IDENTIFIER  décalage et aller à l'état 5
 
 
-State 4
+État 4
 
     0 $accept: Program $end •
 
-    $default  accept
+    $défaut  accepter
 
 
-State 5
+État 5
 
     2 Program: KW_BEGIN KW_PROGRAM IDENTIFIER • SEP_SEMICOLON $@1 Decls Instrs KW_END KW_PROGRAM SEP_SEMICOLON
 
-    SEP_SEMICOLON  shift, and go to state 6
+    SEP_SEMICOLON  décalage et aller à l'état 6
 
 
-State 6
+État 6
 
     2 Program: KW_BEGIN KW_PROGRAM IDENTIFIER SEP_SEMICOLON • $@1 Decls Instrs KW_END KW_PROGRAM SEP_SEMICOLON
 
-    $default  reduce using rule 1 ($@1)
+    $défaut  réduction par utilisation de la règle 1 ($@1)
 
-    $@1  go to state 7
+    $@1  aller à l'état 7
 
 
-State 7
+État 7
 
     2 Program: KW_BEGIN KW_PROGRAM IDENTIFIER SEP_SEMICOLON $@1 • Decls Instrs KW_END KW_PROGRAM SEP_SEMICOLON
 
-    $default  reduce using rule 4 (Decls)
+    $défaut  réduction par utilisation de la règle 4 (Decls)
 
-    Decls  go to state 8
+    Decls  aller à l'état 8
 
 
-State 8
+État 8
 
     2 Program: KW_BEGIN KW_PROGRAM IDENTIFIER SEP_SEMICOLON $@1 Decls • Instrs KW_END KW_PROGRAM SEP_SEMICOLON
     3 Decls: Decls • Decl
 
-    KW_SET  shift, and go to state 9
+    KW_SET  décalage et aller à l'état 9
 
-    $default  reduce using rule 13 (Instrs)
+    $défaut  réduction par utilisation de la règle 13 (Instrs)
 
-    Decl    go to state 10
-    Instrs  go to state 11
+    Decl    aller à l'état 10
+    Instrs  aller à l'état 11
 
 
-State 9
+État 9
 
     5 Decl: KW_SET • IDENTIFIER Type OptInit SEP_SEMICOLON
 
-    IDENTIFIER  shift, and go to state 12
+    IDENTIFIER  décalage et aller à l'état 12
 
 
-State 10
+État 10
 
     3 Decls: Decls Decl •
 
-    $default  reduce using rule 3 (Decls)
+    $défaut  réduction par utilisation de la règle 3 (Decls)
 
 
-State 11
+État 11
 
     2 Program: KW_BEGIN KW_PROGRAM IDENTIFIER SEP_SEMICOLON $@1 Decls Instrs • KW_END KW_PROGRAM SEP_SEMICOLON
    12 Instrs: Instrs • Instr
 
-    IDENTIFIER  shift, and go to state 13
-    KW_END      shift, and go to state 14
-    KW_WHEN     shift, and go to state 15
-    KW_PRINT    shift, and go to state 16
+    IDENTIFIER  décalage et aller à l'état 13
+    KW_END      décalage et aller à l'état 14
+    KW_WHEN     décalage et aller à l'état 15
+    KW_PRINT    décalage et aller à l'état 16
 
-    Instr   go to state 17
-    Assign  go to state 18
-    Print   go to state 19
-    If      go to state 20
+    Instr   aller à l'état 17
+    Assign  aller à l'état 18
+    Print   aller à l'état 19
+    If      aller à l'état 20
 
 
-State 12
+État 12
 
     5 Decl: KW_SET IDENTIFIER • Type OptInit SEP_SEMICOLON
 
-    KW_INTEGER  shift, and go to state 21
-    KW_STRING   shift, and go to state 22
-    KW_FLOAT    shift, and go to state 23
-    KW_BOOLEAN  shift, and go to state 24
+    KW_INTEGER  décalage et aller à l'état 21
+    KW_STRING   décalage et aller à l'état 22
+    KW_FLOAT    décalage et aller à l'état 23
+    KW_BOOLEAN  décalage et aller à l'état 24
 
-    Type  go to state 25
+    Type  aller à l'état 25
 
 
-State 13
+État 13
 
    17 Assign: IDENTIFIER • OP_EQ Expr SEP_SEMICOLON
 
-    OP_EQ  shift, and go to state 26
+    OP_EQ  décalage et aller à l'état 26
 
 
-State 14
+État 14
 
     2 Program: KW_BEGIN KW_PROGRAM IDENTIFIER SEP_SEMICOLON $@1 Decls Instrs KW_END • KW_PROGRAM SEP_SEMICOLON
 
-    KW_PROGRAM  shift, and go to state 27
+    KW_PROGRAM  décalage et aller à l'état 27
 
 
-State 15
+État 15
 
    20 If: KW_WHEN • $@2 Cond KW_THEN Instrs OptElse KW_END KW_WHEN SEP_SEMICOLON
 
-    $default  reduce using rule 19 ($@2)
+    $défaut  réduction par utilisation de la règle 19 ($@2)
 
-    $@2  go to state 28
+    $@2  aller à l'état 28
 
 
-State 16
+État 16
 
    18 Print: KW_PRINT • Expr SEP_SEMICOLON
 
-    IDENTIFIER      shift, and go to state 29
-    STRING_LITERAL  shift, and go to state 30
-    INT_LITERAL     shift, and go to state 31
-    FLOAT_LITERAL   shift, and go to state 32
-    SEP_LPAREN      shift, and go to state 33
+    IDENTIFIER      décalage et aller à l'état 29
+    STRING_LITERAL  décalage et aller à l'état 30
+    INT_LITERAL     décalage et aller à l'état 31
+    FLOAT_LITERAL   décalage et aller à l'état 32
+    SEP_LPAREN      décalage et aller à l'état 33
 
-    Expr    go to state 34
-    Term    go to state 35
-    Factor  go to state 36
+    Expr    aller à l'état 34
+    Term    aller à l'état 35
+    Factor  aller à l'état 36
 
 
-State 17
+État 17
 
    12 Instrs: Instrs Instr •
 
-    $default  reduce using rule 12 (Instrs)
+    $défaut  réduction par utilisation de la règle 12 (Instrs)
 
 
-State 18
+État 18
 
    14 Instr: Assign •
 
-    $default  reduce using rule 14 (Instr)
+    $défaut  réduction par utilisation de la règle 14 (Instr)
 
 
-State 19
+État 19
 
    15 Instr: Print •
 
-    $default  reduce using rule 15 (Instr)
+    $défaut  réduction par utilisation de la règle 15 (Instr)
 
 
-State 20
+État 20
 
    16 Instr: If •
 
-    $default  reduce using rule 16 (Instr)
+    $défaut  réduction par utilisation de la règle 16 (Instr)
 
 
-State 21
+État 21
 
     8 Type: KW_INTEGER •
 
-    $default  reduce using rule 8 (Type)
+    $défaut  réduction par utilisation de la règle 8 (Type)
 
 
-State 22
+État 22
 
     9 Type: KW_STRING •
 
-    $default  reduce using rule 9 (Type)
+    $défaut  réduction par utilisation de la règle 9 (Type)
 
 
-State 23
+État 23
 
    10 Type: KW_FLOAT •
 
-    $default  reduce using rule 10 (Type)
+    $défaut  réduction par utilisation de la règle 10 (Type)
 
 
-State 24
+État 24
 
    11 Type: KW_BOOLEAN •
 
-    $default  reduce using rule 11 (Type)
+    $défaut  réduction par utilisation de la règle 11 (Type)
 
 
-State 25
+État 25
 
     5 Decl: KW_SET IDENTIFIER Type • OptInit SEP_SEMICOLON
 
-    OP_EQ  shift, and go to state 37
+    OP_EQ  décalage et aller à l'état 37
 
-    $default  reduce using rule 7 (OptInit)
+    $défaut  réduction par utilisation de la règle 7 (OptInit)
 
-    OptInit  go to state 38
+    OptInit  aller à l'état 38
 
 
-State 26
+État 26
 
    17 Assign: IDENTIFIER OP_EQ • Expr SEP_SEMICOLON
 
-    IDENTIFIER      shift, and go to state 29
-    STRING_LITERAL  shift, and go to state 30
-    INT_LITERAL     shift, and go to state 31
-    FLOAT_LITERAL   shift, and go to state 32
-    SEP_LPAREN      shift, and go to state 33
+    IDENTIFIER      décalage et aller à l'état 29
+    STRING_LITERAL  décalage et aller à l'état 30
+    INT_LITERAL     décalage et aller à l'état 31
+    FLOAT_LITERAL   décalage et aller à l'état 32
+    SEP_LPAREN      décalage et aller à l'état 33
 
-    Expr    go to state 39
-    Term    go to state 35
-    Factor  go to state 36
+    Expr    aller à l'état 39
+    Term    aller à l'état 35
+    Factor  aller à l'état 36
 
 
-State 27
+État 27
 
     2 Program: KW_BEGIN KW_PROGRAM IDENTIFIER SEP_SEMICOLON $@1 Decls Instrs KW_END KW_PROGRAM • SEP_SEMICOLON
 
-    SEP_SEMICOLON  shift, and go to state 40
+    SEP_SEMICOLON  décalage et aller à l'état 40
 
 
-State 28
+État 28
 
    20 If: KW_WHEN $@2 • Cond KW_THEN Instrs OptElse KW_END KW_WHEN SEP_SEMICOLON
 
-    IDENTIFIER      shift, and go to state 29
-    STRING_LITERAL  shift, and go to state 30
-    INT_LITERAL     shift, and go to state 31
-    FLOAT_LITERAL   shift, and go to state 32
-    SEP_LPAREN      shift, and go to state 33
+    IDENTIFIER      décalage et aller à l'état 29
+    STRING_LITERAL  décalage et aller à l'état 30
+    INT_LITERAL     décalage et aller à l'état 31
+    FLOAT_LITERAL   décalage et aller à l'état 32
+    SEP_LPAREN      décalage et aller à l'état 33
 
-    Expr    go to state 41
-    Term    go to state 35
-    Factor  go to state 36
-    Cond    go to state 42
+    Expr    aller à l'état 41
+    Term    aller à l'état 35
+    Factor  aller à l'état 36
+    Cond    aller à l'état 42
 
 
-State 29
+État 29
 
    32 Factor: IDENTIFIER •
 
-    $default  reduce using rule 32 (Factor)
+    $défaut  réduction par utilisation de la règle 32 (Factor)
 
 
-State 30
+État 30
 
    31 Factor: STRING_LITERAL •
 
-    $default  reduce using rule 31 (Factor)
+    $défaut  réduction par utilisation de la règle 31 (Factor)
 
 
-State 31
+État 31
 
    29 Factor: INT_LITERAL •
 
-    $default  reduce using rule 29 (Factor)
+    $défaut  réduction par utilisation de la règle 29 (Factor)
 
 
-State 32
+État 32
 
    30 Factor: FLOAT_LITERAL •
 
-    $default  reduce using rule 30 (Factor)
+    $défaut  réduction par utilisation de la règle 30 (Factor)
 
 
-State 33
+État 33
 
    33 Factor: SEP_LPAREN • Expr SEP_RPAREN
 
-    IDENTIFIER      shift, and go to state 29
-    STRING_LITERAL  shift, and go to state 30
-    INT_LITERAL     shift, and go to state 31
-    FLOAT_LITERAL   shift, and go to state 32
-    SEP_LPAREN      shift, and go to state 33
+    IDENTIFIER      décalage et aller à l'état 29
+    STRING_LITERAL  décalage et aller à l'état 30
+    INT_LITERAL     décalage et aller à l'état 31
+    FLOAT_LITERAL   décalage et aller à l'état 32
+    SEP_LPAREN      décalage et aller à l'état 33
 
-    Expr    go to state 43
-    Term    go to state 35
-    Factor  go to state 36
+    Expr    aller à l'état 43
+    Term    aller à l'état 35
+    Factor  aller à l'état 36
 
 
-State 34
+État 34
 
    18 Print: KW_PRINT Expr • SEP_SEMICOLON
    23 Expr: Expr • OP_PLUS Term
    24     | Expr • OP_MINUS Term
 
-    OP_PLUS        shift, and go to state 44
-    OP_MINUS       shift, and go to state 45
-    SEP_SEMICOLON  shift, and go to state 46
+    OP_PLUS        décalage et aller à l'état 44
+    OP_MINUS       décalage et aller à l'état 45
+    SEP_SEMICOLON  décalage et aller à l'état 46
 
 
-State 35
+État 35
 
    25 Expr: Term •
    26 Term: Term • OP_MULT Factor
    27     | Term • OP_DIV Factor
 
-    OP_MULT  shift, and go to state 47
-    OP_DIV   shift, and go to state 48
+    OP_MULT  décalage et aller à l'état 47
+    OP_DIV   décalage et aller à l'état 48
 
-    $default  reduce using rule 25 (Expr)
+    $défaut  réduction par utilisation de la règle 25 (Expr)
 
 
-State 36
+État 36
 
    28 Term: Factor •
 
-    $default  reduce using rule 28 (Term)
+    $défaut  réduction par utilisation de la règle 28 (Term)
 
 
-State 37
+État 37
 
     6 OptInit: OP_EQ • Expr
 
-    IDENTIFIER      shift, and go to state 29
-    STRING_LITERAL  shift, and go to state 30
-    INT_LITERAL     shift, and go to state 31
-    FLOAT_LITERAL   shift, and go to state 32
-    SEP_LPAREN      shift, and go to state 33
+    IDENTIFIER      décalage et aller à l'état 29
+    STRING_LITERAL  décalage et aller à l'état 30
+    INT_LITERAL     décalage et aller à l'état 31
+    FLOAT_LITERAL   décalage et aller à l'état 32
+    SEP_LPAREN      décalage et aller à l'état 33
 
-    Expr    go to state 49
-    Term    go to state 35
-    Factor  go to state 36
+    Expr    aller à l'état 49
+    Term    aller à l'état 35
+    Factor  aller à l'état 36
 
 
-State 38
+État 38
 
     5 Decl: KW_SET IDENTIFIER Type OptInit • SEP_SEMICOLON
 
-    SEP_SEMICOLON  shift, and go to state 50
+    SEP_SEMICOLON  décalage et aller à l'état 50
 
 
-State 39
+État 39
 
    17 Assign: IDENTIFIER OP_EQ Expr • SEP_SEMICOLON
    23 Expr: Expr • OP_PLUS Term
    24     | Expr • OP_MINUS Term
 
-    OP_PLUS        shift, and go to state 44
-    OP_MINUS       shift, and go to state 45
-    SEP_SEMICOLON  shift, and go to state 51
+    OP_PLUS        décalage et aller à l'état 44
+    OP_MINUS       décalage et aller à l'état 45
+    SEP_SEMICOLON  décalage et aller à l'état 51
 
 
-State 40
+État 40
 
     2 Program: KW_BEGIN KW_PROGRAM IDENTIFIER SEP_SEMICOLON $@1 Decls Instrs KW_END KW_PROGRAM SEP_SEMICOLON •
 
-    $default  reduce using rule 2 (Program)
+    $défaut  réduction par utilisation de la règle 2 (Program)
 
 
-State 41
+État 41
 
    23 Expr: Expr • OP_PLUS Term
    24     | Expr • OP_MINUS Term
@@ -587,405 +587,405 @@ State 41
    38     | Expr • OP_LTE Expr
    39     | Expr • OP_GTE Expr
 
-    OP_EQ     shift, and go to state 52
-    OP_NEQ    shift, and go to state 53
-    OP_LT     shift, and go to state 54
-    OP_GT     shift, and go to state 55
-    OP_LTE    shift, and go to state 56
-    OP_GTE    shift, and go to state 57
-    OP_PLUS   shift, and go to state 44
-    OP_MINUS  shift, and go to state 45
+    OP_EQ     décalage et aller à l'état 52
+    OP_NEQ    décalage et aller à l'état 53
+    OP_LT     décalage et aller à l'état 54
+    OP_GT     décalage et aller à l'état 55
+    OP_LTE    décalage et aller à l'état 56
+    OP_GTE    décalage et aller à l'état 57
+    OP_PLUS   décalage et aller à l'état 44
+    OP_MINUS  décalage et aller à l'état 45
 
 
-State 42
+État 42
 
    20 If: KW_WHEN $@2 Cond • KW_THEN Instrs OptElse KW_END KW_WHEN SEP_SEMICOLON
 
-    KW_THEN  shift, and go to state 58
+    KW_THEN  décalage et aller à l'état 58
 
 
-State 43
+État 43
 
    23 Expr: Expr • OP_PLUS Term
    24     | Expr • OP_MINUS Term
    33 Factor: SEP_LPAREN Expr • SEP_RPAREN
 
-    OP_PLUS     shift, and go to state 44
-    OP_MINUS    shift, and go to state 45
-    SEP_RPAREN  shift, and go to state 59
+    OP_PLUS     décalage et aller à l'état 44
+    OP_MINUS    décalage et aller à l'état 45
+    SEP_RPAREN  décalage et aller à l'état 59
 
 
-State 44
+État 44
 
    23 Expr: Expr OP_PLUS • Term
 
-    IDENTIFIER      shift, and go to state 29
-    STRING_LITERAL  shift, and go to state 30
-    INT_LITERAL     shift, and go to state 31
-    FLOAT_LITERAL   shift, and go to state 32
-    SEP_LPAREN      shift, and go to state 33
+    IDENTIFIER      décalage et aller à l'état 29
+    STRING_LITERAL  décalage et aller à l'état 30
+    INT_LITERAL     décalage et aller à l'état 31
+    FLOAT_LITERAL   décalage et aller à l'état 32
+    SEP_LPAREN      décalage et aller à l'état 33
 
-    Term    go to state 60
-    Factor  go to state 36
+    Term    aller à l'état 60
+    Factor  aller à l'état 36
 
 
-State 45
+État 45
 
    24 Expr: Expr OP_MINUS • Term
 
-    IDENTIFIER      shift, and go to state 29
-    STRING_LITERAL  shift, and go to state 30
-    INT_LITERAL     shift, and go to state 31
-    FLOAT_LITERAL   shift, and go to state 32
-    SEP_LPAREN      shift, and go to state 33
+    IDENTIFIER      décalage et aller à l'état 29
+    STRING_LITERAL  décalage et aller à l'état 30
+    INT_LITERAL     décalage et aller à l'état 31
+    FLOAT_LITERAL   décalage et aller à l'état 32
+    SEP_LPAREN      décalage et aller à l'état 33
 
-    Term    go to state 61
-    Factor  go to state 36
+    Term    aller à l'état 61
+    Factor  aller à l'état 36
 
 
-State 46
+État 46
 
    18 Print: KW_PRINT Expr SEP_SEMICOLON •
 
-    $default  reduce using rule 18 (Print)
+    $défaut  réduction par utilisation de la règle 18 (Print)
 
 
-State 47
+État 47
 
    26 Term: Term OP_MULT • Factor
 
-    IDENTIFIER      shift, and go to state 29
-    STRING_LITERAL  shift, and go to state 30
-    INT_LITERAL     shift, and go to state 31
-    FLOAT_LITERAL   shift, and go to state 32
-    SEP_LPAREN      shift, and go to state 33
+    IDENTIFIER      décalage et aller à l'état 29
+    STRING_LITERAL  décalage et aller à l'état 30
+    INT_LITERAL     décalage et aller à l'état 31
+    FLOAT_LITERAL   décalage et aller à l'état 32
+    SEP_LPAREN      décalage et aller à l'état 33
 
-    Factor  go to state 62
+    Factor  aller à l'état 62
 
 
-State 48
+État 48
 
    27 Term: Term OP_DIV • Factor
 
-    IDENTIFIER      shift, and go to state 29
-    STRING_LITERAL  shift, and go to state 30
-    INT_LITERAL     shift, and go to state 31
-    FLOAT_LITERAL   shift, and go to state 32
-    SEP_LPAREN      shift, and go to state 33
+    IDENTIFIER      décalage et aller à l'état 29
+    STRING_LITERAL  décalage et aller à l'état 30
+    INT_LITERAL     décalage et aller à l'état 31
+    FLOAT_LITERAL   décalage et aller à l'état 32
+    SEP_LPAREN      décalage et aller à l'état 33
 
-    Factor  go to state 63
+    Factor  aller à l'état 63
 
 
-State 49
+État 49
 
     6 OptInit: OP_EQ Expr •
    23 Expr: Expr • OP_PLUS Term
    24     | Expr • OP_MINUS Term
 
-    OP_PLUS   shift, and go to state 44
-    OP_MINUS  shift, and go to state 45
+    OP_PLUS   décalage et aller à l'état 44
+    OP_MINUS  décalage et aller à l'état 45
 
-    $default  reduce using rule 6 (OptInit)
+    $défaut  réduction par utilisation de la règle 6 (OptInit)
 
 
-State 50
+État 50
 
     5 Decl: KW_SET IDENTIFIER Type OptInit SEP_SEMICOLON •
 
-    $default  reduce using rule 5 (Decl)
+    $défaut  réduction par utilisation de la règle 5 (Decl)
 
 
-State 51
+État 51
 
    17 Assign: IDENTIFIER OP_EQ Expr SEP_SEMICOLON •
 
-    $default  reduce using rule 17 (Assign)
+    $défaut  réduction par utilisation de la règle 17 (Assign)
 
 
-State 52
+État 52
 
    34 Cond: Expr OP_EQ • Expr
 
-    IDENTIFIER      shift, and go to state 29
-    STRING_LITERAL  shift, and go to state 30
-    INT_LITERAL     shift, and go to state 31
-    FLOAT_LITERAL   shift, and go to state 32
-    SEP_LPAREN      shift, and go to state 33
+    IDENTIFIER      décalage et aller à l'état 29
+    STRING_LITERAL  décalage et aller à l'état 30
+    INT_LITERAL     décalage et aller à l'état 31
+    FLOAT_LITERAL   décalage et aller à l'état 32
+    SEP_LPAREN      décalage et aller à l'état 33
 
-    Expr    go to state 64
-    Term    go to state 35
-    Factor  go to state 36
+    Expr    aller à l'état 64
+    Term    aller à l'état 35
+    Factor  aller à l'état 36
 
 
-State 53
+État 53
 
    35 Cond: Expr OP_NEQ • Expr
 
-    IDENTIFIER      shift, and go to state 29
-    STRING_LITERAL  shift, and go to state 30
-    INT_LITERAL     shift, and go to state 31
-    FLOAT_LITERAL   shift, and go to state 32
-    SEP_LPAREN      shift, and go to state 33
+    IDENTIFIER      décalage et aller à l'état 29
+    STRING_LITERAL  décalage et aller à l'état 30
+    INT_LITERAL     décalage et aller à l'état 31
+    FLOAT_LITERAL   décalage et aller à l'état 32
+    SEP_LPAREN      décalage et aller à l'état 33
 
-    Expr    go to state 65
-    Term    go to state 35
-    Factor  go to state 36
+    Expr    aller à l'état 65
+    Term    aller à l'état 35
+    Factor  aller à l'état 36
 
 
-State 54
+État 54
 
    36 Cond: Expr OP_LT • Expr
 
-    IDENTIFIER      shift, and go to state 29
-    STRING_LITERAL  shift, and go to state 30
-    INT_LITERAL     shift, and go to state 31
-    FLOAT_LITERAL   shift, and go to state 32
-    SEP_LPAREN      shift, and go to state 33
+    IDENTIFIER      décalage et aller à l'état 29
+    STRING_LITERAL  décalage et aller à l'état 30
+    INT_LITERAL     décalage et aller à l'état 31
+    FLOAT_LITERAL   décalage et aller à l'état 32
+    SEP_LPAREN      décalage et aller à l'état 33
 
-    Expr    go to state 66
-    Term    go to state 35
-    Factor  go to state 36
+    Expr    aller à l'état 66
+    Term    aller à l'état 35
+    Factor  aller à l'état 36
 
 
-State 55
+État 55
 
    37 Cond: Expr OP_GT • Expr
 
-    IDENTIFIER      shift, and go to state 29
-    STRING_LITERAL  shift, and go to state 30
-    INT_LITERAL     shift, and go to state 31
-    FLOAT_LITERAL   shift, and go to state 32
-    SEP_LPAREN      shift, and go to state 33
+    IDENTIFIER      décalage et aller à l'état 29
+    STRING_LITERAL  décalage et aller à l'état 30
+    INT_LITERAL     décalage et aller à l'état 31
+    FLOAT_LITERAL   décalage et aller à l'état 32
+    SEP_LPAREN      décalage et aller à l'état 33
 
-    Expr    go to state 67
-    Term    go to state 35
-    Factor  go to state 36
+    Expr    aller à l'état 67
+    Term    aller à l'état 35
+    Factor  aller à l'état 36
 
 
-State 56
+État 56
 
    38 Cond: Expr OP_LTE • Expr
 
-    IDENTIFIER      shift, and go to state 29
-    STRING_LITERAL  shift, and go to state 30
-    INT_LITERAL     shift, and go to state 31
-    FLOAT_LITERAL   shift, and go to state 32
-    SEP_LPAREN      shift, and go to state 33
+    IDENTIFIER      décalage et aller à l'état 29
+    STRING_LITERAL  décalage et aller à l'état 30
+    INT_LITERAL     décalage et aller à l'état 31
+    FLOAT_LITERAL   décalage et aller à l'état 32
+    SEP_LPAREN      décalage et aller à l'état 33
 
-    Expr    go to state 68
-    Term    go to state 35
-    Factor  go to state 36
+    Expr    aller à l'état 68
+    Term    aller à l'état 35
+    Factor  aller à l'état 36
 
 
-State 57
+État 57
 
    39 Cond: Expr OP_GTE • Expr
 
-    IDENTIFIER      shift, and go to state 29
-    STRING_LITERAL  shift, and go to state 30
-    INT_LITERAL     shift, and go to state 31
-    FLOAT_LITERAL   shift, and go to state 32
-    SEP_LPAREN      shift, and go to state 33
+    IDENTIFIER      décalage et aller à l'état 29
+    STRING_LITERAL  décalage et aller à l'état 30
+    INT_LITERAL     décalage et aller à l'état 31
+    FLOAT_LITERAL   décalage et aller à l'état 32
+    SEP_LPAREN      décalage et aller à l'état 33
 
-    Expr    go to state 69
-    Term    go to state 35
-    Factor  go to state 36
+    Expr    aller à l'état 69
+    Term    aller à l'état 35
+    Factor  aller à l'état 36
 
 
-State 58
+État 58
 
    20 If: KW_WHEN $@2 Cond KW_THEN • Instrs OptElse KW_END KW_WHEN SEP_SEMICOLON
 
-    $default  reduce using rule 13 (Instrs)
+    $défaut  réduction par utilisation de la règle 13 (Instrs)
 
-    Instrs  go to state 70
+    Instrs  aller à l'état 70
 
 
-State 59
+État 59
 
    33 Factor: SEP_LPAREN Expr SEP_RPAREN •
 
-    $default  reduce using rule 33 (Factor)
+    $défaut  réduction par utilisation de la règle 33 (Factor)
 
 
-State 60
+État 60
 
    23 Expr: Expr OP_PLUS Term •
    26 Term: Term • OP_MULT Factor
    27     | Term • OP_DIV Factor
 
-    OP_MULT  shift, and go to state 47
-    OP_DIV   shift, and go to state 48
+    OP_MULT  décalage et aller à l'état 47
+    OP_DIV   décalage et aller à l'état 48
 
-    $default  reduce using rule 23 (Expr)
+    $défaut  réduction par utilisation de la règle 23 (Expr)
 
 
-State 61
+État 61
 
    24 Expr: Expr OP_MINUS Term •
    26 Term: Term • OP_MULT Factor
    27     | Term • OP_DIV Factor
 
-    OP_MULT  shift, and go to state 47
-    OP_DIV   shift, and go to state 48
+    OP_MULT  décalage et aller à l'état 47
+    OP_DIV   décalage et aller à l'état 48
 
-    $default  reduce using rule 24 (Expr)
+    $défaut  réduction par utilisation de la règle 24 (Expr)
 
 
-State 62
+État 62
 
    26 Term: Term OP_MULT Factor •
 
-    $default  reduce using rule 26 (Term)
+    $défaut  réduction par utilisation de la règle 26 (Term)
 
 
-State 63
+État 63
 
    27 Term: Term OP_DIV Factor •
 
-    $default  reduce using rule 27 (Term)
+    $défaut  réduction par utilisation de la règle 27 (Term)
 
 
-State 64
+État 64
 
    23 Expr: Expr • OP_PLUS Term
    24     | Expr • OP_MINUS Term
    34 Cond: Expr OP_EQ Expr •
 
-    OP_PLUS   shift, and go to state 44
-    OP_MINUS  shift, and go to state 45
+    OP_PLUS   décalage et aller à l'état 44
+    OP_MINUS  décalage et aller à l'état 45
 
-    $default  reduce using rule 34 (Cond)
+    $défaut  réduction par utilisation de la règle 34 (Cond)
 
 
-State 65
+État 65
 
    23 Expr: Expr • OP_PLUS Term
    24     | Expr • OP_MINUS Term
    35 Cond: Expr OP_NEQ Expr •
 
-    OP_PLUS   shift, and go to state 44
-    OP_MINUS  shift, and go to state 45
+    OP_PLUS   décalage et aller à l'état 44
+    OP_MINUS  décalage et aller à l'état 45
 
-    $default  reduce using rule 35 (Cond)
+    $défaut  réduction par utilisation de la règle 35 (Cond)
 
 
-State 66
+État 66
 
    23 Expr: Expr • OP_PLUS Term
    24     | Expr • OP_MINUS Term
    36 Cond: Expr OP_LT Expr •
 
-    OP_PLUS   shift, and go to state 44
-    OP_MINUS  shift, and go to state 45
+    OP_PLUS   décalage et aller à l'état 44
+    OP_MINUS  décalage et aller à l'état 45
 
-    $default  reduce using rule 36 (Cond)
+    $défaut  réduction par utilisation de la règle 36 (Cond)
 
 
-State 67
+État 67
 
    23 Expr: Expr • OP_PLUS Term
    24     | Expr • OP_MINUS Term
    37 Cond: Expr OP_GT Expr •
 
-    OP_PLUS   shift, and go to state 44
-    OP_MINUS  shift, and go to state 45
+    OP_PLUS   décalage et aller à l'état 44
+    OP_MINUS  décalage et aller à l'état 45
 
-    $default  reduce using rule 37 (Cond)
+    $défaut  réduction par utilisation de la règle 37 (Cond)
 
 
-State 68
+État 68
 
    23 Expr: Expr • OP_PLUS Term
    24     | Expr • OP_MINUS Term
    38 Cond: Expr OP_LTE Expr •
 
-    OP_PLUS   shift, and go to state 44
-    OP_MINUS  shift, and go to state 45
+    OP_PLUS   décalage et aller à l'état 44
+    OP_MINUS  décalage et aller à l'état 45
 
-    $default  reduce using rule 38 (Cond)
+    $défaut  réduction par utilisation de la règle 38 (Cond)
 
 
-State 69
+État 69
 
    23 Expr: Expr • OP_PLUS Term
    24     | Expr • OP_MINUS Term
    39 Cond: Expr OP_GTE Expr •
 
-    OP_PLUS   shift, and go to state 44
-    OP_MINUS  shift, and go to state 45
+    OP_PLUS   décalage et aller à l'état 44
+    OP_MINUS  décalage et aller à l'état 45
 
-    $default  reduce using rule 39 (Cond)
+    $défaut  réduction par utilisation de la règle 39 (Cond)
 
 
-State 70
+État 70
 
    12 Instrs: Instrs • Instr
    20 If: KW_WHEN $@2 Cond KW_THEN Instrs • OptElse KW_END KW_WHEN SEP_SEMICOLON
 
-    IDENTIFIER  shift, and go to state 13
-    KW_WHEN     shift, and go to state 15
-    KW_ELSE     shift, and go to state 71
-    KW_PRINT    shift, and go to state 16
+    IDENTIFIER  décalage et aller à l'état 13
+    KW_WHEN     décalage et aller à l'état 15
+    KW_ELSE     décalage et aller à l'état 71
+    KW_PRINT    décalage et aller à l'état 16
 
-    $default  reduce using rule 22 (OptElse)
+    $défaut  réduction par utilisation de la règle 22 (OptElse)
 
-    Instr    go to state 17
-    Assign   go to state 18
-    Print    go to state 19
-    If       go to state 20
-    OptElse  go to state 72
+    Instr    aller à l'état 17
+    Assign   aller à l'état 18
+    Print    aller à l'état 19
+    If       aller à l'état 20
+    OptElse  aller à l'état 72
 
 
-State 71
+État 71
 
    21 OptElse: KW_ELSE • Instrs
 
-    $default  reduce using rule 13 (Instrs)
+    $défaut  réduction par utilisation de la règle 13 (Instrs)
 
-    Instrs  go to state 73
+    Instrs  aller à l'état 73
 
 
-State 72
+État 72
 
    20 If: KW_WHEN $@2 Cond KW_THEN Instrs OptElse • KW_END KW_WHEN SEP_SEMICOLON
 
-    KW_END  shift, and go to state 74
+    KW_END  décalage et aller à l'état 74
 
 
-State 73
+État 73
 
    12 Instrs: Instrs • Instr
    21 OptElse: KW_ELSE Instrs •
 
-    IDENTIFIER  shift, and go to state 13
-    KW_WHEN     shift, and go to state 15
-    KW_PRINT    shift, and go to state 16
+    IDENTIFIER  décalage et aller à l'état 13
+    KW_WHEN     décalage et aller à l'état 15
+    KW_PRINT    décalage et aller à l'état 16
 
-    $default  reduce using rule 21 (OptElse)
+    $défaut  réduction par utilisation de la règle 21 (OptElse)
 
-    Instr   go to state 17
-    Assign  go to state 18
-    Print   go to state 19
-    If      go to state 20
+    Instr   aller à l'état 17
+    Assign  aller à l'état 18
+    Print   aller à l'état 19
+    If      aller à l'état 20
 
 
-State 74
+État 74
 
    20 If: KW_WHEN $@2 Cond KW_THEN Instrs OptElse KW_END • KW_WHEN SEP_SEMICOLON
 
-    KW_WHEN  shift, and go to state 75
+    KW_WHEN  décalage et aller à l'état 75
 
 
-State 75
+État 75
 
    20 If: KW_WHEN $@2 Cond KW_THEN Instrs OptElse KW_END KW_WHEN • SEP_SEMICOLON
 
-    SEP_SEMICOLON  shift, and go to state 76
+    SEP_SEMICOLON  décalage et aller à l'état 76
 
 
-State 76
+État 76
 
    20 If: KW_WHEN $@2 Cond KW_THEN Instrs OptElse KW_END KW_WHEN SEP_SEMICOLON •
 
-    $default  reduce using rule 20 (If)
+    $défaut  réduction par utilisation de la règle 20 (If)

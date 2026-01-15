@@ -1,7 +1,7 @@
 BEGIN PROGRAM TestError;
 
 SET x INTEGER;
-SET y = 20;           
+SET y = 20;       
 SET z FLOAT;
 
 x = 5 + ;             
