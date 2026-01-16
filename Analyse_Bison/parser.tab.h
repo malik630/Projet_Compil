@@ -73,40 +73,43 @@ extern int yydebug;
     KW_TRUE = 274,                 /* KW_TRUE  */
     KW_FALSE = 275,                /* KW_FALSE  */
     KW_WHEN = 276,                 /* KW_WHEN  */
-    KW_THEN = 277,                 /* KW_THEN  */
-    KW_OTHERWISE = 278,            /* KW_OTHERWISE  */
-    KW_CASE = 279,                 /* KW_CASE  */
-    KW_ELSE = 280,                 /* KW_ELSE  */
-    KW_LOOP = 281,                 /* KW_LOOP  */
-    KW_ITERATE = 282,              /* KW_ITERATE  */
-    KW_FROM = 283,                 /* KW_FROM  */
-    KW_TO = 284,                   /* KW_TO  */
-    KW_PRINT = 285,                /* KW_PRINT  */
-    KW_INPUT = 286,                /* KW_INPUT  */
-    OP_AND = 287,                  /* OP_AND  */
-    OP_OR = 288,                   /* OP_OR  */
-    OP_NOT = 289,                  /* OP_NOT  */
-    OP_EQ = 290,                   /* OP_EQ  */
-    OP_NEQ = 291,                  /* OP_NEQ  */
-    OP_LT = 292,                   /* OP_LT  */
-    OP_GT = 293,                   /* OP_GT  */
-    OP_LTE = 294,                  /* OP_LTE  */
-    OP_GTE = 295,                  /* OP_GTE  */
-    OP_PLUS = 296,                 /* OP_PLUS  */
-    OP_MINUS = 297,                /* OP_MINUS  */
-    OP_MULT = 298,                 /* OP_MULT  */
-    OP_DIV = 299,                  /* OP_DIV  */
-    OP_MOD = 300,                  /* OP_MOD  */
-    SEP_LPAREN = 301,              /* SEP_LPAREN  */
-    SEP_RPAREN = 302,              /* SEP_RPAREN  */
-    SEP_LBRACKET = 303,            /* SEP_LBRACKET  */
-    SEP_RBRACKET = 304,            /* SEP_RBRACKET  */
-    SEP_LBRACE = 305,              /* SEP_LBRACE  */
-    SEP_RBRACE = 306,              /* SEP_RBRACE  */
-    SEP_COMMA = 307,               /* SEP_COMMA  */
-    SEP_SEMICOLON = 308,           /* SEP_SEMICOLON  */
-    SEP_DOT = 309,                 /* SEP_DOT  */
-    UMINUS = 310                   /* UMINUS  */
+    KW_CASE_WHEN = 277,            /* KW_CASE_WHEN  */
+    KW_THEN = 278,                 /* KW_THEN  */
+    KW_OTHERWISE = 279,            /* KW_OTHERWISE  */
+    KW_CASE = 280,                 /* KW_CASE  */
+    KW_ELSE = 281,                 /* KW_ELSE  */
+    KW_LOOP = 282,                 /* KW_LOOP  */
+    KW_ITERATE = 283,              /* KW_ITERATE  */
+    KW_FROM = 284,                 /* KW_FROM  */
+    KW_TO = 285,                   /* KW_TO  */
+    KW_FOREACH = 286,              /* KW_FOREACH  */
+    KW_IN = 287,                   /* KW_IN  */
+    KW_PRINT = 288,                /* KW_PRINT  */
+    KW_INPUT = 289,                /* KW_INPUT  */
+    OP_AND = 290,                  /* OP_AND  */
+    OP_OR = 291,                   /* OP_OR  */
+    OP_NOT = 292,                  /* OP_NOT  */
+    OP_EQ = 293,                   /* OP_EQ  */
+    OP_NEQ = 294,                  /* OP_NEQ  */
+    OP_LT = 295,                   /* OP_LT  */
+    OP_GT = 296,                   /* OP_GT  */
+    OP_LTE = 297,                  /* OP_LTE  */
+    OP_GTE = 298,                  /* OP_GTE  */
+    OP_PLUS = 299,                 /* OP_PLUS  */
+    OP_MINUS = 300,                /* OP_MINUS  */
+    OP_MULT = 301,                 /* OP_MULT  */
+    OP_DIV = 302,                  /* OP_DIV  */
+    OP_MOD = 303,                  /* OP_MOD  */
+    SEP_LPAREN = 304,              /* SEP_LPAREN  */
+    SEP_RPAREN = 305,              /* SEP_RPAREN  */
+    SEP_LBRACKET = 306,            /* SEP_LBRACKET  */
+    SEP_RBRACKET = 307,            /* SEP_RBRACKET  */
+    SEP_LBRACE = 308,              /* SEP_LBRACE  */
+    SEP_RBRACE = 309,              /* SEP_RBRACE  */
+    SEP_COMMA = 310,               /* SEP_COMMA  */
+    SEP_SEMICOLON = 311,           /* SEP_SEMICOLON  */
+    SEP_DOT = 312,                 /* SEP_DOT  */
+    UMINUS = 313                   /* UMINUS  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -115,7 +118,7 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 23 "parser.y"
+#line 18 "parser.y"
 
     int ival;
     float fval;
@@ -123,7 +126,7 @@ union YYSTYPE
     ASTNode* node;
     DataType dtype;
 
-#line 127 "parser.tab.h"
+#line 130 "parser.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;
