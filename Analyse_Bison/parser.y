@@ -190,7 +190,6 @@ Field:
 ArrayDecl:
     KW_SET IDENTIFIER KW_ARRAY SEP_LBRACKET Type SEP_COMMA INT_LITERAL SEP_RBRACKET ArrayInit SEP_SEMICOLON
     {
-        /**** ADDED - START ****/
         Symbole sym;
         strcpy(sym.nom, $2);
         sym.typeSymbole = TYPE_VARIABLE;
@@ -199,17 +198,18 @@ ArrayDecl:
         sym.adresse = adresseMemoire++;
         sym.initialise = ($9 != NULL) ? 1 : 0;
         
+        // AJOUTEZ CETTE LIGNE :
+        sym.taille = $7; 
+        
         if (insererSymbole(&tableGlobale, sym) == -1) {
             char msg[100];
             sprintf(msg, "Array '%s' déjà déclaré", $2);
             yyerror(msg);
         }
-        /**** ADDED - END ****/
         
         $$ = createArrayDeclNode($2, $5, $7, $9);
         free($2);
     }
-    ;
 
 ArrayInit:
     OP_EQ SEP_LBRACE ExprList SEP_RBRACE { $$ = $3; }
