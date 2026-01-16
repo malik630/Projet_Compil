@@ -51,6 +51,7 @@ ELSE
     PRINT 'x is not';
 END WHEN; -- Mandatory ;
 
+
 -- SECTION 12: If-Then-Otherwise
 WHEN active = true
 THEN
@@ -64,6 +65,7 @@ WHEN x > 5
 THEN
     WHEN x > 15
     THEN
+    SET khadidja INTEGER = 20; 
         PRINT 'Nested';
     END WHEN; -- Mandatory ;
 END WHEN; -- Mandatory ;

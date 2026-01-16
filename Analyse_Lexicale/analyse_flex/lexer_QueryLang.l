@@ -416,12 +416,12 @@ COMMENT_MULTI   \/\*([^*]|\*+[^*/])*\*+\/
  "LOOP WHEN"              { printToken("KW_LOOP KW_WHEN", yytext); enterScope(); }
     
 "WHEN"              { printToken("KW_WHEN", yytext); enterScope();}
-"THEN"              { printToken("KW_THEN", yytext); exitScope();  }
+"THEN"              { printToken("KW_THEN", yytext);  }
 "OTHERWISE"         { printToken("KW_OTHERWISE", yytext); }
 
 
 "CASE"              { printToken("KW_CASE", yytext); enterScope(); }
-"CASEWHEN"              { printToken("KW_CASE_WHEN", yytext); enterScope();}
+"CASEWHEN"              { printToken("KW_CASE_WHEN", yytext);}
 "ELSE"              { printToken("KW_ELSE", yytext); }
 
 
@@ -433,7 +433,7 @@ COMMENT_MULTI   \/\*([^*]|\*+[^*/])*\*+\/
 
 "END LOOP"   { printToken("KW_END_LOOP", yytext); exitScope(); }
 "END CASE"   { printToken("KW_END_CASE", yytext); exitScope(); }
-"END WHEN"   { printToken("KW_END_CASE", yytext); }
+"END WHEN"   { printToken("KW_END_CASE", yytext); exitScope(); }
 
     /* Entrée/Sortie */
 "PRINT"             { printToken("KW_PRINT", yytext); }

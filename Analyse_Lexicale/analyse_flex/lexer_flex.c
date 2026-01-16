@@ -375,15 +375,15 @@ static const flex_int16_t yy_accept[195] =
        56,   56,   56,   56,   56,    5,   56,   56,   56,   56,
 
        56,   56,   35,   56,   56,   56,   56,    6,   56,   56,
-       56,   56,   56,    2,   56,   56,   56,   22,   56,   56,
+       56,   56,   56,    2,   56,   56,   56,   21,   56,   56,
        23,    0,   56,   26,   56,   56,   56,   24,   56,   56,
-       56,   56,   56,   20,   18,   56,   15,    9,    3,   56,
+       56,   56,   56,   19,   18,   56,   15,    9,    3,   56,
        56,   56,   56,    0,    0,    0,   13,   32,   56,   56,
         0,   56,   31,   56,   56,   56,   16,   56,   56,    7,
        56,    0,    0,    0,   56,   56,    0,   56,   56,    8,
        12,   14,   56,   56,    0,    0,    0,   11,   25,    0,
-       56,    4,   19,   56,   29,   28,   30,    0,   56,   56,
-       17,   21,   10,    0
+       56,    4,   22,   56,   29,   28,   30,    0,   56,   56,
+       17,   20,   10,    0
 
     } ;
 
@@ -1316,198 +1316,198 @@ YY_RULE_SETUP
 case 19:
 YY_RULE_SETUP
 #line 420 "lexer_QueryLang.l"
-{ printToken("KW_CASE_WHEN", yytext); enterScope();}
+{ printToken("KW_THEN", yytext);  }
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
 #line 421 "lexer_QueryLang.l"
-{ printToken("KW_THEN", yytext); exitScope();  }
+{ printToken("KW_OTHERWISE", yytext); }
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 422 "lexer_QueryLang.l"
-{ printToken("KW_OTHERWISE", yytext); }
+#line 424 "lexer_QueryLang.l"
+{ printToken("KW_CASE", yytext); enterScope(); }
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 423 "lexer_QueryLang.l"
-{ printToken("KW_CASE", yytext); enterScope(); }
+#line 425 "lexer_QueryLang.l"
+{ printToken("KW_CASE_WHEN", yytext);}
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 424 "lexer_QueryLang.l"
+#line 426 "lexer_QueryLang.l"
 { printToken("KW_ELSE", yytext); }
 	YY_BREAK
 /* Boucles */
 case 24:
 YY_RULE_SETUP
-#line 427 "lexer_QueryLang.l"
+#line 430 "lexer_QueryLang.l"
 { printToken("KW_LOOP", yytext); enterScope(); }
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 428 "lexer_QueryLang.l"
+#line 431 "lexer_QueryLang.l"
 { printToken("KW_ITERATE", yytext); }
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 429 "lexer_QueryLang.l"
+#line 432 "lexer_QueryLang.l"
 { printToken("KW_FROM", yytext); }
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 430 "lexer_QueryLang.l"
+#line 433 "lexer_QueryLang.l"
 { printToken("KW_TO", yytext); }
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 432 "lexer_QueryLang.l"
+#line 435 "lexer_QueryLang.l"
 { printToken("KW_END_LOOP", yytext); exitScope(); }
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 433 "lexer_QueryLang.l"
+#line 436 "lexer_QueryLang.l"
 { printToken("KW_END_CASE", yytext); exitScope(); }
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 434 "lexer_QueryLang.l"
-{ printToken("KW_END_CASE", yytext); }
+#line 437 "lexer_QueryLang.l"
+{ printToken("KW_END_CASE", yytext); exitScope(); }
 	YY_BREAK
 /* Entrée/Sortie */
 case 31:
 YY_RULE_SETUP
-#line 437 "lexer_QueryLang.l"
+#line 440 "lexer_QueryLang.l"
 { printToken("KW_PRINT", yytext); }
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 438 "lexer_QueryLang.l"
+#line 441 "lexer_QueryLang.l"
 { printToken("KW_INPUT", yytext); }
 	YY_BREAK
 /* Opérateurs logiques */
 case 33:
 YY_RULE_SETUP
-#line 441 "lexer_QueryLang.l"
+#line 444 "lexer_QueryLang.l"
 { printToken("OP_AND", yytext); }
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 442 "lexer_QueryLang.l"
+#line 445 "lexer_QueryLang.l"
 { printToken("OP_OR", yytext); }
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 443 "lexer_QueryLang.l"
+#line 446 "lexer_QueryLang.l"
 { printToken("OP_NOT", yytext); }
 	YY_BREAK
 /* Opérateurs de comparaison */
 case 36:
 YY_RULE_SETUP
-#line 446 "lexer_QueryLang.l"
+#line 449 "lexer_QueryLang.l"
 { printToken("OP_EQ", yytext); }
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 447 "lexer_QueryLang.l"
+#line 450 "lexer_QueryLang.l"
 { printToken("OP_NEQ", yytext); }
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 448 "lexer_QueryLang.l"
+#line 451 "lexer_QueryLang.l"
 { printToken("OP_LT", yytext); }
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 449 "lexer_QueryLang.l"
+#line 452 "lexer_QueryLang.l"
 { printToken("OP_GT", yytext); }
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 450 "lexer_QueryLang.l"
+#line 453 "lexer_QueryLang.l"
 { printToken("OP_LTE", yytext); }
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
-#line 451 "lexer_QueryLang.l"
+#line 454 "lexer_QueryLang.l"
 { printToken("OP_GTE", yytext); }
 	YY_BREAK
 /* Opérateurs arithmétiques */
 case 42:
 YY_RULE_SETUP
-#line 454 "lexer_QueryLang.l"
+#line 457 "lexer_QueryLang.l"
 { printToken("OP_PLUS", yytext); }
 	YY_BREAK
 case 43:
 YY_RULE_SETUP
-#line 455 "lexer_QueryLang.l"
+#line 458 "lexer_QueryLang.l"
 { printToken("OP_MINUS", yytext); }
 	YY_BREAK
 case 44:
 YY_RULE_SETUP
-#line 456 "lexer_QueryLang.l"
+#line 459 "lexer_QueryLang.l"
 { printToken("OP_MULT", yytext); }
 	YY_BREAK
 case 45:
 YY_RULE_SETUP
-#line 457 "lexer_QueryLang.l"
+#line 460 "lexer_QueryLang.l"
 { printToken("OP_DIV", yytext); }
 	YY_BREAK
 case 46:
 YY_RULE_SETUP
-#line 458 "lexer_QueryLang.l"
+#line 461 "lexer_QueryLang.l"
 { printToken("OP_MOD", yytext); }
 	YY_BREAK
 /* Séparateurs */
 case 47:
 YY_RULE_SETUP
-#line 461 "lexer_QueryLang.l"
+#line 464 "lexer_QueryLang.l"
 { printToken("SEP_LPAREN", yytext); }
 	YY_BREAK
 case 48:
 YY_RULE_SETUP
-#line 462 "lexer_QueryLang.l"
+#line 465 "lexer_QueryLang.l"
 { printToken("SEP_RPAREN", yytext); }
 	YY_BREAK
 case 49:
 YY_RULE_SETUP
-#line 463 "lexer_QueryLang.l"
+#line 466 "lexer_QueryLang.l"
 { printToken("SEP_LBRACKET", yytext); }
 	YY_BREAK
 case 50:
 YY_RULE_SETUP
-#line 464 "lexer_QueryLang.l"
+#line 467 "lexer_QueryLang.l"
 { printToken("SEP_RBRACKET", yytext); }
 	YY_BREAK
 case 51:
 YY_RULE_SETUP
-#line 465 "lexer_QueryLang.l"
+#line 468 "lexer_QueryLang.l"
 { printToken("SEP_LBRACE", yytext); }
 	YY_BREAK
 case 52:
 YY_RULE_SETUP
-#line 466 "lexer_QueryLang.l"
+#line 469 "lexer_QueryLang.l"
 { printToken("SEP_RBRACE", yytext); }
 	YY_BREAK
 case 53:
 YY_RULE_SETUP
-#line 467 "lexer_QueryLang.l"
+#line 470 "lexer_QueryLang.l"
 { printToken("SEP_COMMA", yytext); }
 	YY_BREAK
 case 54:
 YY_RULE_SETUP
-#line 468 "lexer_QueryLang.l"
+#line 471 "lexer_QueryLang.l"
 { printToken("SEP_SEMICOLON", yytext); in_declaration = 0; }
 	YY_BREAK
 case 55:
 YY_RULE_SETUP
-#line 469 "lexer_QueryLang.l"
+#line 472 "lexer_QueryLang.l"
 { printToken("SEP_DOT", yytext); }
 	YY_BREAK
 /* Identificateurs */
 case 56:
 YY_RULE_SETUP
-#line 472 "lexer_QueryLang.l"
+#line 475 "lexer_QueryLang.l"
 { 
                         if (yyleng > 255) {
                             reportError(ERR_IDENTIFIER_TOO_LONG, 
@@ -1525,14 +1525,14 @@ YY_RULE_SETUP
 /* Littéraux numériques */
 case 57:
 YY_RULE_SETUP
-#line 487 "lexer_QueryLang.l"
+#line 490 "lexer_QueryLang.l"
 { 
                         printToken("INT_LITERAL", yytext); 
                     }
 	YY_BREAK
 case 58:
 YY_RULE_SETUP
-#line 491 "lexer_QueryLang.l"
+#line 494 "lexer_QueryLang.l"
 { 
                         printToken("FLOAT_LITERAL", yytext); 
                     }
@@ -1540,7 +1540,7 @@ YY_RULE_SETUP
 /* Chaînes de caractères */
 case 59:
 YY_RULE_SETUP
-#line 496 "lexer_QueryLang.l"
+#line 499 "lexer_QueryLang.l"
 { 
                         if (yyleng > 257) {  /* 255 + 2 quotes */
                             reportError(ERR_STRING_TOO_LONG,
@@ -1556,7 +1556,7 @@ case 60:
 (yy_c_buf_p) = yy_cp -= 1;
 YY_DO_BEFORE_ACTION; /* set up yytext again */
 YY_RULE_SETUP
-#line 506 "lexer_QueryLang.l"
+#line 509 "lexer_QueryLang.l"
 {
                         reportError(ERR_UNTERMINATED_STRING,
                                   "String literal not terminated before end of line", yytext);
@@ -1570,7 +1570,7 @@ YY_LINENO_REWIND_TO(yy_cp - 1);
 (yy_c_buf_p) = yy_cp -= 1;
 YY_DO_BEFORE_ACTION; /* set up yytext again */
 YY_RULE_SETUP
-#line 512 "lexer_QueryLang.l"
+#line 515 "lexer_QueryLang.l"
 {
                         reportError(ERR_UNTERMINATED_COMMENT,
                                   "Multi-line comment not terminated", "/* ...");
@@ -1579,19 +1579,19 @@ YY_RULE_SETUP
 /* Espaces blancs */
 case 62:
 YY_RULE_SETUP
-#line 518 "lexer_QueryLang.l"
+#line 521 "lexer_QueryLang.l"
 { col_num += yyleng; }
 	YY_BREAK
 case 63:
 /* rule 63 can match eol */
 YY_RULE_SETUP
-#line 519 "lexer_QueryLang.l"
+#line 522 "lexer_QueryLang.l"
 { line_num++; col_num = 1; }
 	YY_BREAK
 /* Erreurs lexicales */
 case 64:
 YY_RULE_SETUP
-#line 522 "lexer_QueryLang.l"
+#line 525 "lexer_QueryLang.l"
 { 
                         char error_msg[256];
                         sprintf(error_msg, "Unexpected character '%s'", yytext);
@@ -1601,7 +1601,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 65:
 YY_RULE_SETUP
-#line 529 "lexer_QueryLang.l"
+#line 532 "lexer_QueryLang.l"
 ECHO;
 	YY_BREAK
 #line 1608 "lexer_flex.c"
@@ -2609,7 +2609,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 529 "lexer_QueryLang.l"
+#line 532 "lexer_QueryLang.l"
 
 
 int yywrap() {
