@@ -33,6 +33,7 @@ LOOP WHEN i < nombre_etudiants
     i = i + 1;
 END LOOP;
 
+
 moyenne = somme / nombre_etudiants;
 
 -- Affichage des résultats
@@ -62,13 +63,13 @@ SET b INTEGER = 5;
 SET resultat INTEGER = 0;
 
 CASE
-    WHEN operation = '+' THEN
+    CASEWHEN operation = '+' THEN
         resultat = a + b;
-    WHEN operation = '-' THEN
+    CASEWHEN operation = '-' THEN
         resultat = a - b;
-    WHEN operation = '*' THEN
+    CASEWHEN operation = '*' THEN
         resultat = a * b;
-    WHEN operation = '/' AND b <> 0 THEN
+    CASEWHEN operation = '/' AND b <> 0 THEN
         resultat = a / b;
     ELSE
         PRINT 'Operation invalide';
