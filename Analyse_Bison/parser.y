@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "ast.h"
+#include "table_symboles_enrichie.h"  /**** ADDED ****/
 
 extern int yylex();
 extern int yyparse();
@@ -13,6 +14,11 @@ extern int col_num;
 void yyerror(const char* s);
 
 ASTNode* root = NULL;
+
+/**** ADDED - START ****/
+TableSymboles tableGlobale;
+int adresseMemoire = 0;
+/**** ADDED - END ****/
 %}
 
 %union {
@@ -27,12 +33,11 @@ ASTNode* root = NULL;
 %token <ival> INT_LITERAL
 %token <fval> FLOAT_LITERAL
 
-/* Removed Decls from this list to fix your warning */
 %type <node> Program Decl OptInit Instrs Instr Assign Print If OptElse
 %type <node> Expr Term Factor Cond While For Case CaseList CaseItem Input
 %type <node> RecordDecl FieldList Field ArrayDecl DictDecl ExprList ArrayInit
 %type <node> ForEach
-%type <dtype> Type BasicType
+%type <dtype> Type
 
 %token KW_BEGIN KW_PROGRAM KW_END
 %token KW_SET KW_CREATE KW_RECORD KW_ARRAY KW_DICTIONARY
@@ -59,25 +64,81 @@ ASTNode* root = NULL;
 %%
 
 Program:
-    KW_BEGIN KW_PROGRAM IDENTIFIER SEP_SEMICOLON Instrs KW_END KW_PROGRAM SEP_SEMICOLON
+    KW_BEGIN KW_PROGRAM IDENTIFIER SEP_SEMICOLON 
     {
-        /* We pass NULL for the old Decls parameter because Declarations are now part of Instrs */
-        $$ = createProgramNode($3, NULL, $5); 
+        /**** ADDED - START ****/
+        initTable(&tableGlobale);
+        /**** ADDED - END ****/
+    }
+    Instrs KW_END KW_PROGRAM SEP_SEMICOLON
+    {
+        $$ = createProgramNode($3, NULL, $6); 
         root = $$;
         printf("\n✓ Program '%s' parsed successfully!\n", $3);
+        
+        /**** ADDED - START ****/
+        afficherTable(&tableGlobale);
+        /**** ADDED - END ****/
+        
         free($3);
     }
     ;
 
-/* Decl remains a rule, but it is now called by Instr */
 Decl:
-    KW_SET IDENTIFIER BasicType OptInit SEP_SEMICOLON
+    KW_SET IDENTIFIER Type OptInit SEP_SEMICOLON
     {
+        /**** ADDED - START ****/
+        Symbole sym;
+        strcpy(sym.nom, $2);
+        sym.typeSymbole = TYPE_VARIABLE;
+        
+        switch($3) {
+            case TYPE_INTEGER:
+                sym.typeDonnee = DATA_ENTIER;
+                break;
+            case TYPE_FLOAT:
+                sym.typeDonnee = DATA_REEL;
+                break;
+            case TYPE_STRING:
+                sym.typeDonnee = DATA_CHAINE;
+                break;
+            case TYPE_BOOLEAN:
+                sym.typeDonnee = DATA_BOOLEEN;
+                break;
+        }
+        
+        sym.portee = tableGlobale.niveauPortee;
+        sym.adresse = adresseMemoire++;
+        sym.initialise = ($4 != NULL) ? 1 : 0;
+        
+        if (insererSymbole(&tableGlobale, sym) == -1) {
+            char msg[100];
+            sprintf(msg, "Variable '%s' déjà déclarée", $2);
+            yyerror(msg);
+        }
+        /**** ADDED - END ****/
+        
         $$ = createDeclNode($2, $3, $4);
         free($2);
     }
     | KW_SET IDENTIFIER IDENTIFIER OptInit SEP_SEMICOLON
     {
+        /**** ADDED - START ****/
+        Symbole sym;
+        strcpy(sym.nom, $2);
+        sym.typeSymbole = TYPE_VARIABLE;
+        sym.typeDonnee = DATA_ENREGISTREMENT;
+        sym.portee = tableGlobale.niveauPortee;
+        sym.adresse = adresseMemoire++;
+        sym.initialise = ($4 != NULL) ? 1 : 0;
+        
+        if (insererSymbole(&tableGlobale, sym) == -1) {
+            char msg[100];
+            sprintf(msg, "Variable '%s' déjà déclarée", $2);
+            yyerror(msg);
+        }
+        /**** ADDED - END ****/
+        
         $$ = createRecordInstanceNode($2, $3, $4);
         free($2); free($3);
     }
@@ -86,7 +147,7 @@ Decl:
     | DictDecl   { $$ = $1; }
     ;
 
-BasicType:
+Type:
     KW_INTEGER   { $$ = TYPE_INTEGER; }
     | KW_STRING  { $$ = TYPE_STRING; }
     | KW_FLOAT   { $$ = TYPE_FLOAT; }
@@ -96,6 +157,22 @@ BasicType:
 RecordDecl:
     KW_CREATE KW_RECORD IDENTIFIER SEP_LPAREN FieldList SEP_RPAREN SEP_SEMICOLON
     {
+        /**** ADDED - START ****/
+        Symbole sym;
+        strcpy(sym.nom, $3);
+        sym.typeSymbole = TYPE_CONSTANTE;
+        sym.typeDonnee = DATA_ENREGISTREMENT;
+        sym.portee = tableGlobale.niveauPortee;
+        sym.adresse = adresseMemoire++;
+        sym.initialise = 1;
+        
+        if (insererSymbole(&tableGlobale, sym) == -1) {
+            char msg[100];
+            sprintf(msg, "Record '%s' déjà déclaré", $3);
+            yyerror(msg);
+        }
+        /**** ADDED - END ****/
+        
         $$ = createRecordDeclNode($3, $5);
         free($3);
     }
@@ -113,6 +190,22 @@ Field:
 ArrayDecl:
     KW_SET IDENTIFIER KW_ARRAY SEP_LBRACKET Type SEP_COMMA INT_LITERAL SEP_RBRACKET ArrayInit SEP_SEMICOLON
     {
+        /**** ADDED - START ****/
+        Symbole sym;
+        strcpy(sym.nom, $2);
+        sym.typeSymbole = TYPE_VARIABLE;
+        sym.typeDonnee = DATA_TABLEAU;
+        sym.portee = tableGlobale.niveauPortee;
+        sym.adresse = adresseMemoire++;
+        sym.initialise = ($9 != NULL) ? 1 : 0;
+        
+        if (insererSymbole(&tableGlobale, sym) == -1) {
+            char msg[100];
+            sprintf(msg, "Array '%s' déjà déclaré", $2);
+            yyerror(msg);
+        }
+        /**** ADDED - END ****/
+        
         $$ = createArrayDeclNode($2, $5, $7, $9);
         free($2);
     }
@@ -127,6 +220,22 @@ ArrayInit:
 DictDecl:
     KW_SET IDENTIFIER KW_DICTIONARY OP_LT Type SEP_COMMA Type OP_GT SEP_SEMICOLON
     {
+        /**** ADDED - START ****/
+        Symbole sym;
+        strcpy(sym.nom, $2);
+        sym.typeSymbole = TYPE_VARIABLE;
+        sym.typeDonnee = DATA_DICTIONNAIRE;
+        sym.portee = tableGlobale.niveauPortee;
+        sym.adresse = adresseMemoire++;
+        sym.initialise = 0;
+        
+        if (insererSymbole(&tableGlobale, sym) == -1) {
+            char msg[100];
+            sprintf(msg, "Dictionary '%s' déjà déclaré", $2);
+            yyerror(msg);
+        }
+        /**** ADDED - END ****/
+        
         $$ = createDictDeclNode($2, $5, $7);
         free($2);
     }
@@ -140,13 +249,6 @@ OptInit:
 ExprList:
     Expr                        { $$ = createExprListNode($1, NULL); }
     | ExprList SEP_COMMA Expr   { $$ = createExprListNode($3, $1); }
-    ;
-
-Type:
-    KW_INTEGER   { $$ = TYPE_INTEGER; }
-    | KW_STRING  { $$ = TYPE_STRING; }
-    | KW_FLOAT   { $$ = TYPE_FLOAT; }
-    | KW_BOOLEAN { $$ = TYPE_BOOLEAN; }
     ;
 
 Instrs:
@@ -163,22 +265,58 @@ Instr:
     | Case      { $$ = $1; }
     | Input     { $$ = $1; }
     | ForEach   { $$ = $1; }
-    | Decl      { $$ = $1; } /* Declarations can now happen anywhere */
+    | Decl      { $$ = $1; }
     ;
 
 Assign:
     IDENTIFIER OP_EQ Expr SEP_SEMICOLON
     {
+        /**** ADDED - START ****/
+        Symbole* sym = obtenirSymbole(&tableGlobale, $1);
+        
+        if (sym == NULL) {
+            char msg[100];
+            sprintf(msg, "Variable '%s' non déclarée", $1);
+            yyerror(msg);
+        } else if (sym->typeSymbole == TYPE_CONSTANTE) {
+            char msg[100];
+            sprintf(msg, "Impossible de modifier la constante '%s'", $1);
+            yyerror(msg);
+        } else {
+            sym->initialise = 1;
+        }
+        /**** ADDED - END ****/
+        
         $$ = createAssignNode($1, $3);
         free($1);
     }
     | IDENTIFIER SEP_DOT IDENTIFIER OP_EQ Expr SEP_SEMICOLON
     {
+        /**** ADDED - START ****/
+        Symbole* sym = obtenirSymbole(&tableGlobale, $1);
+        
+        if (sym == NULL) {
+            char msg[100];
+            sprintf(msg, "Record '%s' non déclaré", $1);
+            yyerror(msg);
+        }
+        /**** ADDED - END ****/
+        
         $$ = createRecordAccessAssignNode($1, $3, $5);
         free($1); free($3);
     }
     | IDENTIFIER SEP_LBRACKET Expr SEP_RBRACKET OP_EQ Expr SEP_SEMICOLON
     {
+        /**** ADDED - START ****/
+        Symbole* sym = obtenirSymbole(&tableGlobale, $1);
+        
+        if (sym == NULL) {
+            char msg[100];
+            sprintf(msg, "Array '%s' non déclaré", $1);
+            yyerror(msg);
+        }
+        /**** ADDED - END ****/
+        
         $$ = createArrayAccessAssignNode($1, $3, $6);
         free($1);
     }
@@ -189,13 +327,41 @@ Print:
     ;
 
 Input:
-    KW_INPUT IDENTIFIER SEP_SEMICOLON { $$ = createInputNode($2); free($2); }
+    KW_INPUT IDENTIFIER SEP_SEMICOLON 
+    { 
+        /**** ADDED - START ****/
+        Symbole* sym = obtenirSymbole(&tableGlobale, $2);
+        
+        if (sym == NULL) {
+            char msg[100];
+            sprintf(msg, "Variable '%s' non déclarée", $2);
+            yyerror(msg);
+        } else {
+            sym->initialise = 1;
+        }
+        /**** ADDED - END ****/
+        
+        $$ = createInputNode($2); 
+        free($2); 
+    }
     ;
 
 If:
-    KW_WHEN Cond KW_THEN Instrs OptElse KW_END KW_WHEN SEP_SEMICOLON
+    KW_WHEN Cond KW_THEN 
     {
-        $$ = createIfNode($2, $4, $5);
+        /**** ADDED - START ****/
+        entrerPortee(&tableGlobale);
+        /**** ADDED - END ****/
+    }
+    Instrs OptElse 
+    {
+        /**** ADDED - START ****/
+        sortirPortee(&tableGlobale);
+        /**** ADDED - END ****/
+    }
+    KW_END KW_WHEN SEP_SEMICOLON
+    {
+        $$ = createIfNode($2, $5, $6);
     }
     ;
 
@@ -206,36 +372,131 @@ OptElse:
     ;
 
 While:
-    KW_LOOP KW_WHEN Cond Instrs KW_END KW_LOOP SEP_SEMICOLON
+    KW_LOOP KW_WHEN Cond 
     {
-        $$ = createWhileNode($3, $4);
+        /**** ADDED - START ****/
+        entrerPortee(&tableGlobale);
+        /**** ADDED - END ****/
+    }
+    Instrs 
+    {
+        /**** ADDED - START ****/
+        sortirPortee(&tableGlobale);
+        /**** ADDED - END ****/
+    }
+    KW_END KW_LOOP SEP_SEMICOLON
+    {
+        $$ = createWhileNode($3, $5);
     }
     ;
 
 For:
-    KW_LOOP KW_ITERATE IDENTIFIER KW_FROM Expr KW_TO Expr Instrs KW_END KW_LOOP SEP_SEMICOLON
+    KW_LOOP KW_ITERATE IDENTIFIER 
     {
-        $$ = createForNode($3, $5, $7, $8);
+        /**** ADDED - START ****/
+        entrerPortee(&tableGlobale);
+        
+        Symbole sym;
+        strcpy(sym.nom, $3);
+        sym.typeSymbole = TYPE_VARIABLE;
+        sym.typeDonnee = DATA_ENTIER;
+        sym.portee = tableGlobale.niveauPortee;
+        sym.adresse = adresseMemoire++;
+        sym.initialise = 1;
+        
+        if (insererSymbole(&tableGlobale, sym) == -1) {
+            char msg[100];
+            sprintf(msg, "Variable '%s' déjà déclarée", $3);
+            yyerror(msg);
+        }
+        /**** ADDED - END ****/
+    }
+    KW_FROM Expr KW_TO Expr Instrs 
+    {
+        /**** ADDED - START ****/
+        sortirPortee(&tableGlobale);
+        /**** ADDED - END ****/
+    }
+    KW_END KW_LOOP SEP_SEMICOLON
+    {
+        $$ = createForNode($3, $6, $8, $9);
         free($3);
     }
     ;
 
 ForEach:
-    KW_FOREACH IDENTIFIER KW_IN IDENTIFIER SEP_LBRACE Instrs SEP_RBRACE
+    KW_FOREACH IDENTIFIER KW_IN IDENTIFIER 
     {
-        $$ = createForEachNode($2, $4, $6);
+        /**** ADDED - START ****/
+        entrerPortee(&tableGlobale);
+        
+        Symbole* arraySym = obtenirSymbole(&tableGlobale, $4);
+        if (arraySym == NULL) {
+            char msg[100];
+            sprintf(msg, "Array '%s' non déclaré", $4);
+            yyerror(msg);
+        }
+        
+        Symbole sym;
+        strcpy(sym.nom, $2);
+        sym.typeSymbole = TYPE_VARIABLE;
+        sym.typeDonnee = DATA_ENTIER;
+        sym.portee = tableGlobale.niveauPortee;
+        sym.adresse = adresseMemoire++;
+        sym.initialise = 1;
+        
+        if (insererSymbole(&tableGlobale, sym) == -1) {
+            char msg[100];
+            sprintf(msg, "Variable '%s' déjà déclarée", $2);
+            yyerror(msg);
+        }
+        /**** ADDED - END ****/
+    }
+    SEP_LBRACE Instrs 
+    {
+        /**** ADDED - START ****/
+        sortirPortee(&tableGlobale);
+        /**** ADDED - END ****/
+    }
+    SEP_RBRACE
+    {
+        $$ = createForEachNode($2, $4, $7);
         free($2); free($4);
     }
     ;
 
 Case:
-    KW_CASE CaseList KW_END KW_CASE SEP_SEMICOLON
+    KW_CASE CaseList 
+    {
+        /**** ADDED - START ****/
+        entrerPortee(&tableGlobale);
+        /**** ADDED - END ****/
+    }
+    KW_END KW_CASE 
+    {
+        /**** ADDED - START ****/
+        sortirPortee(&tableGlobale);
+        /**** ADDED - END ****/
+    }
+    SEP_SEMICOLON
     {
         $$ = createCaseNode($2, NULL);
     }
-    | KW_CASE CaseList KW_ELSE Instrs KW_END KW_CASE SEP_SEMICOLON
+    | KW_CASE CaseList KW_ELSE 
     {
-        $$ = createCaseNode($2, $4);
+        /**** ADDED - START ****/
+        entrerPortee(&tableGlobale);
+        /**** ADDED - END ****/
+    }
+    Instrs KW_END KW_CASE 
+    {
+        /**** ADDED - START ****/
+        sortirPortee(&tableGlobale);
+        /**** ADDED - END ****/
+    }
+    SEP_SEMICOLON
+    {
+        $$ = createCaseNode($2, $5);
     }
     ;
 
@@ -278,9 +539,54 @@ Factor:
     | STRING_LITERAL   { $$ = createStringLiteralNode($1); free($1); }
     | KW_TRUE          { $$ = createBoolLiteralNode(1); }
     | KW_FALSE         { $$ = createBoolLiteralNode(0); }
-    | IDENTIFIER       { $$ = createIdentifierNode($1); free($1); }
-    | IDENTIFIER SEP_DOT IDENTIFIER { $$ = createRecordAccessNode($1, $3); free($1); free($3); }
-    | IDENTIFIER SEP_LBRACKET Expr SEP_RBRACKET { $$ = createArrayAccessNode($1, $3); free($1); }
+    | IDENTIFIER       
+    { 
+        /**** ADDED - START ****/
+        Symbole* sym = obtenirSymbole(&tableGlobale, $1);
+        
+        if (sym == NULL) {
+            char msg[100];
+            sprintf(msg, "Variable '%s' non déclarée", $1);
+            yyerror(msg);
+        } else if (!sym->initialise && sym->typeSymbole != TYPE_CONSTANTE) {
+            printf("Attention ligne %d : variable '%s' utilisée sans initialisation\n", 
+                   line_num, $1);
+        }
+        /**** ADDED - END ****/
+        
+        $$ = createIdentifierNode($1); 
+        free($1); 
+    }
+    | IDENTIFIER SEP_DOT IDENTIFIER 
+    { 
+        /**** ADDED - START ****/
+        Symbole* sym = obtenirSymbole(&tableGlobale, $1);
+        
+        if (sym == NULL) {
+            char msg[100];
+            sprintf(msg, "Record '%s' non déclaré", $1);
+            yyerror(msg);
+        }
+        /**** ADDED - END ****/
+        
+        $$ = createRecordAccessNode($1, $3); 
+        free($1); free($3); 
+    }
+    | IDENTIFIER SEP_LBRACKET Expr SEP_RBRACKET 
+    { 
+        /**** ADDED - START ****/
+        Symbole* sym = obtenirSymbole(&tableGlobale, $1);
+        
+        if (sym == NULL) {
+            char msg[100];
+            sprintf(msg, "Array '%s' non déclaré", $1);
+            yyerror(msg);
+        }
+        /**** ADDED - END ****/
+        
+        $$ = createArrayAccessNode($1, $3); 
+        free($1); 
+    }
     | SEP_LPAREN Expr SEP_RPAREN { $$ = $2; }
     | OP_MINUS Factor %prec UMINUS { $$ = createUnaryOpNode(AST_OP_NEG, $2); }
     ;

@@ -55,9 +55,9 @@ void sortirPortee(TableSymboles* table) {
 // Afficher la table
 void afficherTable(TableSymboles* table) {
     printf("\n========== TABLE DES SYMBOLES ==========\n");
-    printf("%-10s %-10s %-10s %-8s %-8s %-10s %-15s\n", 
+    printf("%-15s %-12s %-15s %-8s %-8s %-10s %-15s\n", 
            "Nom", "Type Sym", "Type Data", "Portée", "Adresse", "Init", "Info");
-    printf("-------------------------------------------------------------------------------\n");
+    printf("----------------------------------------------------------------------------------------\n");
     
     for (int i = 0; i < table->nbSymboles; i++) {
         Symbole s = table->symboles[i];
@@ -73,16 +73,21 @@ void afficherTable(TableSymboles* table) {
         if (s.typeDonnee == DATA_ENTIER) typeData = "Entier";
         else if (s.typeDonnee == DATA_REEL) typeData = "Réel";
         else if (s.typeDonnee == DATA_CHAINE) typeData = "Chaîne";
-        else typeData = "Booléen";
+        else if (s.typeDonnee == DATA_BOOLEEN) typeData = "Booléen";
+        else if (s.typeDonnee == DATA_ENREGISTREMENT) typeData = "Enregistrement";
+        else if (s.typeDonnee == DATA_TABLEAU) typeData = "Tableau";
+        else if (s.typeDonnee == DATA_DICTIONNAIRE) typeData = "Dictionnaire";
+        else typeData = "Inconnu";
         
         // Portée
-        char* portee = (s.portee == PORTEE_GLOBALE) ? "Globale" : "Locale";
+        char porteeStr[10];
+        sprintf(porteeStr, "%d", s.portee);
         
         // Initialisé
         char* init = s.initialise ? "Oui" : "Non";
         
-        printf("%-10s %-10s %-10s %-8s %-8d %-10s ", 
-               s.nom, typeSym, typeData, portee, s.adresse, init);
+        printf("%-15s %-12s %-15s %-8s %-8d %-10s ", 
+               s.nom, typeSym, typeData, porteeStr, s.adresse, init);
         
         // Info supplémentaire
         if (s.typeSymbole == TYPE_CONSTANTE) {
@@ -91,11 +96,11 @@ void afficherTable(TableSymboles* table) {
             } else if (s.typeDonnee == DATA_REEL) {
                 printf("Valeur=%.2f", s.valeur.valeurReel);
             }
-        } else if (s.typeSymbole == TYPE_TABLEAU) {
+        } else if (s.typeSymbole == TYPE_TABLEAU || s.typeDonnee == DATA_TABLEAU) {
             printf("Taille=%d", s.taille);
         }
         
         printf("\n");
     }
-    printf("========================================\n\n");
+    printf("========================================================================================\n\n");
 }

@@ -13,7 +13,10 @@ typedef enum {
     DATA_ENTIER,
     DATA_REEL,
     DATA_CHAINE,
-    DATA_BOOLEEN
+    DATA_BOOLEEN,
+    DATA_ENREGISTREMENT,   // ADDED - for records
+    DATA_TABLEAU,          // ADDED - for arrays
+    DATA_DICTIONNAIRE      // ADDED - for dictionaries
 } TypeDonnee;
 
 // Portée
@@ -26,7 +29,7 @@ typedef enum {
 typedef struct {
     char nom[50];
     TypeSymbole typeSymbole;    // Variable, Constante ou Tableau
-    TypeDonnee typeDonnee;      // Entier, Réel, Chaîne, Booléen
+    TypeDonnee typeDonnee;      // Entier, Réel, Chaîne, Booléen, Enregistrement, Tableau, Dictionnaire
     Portee portee;              // Globale ou Locale
     int adresse;                // Adresse mémoire
     int initialise;             // 0 = non, 1 = oui

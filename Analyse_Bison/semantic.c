@@ -72,7 +72,7 @@ void printSemanticErrors() {
     
     for (int i = 0; i < semanticErrors.count; i++) {
         SemanticError err = semanticErrors.errors[i];
-        printf("❌ [%s] Ligne %d, Col %d:\n   %s\n\n", 
+        printf(" [%s] Ligne %d, Col %d:\n   %s\n\n", 
                semanticErrorTypeToString(err.type),
                err.line, err.column, err.message);
     }
@@ -92,7 +92,7 @@ void printSemanticWarnings() {
     
     for (int i = 0; i < semanticWarnings.count; i++) {
         SemanticWarning warn = semanticWarnings.warnings[i];
-        printf("⚠️  [%s] Ligne %d, Col %d:\n   %s\n\n", 
+        printf("  [%s] Ligne %d, Col %d:\n   %s\n\n", 
                semanticWarningTypeToString(warn.type),
                warn.line, warn.column, warn.message);
     }
