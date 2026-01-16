@@ -108,4 +108,17 @@ COMMENT_MULTI   \/\*([^*]|\*+[^*/])*\*+\/
 
 .                { col_num++; }
 
+ /* Lexical errors */
+.                   { 
+                        fprintf(stderr, "Lexical error at line %d, col %d: unexpected character '%s'\n",
+                                line_num, col_num, yytext);
+                        col_num++;
+                    }
+
+%%
+
+int yywrap() {
+    return 1;
+}
+
 %%

@@ -10,8 +10,8 @@ extern void yylex_destroy();
 
 void print_banner() {
     printf("╔══════════════════════════════════════════════╗\n");
-    printf("║      QueryLang Compiler - Version 1.0       ║\n");
-    printf("║   A Simple Language for Data Processing     ║\n");
+    printf("║      QueryLang Compiler                      ║\n");
+    printf("║   A Simple Language for Data Processing      ║\n");
     printf("╚══════════════════════════════════════════════╝\n\n");
 }
 
@@ -39,14 +39,14 @@ int main(int argc, char** argv) {
         return 1;
     }
     
-    printf("📄 Compiling: %s\n", argv[1]);
-    printf("─────────────────────────────────────────────\n\n");
+    printf(" Compiling: %s\n", argv[1]);
+    printf("────────────────────────────────────────────\n\n");
     
     // Set input for lexer
     yyin = input_file;
     
     // Parse the input
-    printf("🔍 Lexical and Syntax Analysis...\n");
+    printf(" Lexical and Syntax Analysis...\n");
     int parse_result = yyparse();
     
     fclose(input_file);
