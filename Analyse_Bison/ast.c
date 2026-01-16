@@ -3,215 +3,270 @@
 extern int line_num;
 extern int col_num;
 
-/*FONCTIONS DE CRÉATION D'AST */
+/* ======== NEW NODE CREATION FUNCTIONS ======== */
 
-/*--------*/
-
-/*Crée le nœud racine du programme. 
-Prend un nom de programme, une liste de déclarations et une liste 
-d'instructions. Retourne un nœud de programme complet
- qui sert de sommet de l'AST.*/
-ASTNode* createProgramNode(char* name, ASTNode* decls, ASTNode* stmts) {
+/* Record Declaration */
+ASTNode* createRecordDeclNode(char* name, ASTNode* fields) {
     ASTNode* node = (ASTNode*)malloc(sizeof(ASTNode));
-    node->type = NODE_PROGRAM;
+    node->type = NODE_RECORD_DECL;
     node->line = line_num;
     node->column = col_num;
-    node->data.program.name = strdup(name);
-    node->data.program.declarations = decls;
-    node->data.program.statements = stmts;
+    node->data.recordDecl.name = strdup(name);
+    node->data.recordDecl.fields = fields;
     return node;
 }
-/*--------*/
-/*Crée un nœud de déclaration de variable. 
-Prend le nom de la variable, son type de données 
-(int/float/string/boolean), et une expression d'initialisation optionnelle.*/
-
-ASTNode* createDeclNode(char* identifier, DataType type, ASTNode* initializer) {
+/* Record Instance */
+ASTNode* createRecordInstanceNode(char* instanceName, char* typeName, ASTNode* initializer) {
     ASTNode* node = (ASTNode*)malloc(sizeof(ASTNode));
-    node->type = NODE_DECL;
+    node->type = NODE_RECORD_INSTANCE;
     node->line = line_num;
     node->column = col_num;
-    node->data.declaration.identifier = strdup(identifier);
-    node->data.declaration.dataType = type;
-    node->data.declaration.initializer = initializer;
-    node->data.declaration.next = NULL;
+    node->data.recordInstance.instanceName = strdup(instanceName);
+    node->data.recordInstance.typeName = strdup(typeName);
+    node->data.recordInstance.initializer = initializer;
     return node;
 }
-/*--------*/
 
-/*Relie les nœuds de déclaration ensemble dans une liste.
- Prend une déclaration et la prochaine déclaration dans la chaîne.
-  Si la première déclaration est NULL, elle retourne simplement la suivante.*/
-
-ASTNode* createDeclListNode(ASTNode* decl, ASTNode* next) {
-    if (decl == NULL) return next;
-    decl->data.declaration.next = next;
-    return decl;
-}
-
-/*--------*/
-
-/*Crée un nœud d'instruction d'affectation. 
-Prend un identifiant de variable et l'expression à lui affecter*/
-
-ASTNode* createAssignNode(char* identifier, ASTNode* expr) {
+/* Array Declaration */
+ASTNode* createArrayDeclNode(char* name, DataType elementType, int size, ASTNode* initializer) {
     ASTNode* node = (ASTNode*)malloc(sizeof(ASTNode));
-    node->type = NODE_ASSIGN;
+    node->type = NODE_ARRAY_DECL;
     node->line = line_num;
     node->column = col_num;
-    node->data.assignment.identifier = strdup(identifier);
-    node->data.assignment.expression = expr;
+    node->data.arrayDecl.name = strdup(name);
+    node->data.arrayDecl.elementType = elementType;
+    node->data.arrayDecl.size = size;
+    node->data.arrayDecl.initializer = initializer;
     return node;
 }
-/*--------*/
-/*Crée un nœud d'instruction d'impression.
- Prend une expression à afficher en sortie.*/
 
-ASTNode* createPrintNode(ASTNode* expr) {
+/* Dictionary Declaration */
+ASTNode* createDictDeclNode(char* name, DataType keyType, DataType valueType) {
     ASTNode* node = (ASTNode*)malloc(sizeof(ASTNode));
-    node->type = NODE_PRINT;
+    node->type = NODE_DICT_DECL;
     node->line = line_num;
     node->column = col_num;
-    node->data.print.expression = expr;
+    node->data.dictDecl.name = strdup(name);
+    node->data.dictDecl.keyType = keyType;
+    node->data.dictDecl.valueType = valueType;
     return node;
 }
-/*--------*/
-/*Crée un nœud d'instruction if. 
-Prend une expression de condition, 
-les instructions à exécuter si vraie (bloc then),
- et un bloc else optionnel.*/
-ASTNode* createIfNode(ASTNode* condition, ASTNode* thenBlock, ASTNode* elseBlock) {
+
+/* Field Node */
+ASTNode* createFieldNode(char* name, DataType type) {
     ASTNode* node = (ASTNode*)malloc(sizeof(ASTNode));
-    node->type = NODE_IF;
+    node->type = NODE_FIELD;
     node->line = line_num;
     node->column = col_num;
-    node->data.ifStmt.condition = condition;
-    node->data.ifStmt.then_block = thenBlock;
-    node->data.ifStmt.else_block = elseBlock;
+    node->data.field.name = strdup(name);
+    node->data.field.type = type;
+    node->data.field.next = NULL;
     return node;
 }
-/*--------*/
-/*Crée une liste d'instructions en reliant les nœuds d'instruction.
- Prend une instruction et la prochaine instruction dans la liste.*/
 
-ASTNode* createStmtListNode(ASTNode* stmt, ASTNode* next) {
+/* Field List Node */
+ASTNode* createFieldListNode(ASTNode* field, ASTNode* next) {
+    if (field == NULL) return next;
+    field->data.field.next = next;
+    return field;
+}
+
+/* Record Access Assignment */
+ASTNode* createRecordAccessAssignNode(char* recordName, char* fieldName, ASTNode* expr) {
     ASTNode* node = (ASTNode*)malloc(sizeof(ASTNode));
-    node->type = NODE_STMT_LIST;
+    node->type = NODE_RECORD_ACCESS_ASSIGN;
     node->line = line_num;
     node->column = col_num;
-    node->data.stmtList.statement = stmt;
-    node->data.stmtList.next = next;
+    node->data.recordAccessAssign.recordName = strdup(recordName);
+    node->data.recordAccessAssign.fieldName = strdup(fieldName);
+    node->data.recordAccessAssign.expression = expr;
     return node;
 }
-/*--------*/
-/*Crée un nœud d'opération binaire pour des expressions comme 5 + 3 ou x > 10.
- Prend le type d'opérateur et les expressions des opérandes gauche et droit.*/
 
-ASTNode* createBinOpNode(OperatorType op, ASTNode* left, ASTNode* right) {
+/* Array Access Assignment */
+ASTNode* createArrayAccessAssignNode(char* arrayName, ASTNode* index, ASTNode* expr) {
     ASTNode* node = (ASTNode*)malloc(sizeof(ASTNode));
-    node->type = NODE_EXPR_BINOP;
+    node->type = NODE_ARRAY_ACCESS_ASSIGN;
     node->line = line_num;
     node->column = col_num;
-    node->data.binOp.op = op;
-    node->data.binOp.left = left;
-    node->data.binOp.right = right;
+    node->data.arrayAccessAssign.arrayName = strdup(arrayName);
+    node->data.arrayAccessAssign.index = index;
+    node->data.arrayAccessAssign.expression = expr;
     return node;
 }
-/*--------*/
-/*Crée un nœud littéral pour les valeurs entières (par exemple, 42).
- Stocke la valeur entière et marque le type comme INTEGER.*/
 
-ASTNode* createIntLiteralNode(int value) {
+/* Input Node */
+ASTNode* createInputNode(char* identifier) {
+    ASTNode* node = (ASTNode*)malloc(sizeof(ASTNode));
+    node->type = NODE_INPUT;
+    node->line = line_num;
+    node->column = col_num;
+    node->data.input.identifier = strdup(identifier);
+    return node;
+}
+
+/* While Node */
+ASTNode* createWhileNode(ASTNode* condition, ASTNode* body) {
+    ASTNode* node = (ASTNode*)malloc(sizeof(ASTNode));
+    node->type = NODE_WHILE;
+    node->line = line_num;
+    node->column = col_num;
+    node->data.whileStmt.condition = condition;
+    node->data.whileStmt.body = body;
+    return node;
+}
+
+/* For Node */
+ASTNode* createForNode(char* iterator, ASTNode* from, ASTNode* to, ASTNode* body) {
+    ASTNode* node = (ASTNode*)malloc(sizeof(ASTNode));
+    node->type = NODE_FOR;
+    node->line = line_num;
+    node->column = col_num;
+    node->data.forStmt.iterator = strdup(iterator);
+    node->data.forStmt.from = from;
+    node->data.forStmt.to = to;
+    node->data.forStmt.body = body;
+    return node;
+}
+
+/* ForEach Node */
+ASTNode* createForEachNode(char* iterator, char* collection, ASTNode* body) {
+    ASTNode* node = (ASTNode*)malloc(sizeof(ASTNode));
+    node->type = NODE_FOREACH;
+    node->line = line_num;
+    node->column = col_num;
+    node->data.forEachStmt.iterator = strdup(iterator);
+    node->data.forEachStmt.collection = strdup(collection);
+    node->data.forEachStmt.body = body;
+    return node;
+}
+
+/* Repeat Node */
+ASTNode* createRepeatNode(ASTNode* body, ASTNode* condition) {
+    ASTNode* node = (ASTNode*)malloc(sizeof(ASTNode));
+    node->type = NODE_REPEAT;
+    node->line = line_num;
+    node->column = col_num;
+    node->data.repeatStmt.body = body;
+    node->data.repeatStmt.condition = condition;
+    return node;
+}
+
+/* Case Node */
+ASTNode* createCaseNode(ASTNode* cases, ASTNode* elseBlock) {
+    ASTNode* node = (ASTNode*)malloc(sizeof(ASTNode));
+    node->type = NODE_CASE;
+    node->line = line_num;
+    node->column = col_num;
+    node->data.caseStmt.cases = cases;
+    node->data.caseStmt.else_block = elseBlock;
+    return node;
+}
+
+/* Case Item Node */
+ASTNode* createCaseItemNode(ASTNode* condition, ASTNode* body, ASTNode* next) {
+    ASTNode* node = (ASTNode*)malloc(sizeof(ASTNode));
+    node->type = NODE_CASE_ITEM;
+    node->line = line_num;
+    node->column = col_num;
+    node->data.caseItem.condition = condition;
+    node->data.caseItem.body = body;
+    node->data.caseItem.next = next;
+    return node;
+}
+
+/* Unary Operation Node */
+ASTNode* createUnaryOpNode(OperatorType op, ASTNode* operand) {
+    ASTNode* node = (ASTNode*)malloc(sizeof(ASTNode));
+    node->type = NODE_EXPR_UNARYOP;
+    node->line = line_num;
+    node->column = col_num;
+    node->data.unaryOp.op = op;
+    node->data.unaryOp.operand = operand;
+    return node;
+}
+
+/* Boolean Literal Node */
+ASTNode* createBoolLiteralNode(int value) {
     ASTNode* node = (ASTNode*)malloc(sizeof(ASTNode));
     node->type = NODE_EXPR_LITERAL;
     node->line = line_num;
     node->column = col_num;
-    node->data.literal.value.intValue = value;
-    node->data.literal.literalType = TYPE_INTEGER;
+    node->data.literal.value.boolValue = value;
+    node->data.literal.literalType = TYPE_BOOLEAN;
     return node;
 }
-/*--------*/
-/*Crée un nœud littéral pour les valeurs à 
-virgule flottante (par exemple, 3.14).
- Stocke la valeur float et marque le type comme FLOAT.*/
 
-ASTNode* createFloatLiteralNode(float value) {
+/* Record Access Node */
+ASTNode* createRecordAccessNode(char* recordName, char* fieldName) {
     ASTNode* node = (ASTNode*)malloc(sizeof(ASTNode));
-    node->type = NODE_EXPR_LITERAL;
+    node->type = NODE_RECORD_ACCESS;
     node->line = line_num;
     node->column = col_num;
-    node->data.literal.value.floatValue = value;
-    node->data.literal.literalType = TYPE_FLOAT;
+    node->data.recordAccess.recordName = strdup(recordName);
+    node->data.recordAccess.fieldName = strdup(fieldName);
     return node;
 }
-/*--------*/
-/*Crée un nœud littéral pour les valeurs de chaîne (par exemple, "bonjour").
- Duplique la chaîne et marque le type comme STRING.*/
 
-ASTNode* createStringLiteralNode(char* value) {
+/* Array Access Node */
+ASTNode* createArrayAccessNode(char* arrayName, ASTNode* index) {
     ASTNode* node = (ASTNode*)malloc(sizeof(ASTNode));
-    node->type = NODE_EXPR_LITERAL;
+    node->type = NODE_ARRAY_ACCESS;
     node->line = line_num;
     node->column = col_num;
-    node->data.literal.value.stringValue = strdup(value);
-    node->data.literal.literalType = TYPE_STRING;
+    node->data.arrayAccess.arrayName = strdup(arrayName);
+    node->data.arrayAccess.index = index;
     return node;
 }
-/*--------*/
-/*Crée un nœud d'identifiant représentant une 
-référence de variable (par exemple, 
-quand vous utilisez x dans une expression). Stocke le nom de la variable*/
 
-ASTNode* createIdentifierNode(char* name) {
+/* Expression List Node */
+ASTNode* createExprListNode(ASTNode* expr, ASTNode* next) {
     ASTNode* node = (ASTNode*)malloc(sizeof(ASTNode));
-    node->type = NODE_EXPR_IDENTIFIER;
+    node->type = NODE_EXPR_LIST;
     node->line = line_num;
     node->column = col_num;
-    node->data.identifier.name = strdup(name);
+    node->data.exprList.expression = expr;
+    node->data.exprList.next = next;
     return node;
 }
-/*--------*/
 
-/*FONCTIONS UTILITAIRES D'AST*/
-/*--------*/
-
-/*Convertit une énumération de type de nœud en chaîne
- lisible. Par exemple, NODE_PROGRAM devient "PROGRAMME". 
- Utilisé pour le débogage et l'affichage de l'AST.*/
+/* ======== UPDATED UTILITY FUNCTIONS ======== */
 
 const char* nodeTypeToString(NodeType type) {
     switch(type) {
         case NODE_PROGRAM: return "PROGRAMME";
         case NODE_DECL_LIST: return "LISTE_DECL";
         case NODE_DECL: return "DÉCLARATION";
+        case NODE_RECORD_DECL: return "DÉCL_RECORD";
+        case NODE_ARRAY_DECL: return "DÉCL_ARRAY";
+        case NODE_DICT_DECL: return "DÉCL_DICT";
+        case NODE_FIELD: return "CHAMP";
+        case NODE_FIELD_LIST: return "LISTE_CHAMPS";
         case NODE_STMT_LIST: return "LISTE_INSTR";
         case NODE_ASSIGN: return "AFFECTATION";
+        case NODE_RECORD_ACCESS_ASSIGN: return "AFFECTATION_RECORD";
+        case NODE_ARRAY_ACCESS_ASSIGN: return "AFFECTATION_ARRAY";
         case NODE_PRINT: return "IMPRESSION";
+        case NODE_INPUT: return "ENTRÉE";
         case NODE_IF: return "SI";
+        case NODE_WHILE: return "TANT_QUE";
+        case NODE_FOR: return "POUR";
+        case NODE_FOREACH: return "POUR_CHAQUE";
+        case NODE_REPEAT: return "RÉPÉTER";
+        case NODE_CASE: return "CAS";
+        case NODE_CASE_ITEM: return "ITEM_CAS";
         case NODE_EXPR_BINOP: return "OP_BINAIRE";
+        case NODE_EXPR_UNARYOP: return "OP_UNAIRE";
         case NODE_EXPR_LITERAL: return "LITTÉRALE";
         case NODE_EXPR_IDENTIFIER: return "IDENTIFIANT";
+        case NODE_EXPR_LIST: return "LISTE_EXPR";
+        case NODE_RECORD_ACCESS: return "ACCÈS_RECORD";
+        case NODE_ARRAY_ACCESS: return "ACCÈS_ARRAY";
         case NODE_CONDITION: return "CONDITION";
+        case NODE_RECORD_INSTANCE: return "INSTANCE_RECORD";
         default: return "INCONNU";
     }
 }
-/*--------*/
-/*Convertit une énumération de type de données en chaîne. Par exemple, 
-TYPE_INTEGER devient "ENTIER". Utile pour afficher les types de variables.*/
-
-const char* dataTypeToString(DataType type) {
-    switch(type) {
-        case TYPE_INTEGER: return "ENTIER";
-        case TYPE_FLOAT: return "RÉEL";
-        case TYPE_STRING: return "CHAÎNE";
-        case TYPE_BOOLEAN: return "BOOLÉEN";
-        default: return "INCONNU";
-    }
-}
-/*--------*/
-/*Convertit une énumération de type d'opérateur en chaîne.
- Par exemple, AST_OP_ADD devient "+". 
- Utile pour afficher les opérations dans l'AST.*/
 
 const char* operatorToString(OperatorType op) {
     switch(op) {
@@ -226,21 +281,149 @@ const char* operatorToString(OperatorType op) {
         case AST_OP_GT: return ">";
         case AST_OP_LTE: return "<=";
         case AST_OP_GTE: return ">=";
+        case AST_OP_AND: return "AND";
+        case AST_OP_OR: return "OR";
+        case AST_OP_NOT: return "NOT";
+        case AST_OP_NEG: return "-";
         default: return "?";
     }
 }
-/*--------*/
-/*Fonction utilitaire pour imprimer des indentations
- lors de l'affichage de l'AST.*/
+/*FONCTIONS DE CRÉATION D'AST - ORIGINAL FUNCTIONS */
+
+ASTNode* createProgramNode(char* name, ASTNode* decls, ASTNode* stmts) {
+    ASTNode* node = (ASTNode*)malloc(sizeof(ASTNode));
+    node->type = NODE_PROGRAM;
+    node->line = line_num;
+    node->column = col_num;
+    node->data.program.name = strdup(name);
+    node->data.program.declarations = decls;
+    node->data.program.statements = stmts;
+    return node;
+}
+
+ASTNode* createDeclNode(char* identifier, DataType type, ASTNode* initializer) {
+    ASTNode* node = (ASTNode*)malloc(sizeof(ASTNode));
+    node->type = NODE_DECL;
+    node->line = line_num;
+    node->column = col_num;
+    node->data.declaration.identifier = strdup(identifier);
+    node->data.declaration.dataType = type;
+    node->data.declaration.initializer = initializer;
+    node->data.declaration.next = NULL;
+    return node;
+}
+
+ASTNode* createDeclListNode(ASTNode* decl, ASTNode* next) {
+    if (decl == NULL) return next;
+    decl->data.declaration.next = next;
+    return decl;
+}
+
+ASTNode* createAssignNode(char* identifier, ASTNode* expr) {
+    ASTNode* node = (ASTNode*)malloc(sizeof(ASTNode));
+    node->type = NODE_ASSIGN;
+    node->line = line_num;
+    node->column = col_num;
+    node->data.assignment.identifier = strdup(identifier);
+    node->data.assignment.expression = expr;
+    return node;
+}
+
+ASTNode* createPrintNode(ASTNode* expr) {
+    ASTNode* node = (ASTNode*)malloc(sizeof(ASTNode));
+    node->type = NODE_PRINT;
+    node->line = line_num;
+    node->column = col_num;
+    node->data.print.expression = expr;
+    return node;
+}
+
+ASTNode* createIfNode(ASTNode* condition, ASTNode* thenBlock, ASTNode* elseBlock) {
+    ASTNode* node = (ASTNode*)malloc(sizeof(ASTNode));
+    node->type = NODE_IF;
+    node->line = line_num;
+    node->column = col_num;
+    node->data.ifStmt.condition = condition;
+    node->data.ifStmt.then_block = thenBlock;
+    node->data.ifStmt.else_block = elseBlock;
+    return node;
+}
+
+ASTNode* createStmtListNode(ASTNode* stmt, ASTNode* next) {
+    ASTNode* node = (ASTNode*)malloc(sizeof(ASTNode));
+    node->type = NODE_STMT_LIST;
+    node->line = line_num;
+    node->column = col_num;
+    node->data.stmtList.statement = stmt;
+    node->data.stmtList.next = next;
+    return node;
+}
+
+ASTNode* createBinOpNode(OperatorType op, ASTNode* left, ASTNode* right) {
+    ASTNode* node = (ASTNode*)malloc(sizeof(ASTNode));
+    node->type = NODE_EXPR_BINOP;
+    node->line = line_num;
+    node->column = col_num;
+    node->data.binOp.op = op;
+    node->data.binOp.left = left;
+    node->data.binOp.right = right;
+    return node;
+}
+
+ASTNode* createIntLiteralNode(int value) {
+    ASTNode* node = (ASTNode*)malloc(sizeof(ASTNode));
+    node->type = NODE_EXPR_LITERAL;
+    node->line = line_num;
+    node->column = col_num;
+    node->data.literal.value.intValue = value;
+    node->data.literal.literalType = TYPE_INTEGER;
+    return node;
+}
+
+ASTNode* createFloatLiteralNode(float value) {
+    ASTNode* node = (ASTNode*)malloc(sizeof(ASTNode));
+    node->type = NODE_EXPR_LITERAL;
+    node->line = line_num;
+    node->column = col_num;
+    node->data.literal.value.floatValue = value;
+    node->data.literal.literalType = TYPE_FLOAT;
+    return node;
+}
+
+ASTNode* createStringLiteralNode(char* value) {
+    ASTNode* node = (ASTNode*)malloc(sizeof(ASTNode));
+    node->type = NODE_EXPR_LITERAL;
+    node->line = line_num;
+    node->column = col_num;
+    node->data.literal.value.stringValue = strdup(value);
+    node->data.literal.literalType = TYPE_STRING;
+    return node;
+}
+
+ASTNode* createIdentifierNode(char* name) {
+    ASTNode* node = (ASTNode*)malloc(sizeof(ASTNode));
+    node->type = NODE_EXPR_IDENTIFIER;
+    node->line = line_num;
+    node->column = col_num;
+    node->data.identifier.name = strdup(name);
+    return node;
+}
+
+const char* dataTypeToString(DataType type) {
+    switch(type) {
+        case TYPE_INTEGER: return "ENTIER";
+        case TYPE_FLOAT: return "RÉEL";
+        case TYPE_STRING: return "CHAÎNE";
+        case TYPE_BOOLEAN: return "BOOLÉEN";
+        default: return "INCONNU";
+    }
+}
 
 void printIndent(int indent) {
     for (int i = 0; i < indent; i++) {
         printf("  ");
     }
 }
-/*--------*/
-/*Imprime l'AST de manière lisible avec indentation.
- Utilise la récursivité pour parcourir tous les nœuds.*/
 
 void printAST(ASTNode* node, int indent) {
     if (node == NULL) {
@@ -338,13 +521,21 @@ void printAST(ASTNode* node, int indent) {
                 printAST(node->data.stmtList.next, indent);
             }
             break;
+        case NODE_RECORD_INSTANCE:
+            printf("INSTANCE_RECORD: %s de type %s\n", 
+                node->data.recordInstance.instanceName,
+                node->data.recordInstance.typeName);
+            if (node->data.recordInstance.initializer) {
+                printIndent(indent);
+                printf("└─ Initialiseur:\n");
+                printAST(node->data.recordInstance.initializer, indent + 1);
+            }
+            break;
             
         default:
-            printf("TYPE DE NŒUD INCONNU\n");
+            printf("TYPE DE NŒUD: %s\n", nodeTypeToString(node->type));
     }
 }
-/*--------*/
-/*Libère la mémoire allouée pour l'AST de manière récursive.*/
 
 void freeAST(ASTNode* node) {
     if (node == NULL) return;
@@ -395,6 +586,11 @@ void freeAST(ASTNode* node) {
         case NODE_STMT_LIST:
             freeAST(node->data.stmtList.statement);
             freeAST(node->data.stmtList.next);
+            break;
+        case NODE_RECORD_INSTANCE:
+            free(node->data.recordInstance.instanceName);
+            free(node->data.recordInstance.typeName);
+            freeAST(node->data.recordInstance.initializer);
             break;
     }
     
