@@ -7,7 +7,7 @@ BEGIN PROGRAM TestTypes;
 
 --SET resultat1 FLOAT = entier + reel;
 SET entier INTEGER = 5/0;
-SET x FLOAT;
+SET x FLOAT = 'texte';
 --SET resultat2 INTEGER = entier + 5;
 
 --SET resultat3 INTEGER = texte + entier;

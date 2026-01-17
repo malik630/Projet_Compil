@@ -64,5 +64,5 @@ Symbole* obtenirSymbole(TableSymboles* table, char* nom);
 void afficherTable(TableSymboles* table);
 void entrerPortee(TableSymboles* table);
 void sortirPortee(TableSymboles* table);
-
+Symbole* rechercherSymbolePorteeActuelle(TableSymboles* table, char* nom);
 #endif

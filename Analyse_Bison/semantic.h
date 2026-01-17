@@ -14,7 +14,7 @@ typedef enum {
     SEM_ERROR_ARRAY_INDEX,
     SEM_ERROR_UNINITIALIZED,
     SEM_ERROR_CONST_ASSIGNMENT,
-    SEM_ERROR_FIELD_NOT_FOUND  // AJOUTÉ
+    SEM_ERROR_FIELD_NOT_FOUND
 } SemanticErrorType;
 
 // Types d'avertissements (warnings)
@@ -74,6 +74,12 @@ int checkCondition(ASTNode* node);
 int checkPrint(ASTNode* node);
 int checkIfStatement(ASTNode* node);
 int checkStatements(ASTNode* node);
+
+// NOUVELLES FONCTIONS pour gérer les déclarations dans les instructions
+int checkRecordDeclaration(ASTNode* node);
+int checkRecordInstance(ASTNode* node);
+int checkArrayDeclaration(ASTNode* node);
+int checkDictDeclaration(ASTNode* node);
 
 // Fonctions utilitaires
 int areTypesCompatible(DataType type1, DataType type2);

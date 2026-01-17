@@ -163,11 +163,13 @@ RecordDecl:
         /**** ADDED - START ****/
         Symbole sym;
         strcpy(sym.nom, $3);
-        sym.typeSymbole = TYPE_CONSTANTE;
+        sym.typeSymbole = TYPE_VARIABLE;
         sym.typeDonnee = DATA_ENREGISTREMENT;
         sym.portee = tableGlobale.niveauPortee;
         sym.adresse = adresseMemoire++;
         sym.initialise = 1;
+        sym.line = line_num;
+        sym.column = col_num;
         
         if (insererSymbole(&tableGlobale, sym) == -1) {
             char msg[100];

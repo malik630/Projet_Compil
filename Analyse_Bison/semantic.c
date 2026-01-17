@@ -267,6 +267,61 @@ int checkArrayIndex(ASTNode* node) {
     return 1;
 }
 
+int checkArrayDeclaration(ASTNode* node) {
+    if (node == NULL || node->type != NODE_ARRAY_DECL) return 1;
+    
+    int valid = 1;
+    
+    // PAS de vérification de double déclaration
+    // (déjà faite par insererSymbole() dans le parser)
+    
+    // Vérifier la taille
+    if (node->data.arrayDecl.size <= 0) {
+        char msg[256];
+        sprintf(msg, "Taille du tableau '%s' doit être positive (reçu: %d)", 
+                node->data.arrayDecl.name, node->data.arrayDecl.size);
+        reportSemanticError(SEM_ERROR_TYPE_MISMATCH, msg, node->line, node->column);
+        valid = 0;
+    }
+    
+    // Vérifier l'initialiseur si présent
+    if (node->data.arrayDecl.initializer != NULL) {
+        int elemCount = 0;
+        ASTNode* current = node->data.arrayDecl.initializer;
+        
+        while (current != NULL && current->type == NODE_EXPR_LIST) {
+            elemCount++;
+            
+            DataType elemType;
+            if (current->data.exprList.expression != NULL) {
+                if (!checkExpression(current->data.exprList.expression, &elemType)) {
+                    valid = 0;
+                } else if (!areTypesCompatible(node->data.arrayDecl.elementType, elemType)) {
+                    char msg[256];
+                    sprintf(msg, "Élément %d du tableau '%s' a un type incompatible: attendu %s, reçu %s",
+                            elemCount, node->data.arrayDecl.name,
+                            dataTypeToString(node->data.arrayDecl.elementType),
+                            dataTypeToString(elemType));
+                    reportSemanticError(SEM_ERROR_TYPE_MISMATCH, msg, node->line, node->column);
+                    valid = 0;
+                }
+            }
+            
+            current = current->data.exprList.next;
+        }
+        
+        if (elemCount != node->data.arrayDecl.size) {
+            char msg[256];
+            sprintf(msg, "Tableau '%s': %d éléments fournis, %d attendus",
+                    node->data.arrayDecl.name, elemCount, node->data.arrayDecl.size);
+            reportSemanticError(SEM_ERROR_TYPE_MISMATCH, msg, node->line, node->column);
+            valid = 0;
+        }
+    }
+    
+    return valid;
+}
+
 int checkArrayAccessAssignment(ASTNode* node) {
     if (node == NULL) return 1;
     
@@ -381,6 +436,123 @@ int evaluateConstantInt(ASTNode* node, int* result) {
     return 0;
 }
 
+int checkRecordInstance(ASTNode* node) {
+    if (node == NULL || node->type != NODE_RECORD_INSTANCE) return 1;
+    
+    // PAS de vérification de double déclaration
+    // (déjà faite par insererSymbole() dans le parser)
+    
+    // TODO: Vérifier que le type de record existe
+    
+    return 1;
+}
+
+int checkRecordDeclaration(ASTNode* node) {
+    if (node == NULL || node->type != NODE_RECORD_DECL) return 1;
+    
+    // Pour l'instant, on accepte tout
+    return 1;
+}
+
+int checkDictDeclaration(ASTNode* node) {
+    if (node == NULL || node->type != NODE_DICT_DECL) return 1;
+    
+    // PAS de vérification de double déclaration
+    // (déjà faite par insererSymbole() dans le parser)
+    
+    return 1;
+}
+
+int checkInput(ASTNode* node) {
+    if (node == NULL) return 1;
+    
+    // Vérifier que la variable existe
+    Symbole* sym = obtenirSymbole(&tableGlobale, node->data.input.identifier);
+    if (sym == NULL) {
+        char msg[256];
+        sprintf(msg, "Variable '%s' non déclarée", node->data.input.identifier);
+        reportSemanticError(SEM_ERROR_UNDECLARED, msg, node->line, node->column);
+        return 0;
+    }
+    
+    // Marquer comme initialisée
+    sym->initialise = 1;
+    
+    return 1;
+}
+
+int checkWhileStatement(ASTNode* node) {
+    if (node == NULL) return 1;
+    
+    int valid = 1;
+    
+    if (!checkCondition(node->data.whileStmt.condition)) {
+        valid = 0;
+    }
+    
+    entrerPortee(&tableGlobale);
+    if (!checkStatements(node->data.whileStmt.body)) {
+        valid = 0;
+    }
+    sortirPortee(&tableGlobale);
+    
+    return valid;
+}
+
+int checkForStatement(ASTNode* node) {
+    if (node == NULL) return 1;
+    
+    int valid = 1;
+    
+    DataType fromType, toType;
+    if (!checkExpression(node->data.forStmt.from, &fromType)) {
+        valid = 0;
+    } else if (fromType != TYPE_INTEGER) {
+        char msg[256];
+        sprintf(msg, "Expression FROM doit être de type INTEGER, pas %s",
+                dataTypeToString(fromType));
+        reportSemanticError(SEM_ERROR_TYPE_MISMATCH, msg, node->line, node->column);
+        valid = 0;
+    }
+    
+    if (!checkExpression(node->data.forStmt.to, &toType)) {
+        valid = 0;
+    } else if (toType != TYPE_INTEGER) {
+        char msg[256];
+        sprintf(msg, "Expression TO doit être de type INTEGER, pas %s",
+                dataTypeToString(toType));
+        reportSemanticError(SEM_ERROR_TYPE_MISMATCH, msg, node->line, node->column);
+        valid = 0;
+    }
+    
+    entrerPortee(&tableGlobale);
+    if (!checkStatements(node->data.forStmt.body)) {
+        valid = 0;
+    }
+    sortirPortee(&tableGlobale);
+    
+    return valid;
+}
+
+int checkRecordAccessAssignment(ASTNode* node) {
+    if (node == NULL) return 1;
+    
+    Symbole* recordSym = obtenirSymbole(&tableGlobale, node->data.recordAccessAssign.recordName);
+    if (recordSym == NULL) {
+        char msg[256];
+        sprintf(msg, "Record '%s' non déclaré", node->data.recordAccessAssign.recordName);
+        reportSemanticError(SEM_ERROR_UNDECLARED, msg, node->line, node->column);
+        return 0;
+    }
+    
+    DataType exprType;
+    if (!checkExpression(node->data.recordAccessAssign.expression, &exprType)) {
+        return 0;
+    }
+    
+    return 1;
+}
+
 // Vérifier une expression
 int checkExpression(ASTNode* node, DataType* resultType) {
     if (node == NULL) return 1;
@@ -463,6 +635,26 @@ int checkExpression(ASTNode* node, DataType* resultType) {
             
             return valid;
         }
+        case NODE_ARRAY_ACCESS: {
+            if (!checkArrayIndex(node)) {
+                *resultType = TYPE_INTEGER;
+                return 0;
+            }
+            
+            Symbole* arraySym = obtenirSymbole(&tableGlobale, node->data.arrayAccess.arrayName);
+            if (arraySym != NULL) {
+                switch(arraySym->typeElement) {
+                    case DATA_ENTIER: *resultType = TYPE_INTEGER; break;
+                    case DATA_REEL: *resultType = TYPE_FLOAT; break;
+                    case DATA_CHAINE: *resultType = TYPE_STRING; break;
+                    case DATA_BOOLEEN: *resultType = TYPE_BOOLEAN; break;
+                    default: *resultType = TYPE_INTEGER;
+                }
+            } else {
+                *resultType = TYPE_INTEGER;
+            }
+            return 1;
+        }
         
         default:
             *resultType = TYPE_INTEGER;
@@ -470,64 +662,25 @@ int checkExpression(ASTNode* node, DataType* resultType) {
     }
 }
 
-// Fonction auxiliaire pour collecter tous les noms de variables déclarées
-void collectDeclaredNames(ASTNode* node, char names[][50], int* count) {
-    if (node == NULL) return;
-    
-    if (node->type == NODE_DECL) {
-        strcpy(names[*count], node->data.declaration.identifier);
-        (*count)++;
-        
-        // Traiter le suivant
-        if (node->data.declaration.next != NULL) {
-            collectDeclaredNames(node->data.declaration.next, names, count);
-        }
-    }
-}
-
-// Vérifier les doubles déclarations AVANT d'analyser les déclarations
-int checkForDuplicateDeclarations(ASTNode* node) {
-    if (node == NULL) return 1;
-    
-    char names[100][50];
-    int count = 0;
-    
-    // Collecter tous les noms
-    collectDeclaredNames(node, names, &count);
-    
-    // Vérifier les doublons
-    int valid = 1;
-    for (int i = 0; i < count; i++) {
-        for (int j = i + 1; j < count; j++) {
-            if (strcmp(names[i], names[j]) == 0) {
-                char msg[256];
-                sprintf(msg, "Variable '%s' déclarée plusieurs fois", names[i]);
-                reportSemanticError(SEM_ERROR_REDECLARED, msg, 0, 0);
-                valid = 0;
-            }
-        }
-    }
-    
-    return valid;
-}
-
 // Vérifier une déclaration
 int checkDeclaration(ASTNode* node) {
     if (node == NULL) return 1;
     
-    int valid = 1;  // Continuer même en cas d'erreur
+    int valid = 1;
     
     if (node->type == NODE_DECL) {
+        // PAS de vérification de double déclaration
+        // (déjà faite par insererSymbole() dans le parser)
+        
         // Vérifier l'initialiseur si présent
         if (node->data.declaration.initializer != NULL) {
             DataType exprType;
             
-            // Vérifier l'expression de l'initialiseur
             if (!checkExpression(node->data.declaration.initializer, &exprType)) {
-                valid = 0;  // Marquer comme invalide mais continuer
+                valid = 0;
             }
             
-            // Vérifier compatibilité des types (même si erreur dans l'expression)
+            // Vérifier compatibilité des types
             if (!areTypesCompatible(node->data.declaration.dataType, exprType)) {
                 char msg[256];
                 sprintf(msg, "Type de l'initialiseur (%s) incompatible avec le type déclaré (%s) pour '%s'",
@@ -683,14 +836,49 @@ int checkStatements(ASTNode* node) {
                 valid = 0;
             }
         }
-    } else if (node->type == NODE_ASSIGN) {
+    } 
+    // DÉCLARATIONS (maintenant dans les instructions)
+    else if (node->type == NODE_DECL) {
+        if (!checkDeclaration(node)) valid = 0;
+    }
+    else if (node->type == NODE_ARRAY_DECL) {
+        if (!checkArrayDeclaration(node)) valid = 0;
+    }
+    else if (node->type == NODE_RECORD_DECL) {
+        if (!checkRecordDeclaration(node)) valid = 0;
+    }
+    else if (node->type == NODE_RECORD_INSTANCE) {
+        if (!checkRecordInstance(node)) valid = 0;
+    }
+    else if (node->type == NODE_DICT_DECL) {
+        if (!checkDictDeclaration(node)) valid = 0;
+    }
+    // AFFECTATIONS
+    else if (node->type == NODE_ASSIGN) {
         if (!checkAssignment(node)) valid = 0;
-    } else if (node->type == NODE_ARRAY_ACCESS_ASSIGN) {
+    } 
+    else if (node->type == NODE_ARRAY_ACCESS_ASSIGN) {
         if (!checkArrayAccessAssignment(node)) valid = 0;
-    } else if (node->type == NODE_PRINT) {
+    }
+    else if (node->type == NODE_RECORD_ACCESS_ASSIGN) {
+        if (!checkRecordAccessAssignment(node)) valid = 0;
+    }
+    // ENTRÉES/SORTIES
+    else if (node->type == NODE_PRINT) {
         if (!checkPrint(node)) valid = 0;
-    } else if (node->type == NODE_IF) {
+    }
+    else if (node->type == NODE_INPUT) {
+        if (!checkInput(node)) valid = 0;
+    }
+    // STRUCTURES DE CONTRÔLE
+    else if (node->type == NODE_IF) {
         if (!checkIfStatement(node)) valid = 0;
+    }
+    else if (node->type == NODE_WHILE) {
+        if (!checkWhileStatement(node)) valid = 0;
+    }
+    else if (node->type == NODE_FOR) {
+        if (!checkForStatement(node)) valid = 0;
     }
     
     return valid;
@@ -735,6 +923,25 @@ void markVariableAsUsed(ASTNode* node) {
         markVariableAsUsed(node->data.stmtList.statement);
         markVariableAsUsed(node->data.stmtList.next);
     }
+    else if (node->type == NODE_WHILE) {
+        markVariableAsUsed(node->data.whileStmt.condition);
+        markVariableAsUsed(node->data.whileStmt.body);
+    } else if (node->type == NODE_FOR) {
+        markVariableAsUsed(node->data.forStmt.from);
+        markVariableAsUsed(node->data.forStmt.to);
+        markVariableAsUsed(node->data.forStmt.body);
+    } else if (node->type == NODE_DECL) {
+        if (node->data.declaration.initializer) {
+            markVariableAsUsed(node->data.declaration.initializer);
+        }
+        if (node->data.declaration.next) {
+            markVariableAsUsed(node->data.declaration.next);
+        }
+    } else if (node->type == NODE_ARRAY_DECL) {
+        if (node->data.arrayDecl.initializer) {
+            markVariableAsUsed(node->data.arrayDecl.initializer);
+        }
+    }
 }
 
 // Vérifier les variables non utilisées
@@ -765,29 +972,16 @@ int performSemanticAnalysis(ASTNode* root) {
     int valid = 1;
     
     if (root->type == NODE_PROGRAM) {
-        // Vérifier d'abord les doubles déclarations
-        printf("Vérification des doubles déclarations...\n");
-        if (!checkForDuplicateDeclarations(root->data.program.declarations)) {
-            valid = 0;
-        }
+        // Maintenant, les déclarations sont dans la branche statements
         
-        // Vérifier les déclarations (initialiseurs, types)
-        printf("Vérification des déclarations...\n");
-        if (!checkDeclaration(root->data.program.declarations)) {
-            valid = 0;
-        }
-        
-        // Vérifier les instructions
-        printf("Vérification des instructions...\n");
+        printf("Vérification des instructions (incluant les déclarations)...\n");
         if (!checkStatements(root->data.program.statements)) {
             valid = 0;
         }
         
-        // Marquer les variables utilisées
         printf("Analyse de l'utilisation des variables...\n");
         markVariableAsUsed(root->data.program.statements);
         
-        // Vérifier les variables non utilisées
         checkUnusedVariables();
     }
     
