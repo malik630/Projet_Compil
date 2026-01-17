@@ -413,10 +413,10 @@ COMMENT_MULTI   \/\*([^*]|\*+[^*/])*\*+\/
 "false"             { printToken("KW_FALSE", yytext); }
 
     /* Structures de contrôle */
-"LOOP WHEN"              { printToken("KW_LOOP KW_WHEN", yytext); enterScope(); }
+ "LOOP WHEN"              { printToken("KW_LOOP KW_WHEN", yytext); enterScope(); }
     
-"WHEN"              { printToken("KW_WHEN", yytext); enterScope(); }
-"THEN"              { printToken("KW_THEN", yytext);}
+"WHEN"              { printToken("KW_WHEN", yytext); enterScope();}
+"THEN"              { printToken("KW_THEN", yytext);  }
 "OTHERWISE"         { printToken("KW_OTHERWISE", yytext); }
 
 

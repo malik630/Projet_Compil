@@ -1,91 +1,9 @@
 #include "ast.h"
-#include "quads.h"
-char* generer_code(ASTNode* node) {
-    if (node == NULL) return "";
 
-    switch(node->type) {
-        case NODE_PROGRAM:
-            // On traite les déclarations PUIS les instructions
-            generer_code(node->data.program.declarations);
-            generer_code(node->data.program.statements);
-            return "";
-
-        case NODE_DECL:
-            if (node->data.declaration.initializer) {
-                char* val = generer_code(node->data.declaration.initializer);
-                generer_quad("=", val, "", node->data.declaration.identifier);
-            }
-            if (node->data.declaration.next) generer_code(node->data.declaration.next);
-            return node->data.declaration.identifier;
-
-        case NODE_STMT_LIST:
-            generer_code(node->data.stmtList.statement);
-            generer_code(node->data.stmtList.next);
-            return "";
-
-        case NODE_EXPR_LITERAL: {
-    char* val = malloc(64); // Un peu plus large pour les flottants
-    if (node->data.literal.literalType == TYPE_INTEGER) 
-        sprintf(val, "%d", node->data.literal.value.intValue);
-    else if (node->data.literal.literalType == TYPE_FLOAT) 
-        sprintf(val, "%f", node->data.literal.value.floatValue);
-    else if (node->data.literal.literalType == TYPE_BOOLEAN)
-        sprintf(val, "%s", node->data.literal.value.boolValue ? "TRUE" : "FALSE");
-    else if (node->data.literal.literalType == TYPE_STRING && node->data.literal.value.stringValue)
-        sprintf(val, "%s", node->data.literal.value.stringValue);
-    else 
-        sprintf(val, "0");
-    return val;
-}
-
-        case NODE_EXPR_IDENTIFIER:
-            return node->data.identifier.name;
-
-        case NODE_EXPR_BINOP: {
-            char* t1 = generer_code(node->data.binOp.left);
-            char* t2 = generer_code(node->data.binOp.right);
-            char* res = creer_temp();
-            generer_quad(operatorToString(node->data.binOp.op), t1, t2, res);
-            return res;
-        }
-
-        case NODE_ASSIGN: {
-            char* src = generer_code(node->data.assignment.expression);
-            generer_quad("=", src, "", node->data.assignment.identifier);
-            return node->data.assignment.identifier;
-        }
-
-        case NODE_PRINT: {
-            char* val = generer_code(node->data.print.expression);
-            generer_quad("PRINT", val, "", "");
-            return "";
-        }
-
-        case NODE_IF: {
-            char* cond = generer_code(node->data.ifStmt.condition);
-            int posBZ = nextQuad;
-            generer_quad("BZ", cond, "", ""); 
-            
-            generer_code(node->data.ifStmt.then_block);
-            
-            char labelFin[10];
-            sprintf(labelFin, "%d", nextQuad);
-            tabQuad[posBZ].res = strdup(labelFin);
-            return "";
-        }
-
-        default: 
-            // Pour les types non encore gérés (Record, Array, etc.)
-            break;
-    }
-    return "";
-}
 extern int line_num;
 extern int col_num;
 
 /* ======== NEW NODE CREATION FUNCTIONS ======== */
-
-
 
 /* Record Declaration */
 ASTNode* createRecordDeclNode(char* name, ASTNode* fields) {
@@ -506,7 +424,6 @@ void printIndent(int indent) {
         printf("  ");
     }
 }
-
 
 void printAST(ASTNode* node, int indent) {
     if (node == NULL) {

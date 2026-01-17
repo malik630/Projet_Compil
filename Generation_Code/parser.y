@@ -3,8 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "ast.h"
-#include "table_symboles_enrichie.h"
-#include "semantic.h"
+#include "table_symboles_enrichie.h"  /**** ADDED ****/
 
 extern int yylex();
 extern int yyparse();
@@ -92,8 +91,6 @@ Decl:
         Symbole sym;
         strcpy(sym.nom, $2);
         sym.typeSymbole = TYPE_VARIABLE;
-        sym.line = line_num;      // AJOUTER
-        sym.column = col_num;     // AJOUTER
         
         switch($3) {
             case TYPE_INTEGER:
@@ -200,8 +197,9 @@ ArrayDecl:
         sym.portee = tableGlobale.niveauPortee;
         sym.adresse = adresseMemoire++;
         sym.initialise = ($9 != NULL) ? 1 : 0;
-        sym.taille = $7;
-        sym.typeElement = dataTypeToTypeDonnee($5);
+        
+        // AJOUTEZ CETTE LIGNE :
+        sym.taille = $7; 
         
         if (insererSymbole(&tableGlobale, sym) == -1) {
             char msg[100];
