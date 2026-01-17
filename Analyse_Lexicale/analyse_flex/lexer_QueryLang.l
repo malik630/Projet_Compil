@@ -113,6 +113,7 @@ void initSymbolTable() {
 
 void enterScope() {
     symTable.current_scope_id++;
+     printf("-----------------[Level] Enter scope → %d\n", symTable.current_scope_id);
 }
 
 void exitScope() {
@@ -125,6 +126,7 @@ void exitScope() {
         curr = curr->next;
     }
     symTable.current_scope_id--;
+    printf("-----------------[Level] Exit scope → %d\n", symTable.current_scope_id);
 }
 
 SymbolEntry* searchSymbol(const char* name) {
@@ -411,17 +413,27 @@ COMMENT_MULTI   \/\*([^*]|\*+[^*/])*\*+\/
 "false"             { printToken("KW_FALSE", yytext); }
 
     /* Structures de contrôle */
+"LOOP WHEN"              { printToken("KW_LOOP KW_WHEN", yytext); enterScope(); }
+    
 "WHEN"              { printToken("KW_WHEN", yytext); enterScope(); }
-"THEN"              { printToken("KW_THEN", yytext); }
+"THEN"              { printToken("KW_THEN", yytext);}
 "OTHERWISE"         { printToken("KW_OTHERWISE", yytext); }
+
+
 "CASE"              { printToken("KW_CASE", yytext); enterScope(); }
+"CASEWHEN"              { printToken("KW_CASE_WHEN", yytext);}
 "ELSE"              { printToken("KW_ELSE", yytext); }
+
 
     /* Boucles */
 "LOOP"              { printToken("KW_LOOP", yytext); enterScope(); }
 "ITERATE"           { printToken("KW_ITERATE", yytext); }
 "FROM"              { printToken("KW_FROM", yytext); }
 "TO"                { printToken("KW_TO", yytext); }
+
+"END LOOP"   { printToken("KW_END_LOOP", yytext); exitScope(); }
+"END CASE"   { printToken("KW_END_CASE", yytext); exitScope(); }
+"END WHEN"   { printToken("KW_END_CASE", yytext); exitScope(); }
 
     /* Entrée/Sortie */
 "PRINT"             { printToken("KW_PRINT", yytext); }
