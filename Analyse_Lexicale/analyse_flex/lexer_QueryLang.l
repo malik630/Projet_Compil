@@ -281,6 +281,21 @@ void reportError(ErrorType type, const char* message, const char* context) {
         return;
     }
     
+    // Créer une nouvelle entrée d'erreur
+    ErrorEntry* newError = (ErrorEntry*)malloc(sizeof(ErrorEntry));
+    newError->type = type;
+    newError->line = line_num;      // STOCKER la ligne actuelle
+    newError->column = col_num;     // STOCKER la colonne actuelle
+    strncpy(newError->message, message, sizeof(newError->message) - 1);
+    if (context) {
+        strncpy(newError->context, context, sizeof(newError->context) - 1);
+    } else {
+        newError->context[0] = '\0';
+    }
+    newError->next = errorMgr.head;
+    errorMgr.head = newError;
+    
+    // Afficher immédiatement l'erreur
     const char* error_type_str = "";
     switch(type) {
         case ERR_LEXICAL: error_type_str = "lexical error"; break;
@@ -293,7 +308,7 @@ void reportError(ErrorType type, const char* message, const char* context) {
     }
     
     fprintf(stderr, "File \"source.ql\", line %d, character %d: %s: %s",
-            line_num, col_num, error_type_str, message);
+            newError->line, newError->column, error_type_str, message);
     
     if (context && context[0] != '\0') {
         fprintf(stderr, " (near '%s')", context);
@@ -309,9 +324,9 @@ void displayErrorSummary() {
     printf("╚════════════════════════════════════════════════════════════════════════════════════╝\n\n");
     
     if (errorMgr.count == 0) {
-        printf("✓ Aucune erreur lexicale détectée.\n");
+        printf("Aucune erreur lexicale détectée.\n");
     } else {
-        printf("✗ %d erreur(s) lexicale(s) détectée(s)\n", errorMgr.count);
+        printf("%d erreur(s) lexicale(s) détectée(s)\n", errorMgr.count);
     }
     printf("\n");
 }
@@ -536,6 +551,8 @@ int yywrap() {
 
 int main(int argc, char** argv) {
     FILE* input_file = NULL;
+
+    char* current_filename;
     
     printf("╔════════════════════════════════════════════════════════════════════════════════════╗\n");
     printf("║           ANALYSEUR LEXICAL COMPLET - QueryLang (Version FLEX)                    ║\n");
@@ -549,6 +566,7 @@ int main(int argc, char** argv) {
         }
         yyin = input_file;
         printf("Analyse du fichier: %s\n\n", argv[1]);
+        current_filename = argv[1];
     } else {
         printf("Usage: %s <fichier_source.ql>\n", argv[0]);
         printf("Mode interactif: Entrez votre code (Ctrl+D pour terminer)\n\n");
@@ -579,10 +597,19 @@ int main(int argc, char** argv) {
     printf("Erreurs lexicales: %d\n\n", errorMgr.count);
     
     if (errorMgr.count == 0) {
-        printf("nalyse lexicale terminée avec succès!\n\n");
+        printf("Analyse lexicale terminée avec succès!\n\n");
         return 0;
     } else {
         printf("Analyse lexicale terminée avec %d erreur(s).\n\n", errorMgr.count);
+        if (errorMgr.head != NULL) {
+            ErrorEntry* firstError = errorMgr.head;
+            // Parcourir jusqu'à la fin pour obtenir la première erreur
+            while (firstError->next != NULL) {
+                firstError = firstError->next;
+            }
+            printf("File \"%s\", line %d, character %d: lexical error\n", 
+                current_filename, firstError->line, firstError->column);
+            }
         return 1;
     }
 }

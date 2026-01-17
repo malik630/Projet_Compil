@@ -847,6 +847,21 @@ void reportError(ErrorType type, const char* message, const char* context) {
         return;
     }
     
+    // Créer une nouvelle entrée d'erreur
+    ErrorEntry* newError = (ErrorEntry*)malloc(sizeof(ErrorEntry));
+    newError->type = type;
+    newError->line = line_num;      // STOCKER la ligne actuelle
+    newError->column = col_num;     // STOCKER la colonne actuelle
+    strncpy(newError->message, message, sizeof(newError->message) - 1);
+    if (context) {
+        strncpy(newError->context, context, sizeof(newError->context) - 1);
+    } else {
+        newError->context[0] = '\0';
+    }
+    newError->next = errorMgr.head;
+    errorMgr.head = newError;
+    
+    // Afficher immédiatement l'erreur
     const char* error_type_str = "";
     switch(type) {
         case ERR_LEXICAL: error_type_str = "lexical error"; break;
@@ -859,7 +874,7 @@ void reportError(ErrorType type, const char* message, const char* context) {
     }
     
     fprintf(stderr, "File \"source.ql\", line %d, character %d: %s: %s",
-            line_num, col_num, error_type_str, message);
+            newError->line, newError->column, error_type_str, message);
     
     if (context && context[0] != '\0') {
         fprintf(stderr, " (near '%s')", context);
@@ -875,9 +890,9 @@ void displayErrorSummary() {
     printf("╚════════════════════════════════════════════════════════════════════════════════════╝\n\n");
     
     if (errorMgr.count == 0) {
-        printf("✓ Aucune erreur lexicale détectée.\n");
+        printf("Aucune erreur lexicale détectée.\n");
     } else {
-        printf("✗ %d erreur(s) lexicale(s) détectée(s)\n", errorMgr.count);
+        printf("%d erreur(s) lexicale(s) détectée(s)\n", errorMgr.count);
     }
     printf("\n");
 }
@@ -896,9 +911,9 @@ char last_identifier[256] = "";
 char last_type[64] = "";
 int in_declaration = 0;
 
-#line 900 "lexer_flex.c"
+#line 915 "lexer_flex.c"
 /* Définitions */
-#line 902 "lexer_flex.c"
+#line 917 "lexer_flex.c"
 
 #define INITIAL 0
 
@@ -1115,12 +1130,12 @@ YY_DECL
 		}
 
 	{
-#line 347 "lexer_QueryLang.l"
+#line 362 "lexer_QueryLang.l"
 
 
-#line 350 "lexer_QueryLang.l"
+#line 365 "lexer_QueryLang.l"
     /* Commentaires */
-#line 1124 "lexer_flex.c"
+#line 1139 "lexer_flex.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -1179,13 +1194,13 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 351 "lexer_QueryLang.l"
+#line 366 "lexer_QueryLang.l"
 { printToken("COMMENT", "-- ..."); }
 	YY_BREAK
 case 2:
 /* rule 2 can match eol */
 YY_RULE_SETUP
-#line 352 "lexer_QueryLang.l"
+#line 367 "lexer_QueryLang.l"
 { 
                         printToken("COMMENT", "/* ... */");
                         for (int i = 0; i < yyleng; i++) {
@@ -1199,49 +1214,49 @@ YY_RULE_SETUP
 /* Mots-clés du programme */
 case 3:
 YY_RULE_SETUP
-#line 363 "lexer_QueryLang.l"
+#line 378 "lexer_QueryLang.l"
 { printToken("KW_BEGIN", yytext); }
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 364 "lexer_QueryLang.l"
+#line 379 "lexer_QueryLang.l"
 { printToken("KW_PROGRAM", yytext); }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 365 "lexer_QueryLang.l"
+#line 380 "lexer_QueryLang.l"
 { printToken("KW_END", yytext); }
 	YY_BREAK
 /* Mots-clés de déclaration */
 case 6:
 YY_RULE_SETUP
-#line 368 "lexer_QueryLang.l"
+#line 383 "lexer_QueryLang.l"
 { printToken("KW_SET", yytext); in_declaration = 1; }
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 369 "lexer_QueryLang.l"
+#line 384 "lexer_QueryLang.l"
 { printToken("KW_CREATE", yytext); }
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 370 "lexer_QueryLang.l"
+#line 385 "lexer_QueryLang.l"
 { printToken("KW_RECORD", yytext); }
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 371 "lexer_QueryLang.l"
+#line 386 "lexer_QueryLang.l"
 { printToken("KW_ARRAY", yytext); }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 372 "lexer_QueryLang.l"
+#line 387 "lexer_QueryLang.l"
 { printToken("KW_DICTIONARY", yytext); }
 	YY_BREAK
 /* Types */
 case 11:
 YY_RULE_SETUP
-#line 375 "lexer_QueryLang.l"
+#line 390 "lexer_QueryLang.l"
 { 
                         printToken("KW_INTEGER", yytext); 
                         if (in_declaration && last_identifier[0] != '\0') {
@@ -1254,7 +1269,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 384 "lexer_QueryLang.l"
+#line 399 "lexer_QueryLang.l"
 { 
                         printToken("KW_STRING", yytext); 
                         if (in_declaration && last_identifier[0] != '\0') {
@@ -1267,7 +1282,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 393 "lexer_QueryLang.l"
+#line 408 "lexer_QueryLang.l"
 { 
                         printToken("KW_FLOAT", yytext); 
                         if (in_declaration && last_identifier[0] != '\0') {
@@ -1280,7 +1295,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 402 "lexer_QueryLang.l"
+#line 417 "lexer_QueryLang.l"
 { 
                         printToken("KW_BOOLEAN", yytext); 
                         if (in_declaration && last_identifier[0] != '\0') {
@@ -1294,220 +1309,220 @@ YY_RULE_SETUP
 /* Valeurs booléennes */
 case 15:
 YY_RULE_SETUP
-#line 413 "lexer_QueryLang.l"
+#line 428 "lexer_QueryLang.l"
 { printToken("KW_TRUE", yytext); }
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 414 "lexer_QueryLang.l"
+#line 429 "lexer_QueryLang.l"
 { printToken("KW_FALSE", yytext); }
 	YY_BREAK
 /* Structures de contrôle */
 case 17:
 YY_RULE_SETUP
-#line 417 "lexer_QueryLang.l"
+#line 432 "lexer_QueryLang.l"
 { printToken("KW_LOOP KW_WHEN", yytext); enterScope(); }
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 419 "lexer_QueryLang.l"
+#line 434 "lexer_QueryLang.l"
 { printToken("KW_WHEN", yytext); enterScope();}
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 420 "lexer_QueryLang.l"
+#line 435 "lexer_QueryLang.l"
 { printToken("KW_THEN", yytext);  }
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 421 "lexer_QueryLang.l"
+#line 436 "lexer_QueryLang.l"
 { printToken("KW_OTHERWISE", yytext); }
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 424 "lexer_QueryLang.l"
+#line 439 "lexer_QueryLang.l"
 { printToken("KW_CASE", yytext); enterScope(); }
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 425 "lexer_QueryLang.l"
+#line 440 "lexer_QueryLang.l"
 { printToken("KW_CASE_WHEN", yytext);}
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 426 "lexer_QueryLang.l"
+#line 441 "lexer_QueryLang.l"
 { printToken("KW_ELSE", yytext); }
 	YY_BREAK
 /* Boucles */
 case 24:
 YY_RULE_SETUP
-#line 430 "lexer_QueryLang.l"
+#line 445 "lexer_QueryLang.l"
 { printToken("KW_LOOP", yytext); enterScope(); }
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 431 "lexer_QueryLang.l"
+#line 446 "lexer_QueryLang.l"
 { printToken("KW_ITERATE", yytext); }
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 432 "lexer_QueryLang.l"
+#line 447 "lexer_QueryLang.l"
 { printToken("KW_FROM", yytext); }
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 433 "lexer_QueryLang.l"
+#line 448 "lexer_QueryLang.l"
 { printToken("KW_TO", yytext); }
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 435 "lexer_QueryLang.l"
+#line 450 "lexer_QueryLang.l"
 { printToken("KW_END_LOOP", yytext); exitScope(); }
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 436 "lexer_QueryLang.l"
+#line 451 "lexer_QueryLang.l"
 { printToken("KW_END_CASE", yytext); exitScope(); }
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 437 "lexer_QueryLang.l"
+#line 452 "lexer_QueryLang.l"
 { printToken("KW_END_CASE", yytext); exitScope(); }
 	YY_BREAK
 /* Entrée/Sortie */
 case 31:
 YY_RULE_SETUP
-#line 440 "lexer_QueryLang.l"
+#line 455 "lexer_QueryLang.l"
 { printToken("KW_PRINT", yytext); }
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 441 "lexer_QueryLang.l"
+#line 456 "lexer_QueryLang.l"
 { printToken("KW_INPUT", yytext); }
 	YY_BREAK
 /* Opérateurs logiques */
 case 33:
 YY_RULE_SETUP
-#line 444 "lexer_QueryLang.l"
+#line 459 "lexer_QueryLang.l"
 { printToken("OP_AND", yytext); }
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 445 "lexer_QueryLang.l"
+#line 460 "lexer_QueryLang.l"
 { printToken("OP_OR", yytext); }
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 446 "lexer_QueryLang.l"
+#line 461 "lexer_QueryLang.l"
 { printToken("OP_NOT", yytext); }
 	YY_BREAK
 /* Opérateurs de comparaison */
 case 36:
 YY_RULE_SETUP
-#line 449 "lexer_QueryLang.l"
+#line 464 "lexer_QueryLang.l"
 { printToken("OP_EQ", yytext); }
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 450 "lexer_QueryLang.l"
+#line 465 "lexer_QueryLang.l"
 { printToken("OP_NEQ", yytext); }
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 451 "lexer_QueryLang.l"
+#line 466 "lexer_QueryLang.l"
 { printToken("OP_LT", yytext); }
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 452 "lexer_QueryLang.l"
+#line 467 "lexer_QueryLang.l"
 { printToken("OP_GT", yytext); }
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 453 "lexer_QueryLang.l"
+#line 468 "lexer_QueryLang.l"
 { printToken("OP_LTE", yytext); }
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
-#line 454 "lexer_QueryLang.l"
+#line 469 "lexer_QueryLang.l"
 { printToken("OP_GTE", yytext); }
 	YY_BREAK
 /* Opérateurs arithmétiques */
 case 42:
 YY_RULE_SETUP
-#line 457 "lexer_QueryLang.l"
+#line 472 "lexer_QueryLang.l"
 { printToken("OP_PLUS", yytext); }
 	YY_BREAK
 case 43:
 YY_RULE_SETUP
-#line 458 "lexer_QueryLang.l"
+#line 473 "lexer_QueryLang.l"
 { printToken("OP_MINUS", yytext); }
 	YY_BREAK
 case 44:
 YY_RULE_SETUP
-#line 459 "lexer_QueryLang.l"
+#line 474 "lexer_QueryLang.l"
 { printToken("OP_MULT", yytext); }
 	YY_BREAK
 case 45:
 YY_RULE_SETUP
-#line 460 "lexer_QueryLang.l"
+#line 475 "lexer_QueryLang.l"
 { printToken("OP_DIV", yytext); }
 	YY_BREAK
 case 46:
 YY_RULE_SETUP
-#line 461 "lexer_QueryLang.l"
+#line 476 "lexer_QueryLang.l"
 { printToken("OP_MOD", yytext); }
 	YY_BREAK
 /* Séparateurs */
 case 47:
 YY_RULE_SETUP
-#line 464 "lexer_QueryLang.l"
+#line 479 "lexer_QueryLang.l"
 { printToken("SEP_LPAREN", yytext); }
 	YY_BREAK
 case 48:
 YY_RULE_SETUP
-#line 465 "lexer_QueryLang.l"
+#line 480 "lexer_QueryLang.l"
 { printToken("SEP_RPAREN", yytext); }
 	YY_BREAK
 case 49:
 YY_RULE_SETUP
-#line 466 "lexer_QueryLang.l"
+#line 481 "lexer_QueryLang.l"
 { printToken("SEP_LBRACKET", yytext); }
 	YY_BREAK
 case 50:
 YY_RULE_SETUP
-#line 467 "lexer_QueryLang.l"
+#line 482 "lexer_QueryLang.l"
 { printToken("SEP_RBRACKET", yytext); }
 	YY_BREAK
 case 51:
 YY_RULE_SETUP
-#line 468 "lexer_QueryLang.l"
+#line 483 "lexer_QueryLang.l"
 { printToken("SEP_LBRACE", yytext); }
 	YY_BREAK
 case 52:
 YY_RULE_SETUP
-#line 469 "lexer_QueryLang.l"
+#line 484 "lexer_QueryLang.l"
 { printToken("SEP_RBRACE", yytext); }
 	YY_BREAK
 case 53:
 YY_RULE_SETUP
-#line 470 "lexer_QueryLang.l"
+#line 485 "lexer_QueryLang.l"
 { printToken("SEP_COMMA", yytext); }
 	YY_BREAK
 case 54:
 YY_RULE_SETUP
-#line 471 "lexer_QueryLang.l"
+#line 486 "lexer_QueryLang.l"
 { printToken("SEP_SEMICOLON", yytext); in_declaration = 0; }
 	YY_BREAK
 case 55:
 YY_RULE_SETUP
-#line 472 "lexer_QueryLang.l"
+#line 487 "lexer_QueryLang.l"
 { printToken("SEP_DOT", yytext); }
 	YY_BREAK
 /* Identificateurs */
 case 56:
 YY_RULE_SETUP
-#line 475 "lexer_QueryLang.l"
+#line 490 "lexer_QueryLang.l"
 { 
                         if (yyleng > 255) {
                             reportError(ERR_IDENTIFIER_TOO_LONG, 
@@ -1525,14 +1540,14 @@ YY_RULE_SETUP
 /* Littéraux numériques */
 case 57:
 YY_RULE_SETUP
-#line 490 "lexer_QueryLang.l"
+#line 505 "lexer_QueryLang.l"
 { 
                         printToken("INT_LITERAL", yytext); 
                     }
 	YY_BREAK
 case 58:
 YY_RULE_SETUP
-#line 494 "lexer_QueryLang.l"
+#line 509 "lexer_QueryLang.l"
 { 
                         printToken("FLOAT_LITERAL", yytext); 
                     }
@@ -1540,7 +1555,7 @@ YY_RULE_SETUP
 /* Chaînes de caractères */
 case 59:
 YY_RULE_SETUP
-#line 499 "lexer_QueryLang.l"
+#line 514 "lexer_QueryLang.l"
 { 
                         if (yyleng > 257) {  /* 255 + 2 quotes */
                             reportError(ERR_STRING_TOO_LONG,
@@ -1556,7 +1571,7 @@ case 60:
 (yy_c_buf_p) = yy_cp -= 1;
 YY_DO_BEFORE_ACTION; /* set up yytext again */
 YY_RULE_SETUP
-#line 509 "lexer_QueryLang.l"
+#line 524 "lexer_QueryLang.l"
 {
                         reportError(ERR_UNTERMINATED_STRING,
                                   "String literal not terminated before end of line", yytext);
@@ -1570,7 +1585,7 @@ YY_LINENO_REWIND_TO(yy_cp - 1);
 (yy_c_buf_p) = yy_cp -= 1;
 YY_DO_BEFORE_ACTION; /* set up yytext again */
 YY_RULE_SETUP
-#line 515 "lexer_QueryLang.l"
+#line 530 "lexer_QueryLang.l"
 {
                         reportError(ERR_UNTERMINATED_COMMENT,
                                   "Multi-line comment not terminated", "/* ...");
@@ -1579,19 +1594,19 @@ YY_RULE_SETUP
 /* Espaces blancs */
 case 62:
 YY_RULE_SETUP
-#line 521 "lexer_QueryLang.l"
+#line 536 "lexer_QueryLang.l"
 { col_num += yyleng; }
 	YY_BREAK
 case 63:
 /* rule 63 can match eol */
 YY_RULE_SETUP
-#line 522 "lexer_QueryLang.l"
+#line 537 "lexer_QueryLang.l"
 { line_num++; col_num = 1; }
 	YY_BREAK
 /* Erreurs lexicales */
 case 64:
 YY_RULE_SETUP
-#line 525 "lexer_QueryLang.l"
+#line 540 "lexer_QueryLang.l"
 { 
                         char error_msg[256];
                         sprintf(error_msg, "Unexpected character '%s'", yytext);
@@ -1601,10 +1616,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 65:
 YY_RULE_SETUP
-#line 532 "lexer_QueryLang.l"
+#line 547 "lexer_QueryLang.l"
 ECHO;
 	YY_BREAK
-#line 1608 "lexer_flex.c"
+#line 1623 "lexer_flex.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -2609,7 +2624,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 532 "lexer_QueryLang.l"
+#line 547 "lexer_QueryLang.l"
 
 
 int yywrap() {
@@ -2618,6 +2633,8 @@ int yywrap() {
 
 int main(int argc, char** argv) {
     FILE* input_file = NULL;
+
+    char* current_filename;
     
     printf("╔════════════════════════════════════════════════════════════════════════════════════╗\n");
     printf("║           ANALYSEUR LEXICAL COMPLET - QueryLang (Version FLEX)                    ║\n");
@@ -2631,6 +2648,7 @@ int main(int argc, char** argv) {
         }
         yyin = input_file;
         printf("Analyse du fichier: %s\n\n", argv[1]);
+        current_filename = argv[1];
     } else {
         printf("Usage: %s <fichier_source.ql>\n", argv[0]);
         printf("Mode interactif: Entrez votre code (Ctrl+D pour terminer)\n\n");
@@ -2661,10 +2679,19 @@ int main(int argc, char** argv) {
     printf("Erreurs lexicales: %d\n\n", errorMgr.count);
     
     if (errorMgr.count == 0) {
-        printf("nalyse lexicale terminée avec succès!\n\n");
+        printf("Analyse lexicale terminée avec succès!\n\n");
         return 0;
     } else {
         printf("Analyse lexicale terminée avec %d erreur(s).\n\n", errorMgr.count);
+        if (errorMgr.head != NULL) {
+            ErrorEntry* firstError = errorMgr.head;
+            // Parcourir jusqu'à la fin pour obtenir la première erreur
+            while (firstError->next != NULL) {
+                firstError = firstError->next;
+            }
+            printf("File \"%s\", line %d, character %d: lexical error\n", 
+                current_filename, firstError->line, firstError->column);
+            }
         return 1;
     }
 }

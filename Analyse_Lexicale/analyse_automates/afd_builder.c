@@ -92,13 +92,13 @@ void initializeAFDs() {
     printf("═══ PHASE 1: CONSTRUCTION DES AFD ═══\n");
     
     identifier_afd = buildIdentifierAFD();
-    printf("✓ AFD Identificateurs construit (%d états)\n", identifier_afd.state_count);
+    printf("AFD Identificateurs construit (%d états)\n", identifier_afd.state_count);
     
     integer_afd = buildIntegerAFD();
-    printf("✓ AFD Entiers construit (%d états)\n", integer_afd.state_count);
+    printf("AFD Entiers construit (%d états)\n", integer_afd.state_count);
     
     float_afd = buildFloatAFD();
-    printf("✓ AFD Réels construit (%d états)\n", float_afd.state_count);
+    printf("AFD Réels construit (%d états)\n", float_afd.state_count);
     
     printf("\n");
 }
