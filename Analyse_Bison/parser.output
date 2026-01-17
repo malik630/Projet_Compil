@@ -1,206 +1,330 @@
-Terminaux inutilisés dans la grammaire
-
-    KW_CREATE
-    KW_RECORD
-    KW_ARRAY
-    KW_DICTIONARY
-    KW_TRUE
-    KW_FALSE
-    KW_OTHERWISE
-    KW_CASE
-    KW_LOOP
-    KW_ITERATE
-    KW_FROM
-    KW_TO
-    KW_INPUT
-    OP_AND
-    OP_OR
-    OP_NOT
-    OP_MOD
-    SEP_LBRACKET
-    SEP_RBRACKET
-    SEP_LBRACE
-    SEP_RBRACE
-    SEP_COMMA
-    SEP_DOT
-    UMINUS
-
-
 Grammaire
 
     0 $accept: Program $end
 
     1 $@1: ε
 
-    2 Program: KW_BEGIN KW_PROGRAM IDENTIFIER SEP_SEMICOLON $@1 Decls Instrs KW_END KW_PROGRAM SEP_SEMICOLON
+    2 Program: KW_BEGIN KW_PROGRAM IDENTIFIER SEP_SEMICOLON $@1 Instrs KW_END KW_PROGRAM SEP_SEMICOLON
 
-    3 Decls: Decls Decl
-    4      | ε
-
-    5 Decl: KW_SET IDENTIFIER Type OptInit SEP_SEMICOLON
-
-    6 OptInit: OP_EQ Expr
-    7        | ε
+    3 Decl: KW_SET IDENTIFIER Type OptInit SEP_SEMICOLON
+    4     | KW_SET IDENTIFIER IDENTIFIER OptInit SEP_SEMICOLON
+    5     | RecordDecl
+    6     | ArrayDecl
+    7     | DictDecl
 
     8 Type: KW_INTEGER
     9     | KW_STRING
    10     | KW_FLOAT
    11     | KW_BOOLEAN
 
-   12 Instrs: Instrs Instr
-   13       | ε
+   12 RecordDecl: KW_CREATE KW_RECORD IDENTIFIER SEP_LPAREN FieldList SEP_RPAREN SEP_SEMICOLON
 
-   14 Instr: Assign
-   15      | Print
-   16      | If
+   13 FieldList: Field
+   14          | FieldList SEP_COMMA Field
 
-   17 Assign: IDENTIFIER OP_EQ Expr SEP_SEMICOLON
+   15 Field: IDENTIFIER Type
 
-   18 Print: KW_PRINT Expr SEP_SEMICOLON
+   16 ArrayDecl: KW_SET IDENTIFIER KW_ARRAY SEP_LBRACKET Type SEP_COMMA INT_LITERAL SEP_RBRACKET ArrayInit SEP_SEMICOLON
 
-   19 $@2: ε
+   17 ArrayInit: OP_EQ SEP_LBRACE ExprList SEP_RBRACE
+   18          | OP_EQ Expr
+   19          | ε
 
-   20 If: KW_WHEN $@2 Cond KW_THEN Instrs OptElse KW_END KW_WHEN SEP_SEMICOLON
+   20 DictDecl: KW_SET IDENTIFIER KW_DICTIONARY OP_LT Type SEP_COMMA Type OP_GT SEP_SEMICOLON
 
-   21 OptElse: KW_ELSE Instrs
+   21 OptInit: OP_EQ Expr
    22        | ε
 
-   23 Expr: Expr OP_PLUS Term
-   24     | Expr OP_MINUS Term
-   25     | Term
+   23 ExprList: Expr
+   24         | ExprList SEP_COMMA Expr
 
-   26 Term: Term OP_MULT Factor
-   27     | Term OP_DIV Factor
-   28     | Factor
+   25 Instrs: ε
+   26       | Instrs Instr
 
-   29 Factor: INT_LITERAL
-   30       | FLOAT_LITERAL
-   31       | STRING_LITERAL
-   32       | IDENTIFIER
-   33       | SEP_LPAREN Expr SEP_RPAREN
+   27 Instr: Assign
+   28      | Print
+   29      | If
+   30      | While
+   31      | For
+   32      | Case
+   33      | Input
+   34      | ForEach
+   35      | Decl
 
-   34 Cond: Expr OP_EQ Expr
-   35     | Expr OP_NEQ Expr
-   36     | Expr OP_LT Expr
-   37     | Expr OP_GT Expr
-   38     | Expr OP_LTE Expr
-   39     | Expr OP_GTE Expr
+   36 Assign: IDENTIFIER OP_EQ Expr SEP_SEMICOLON
+   37       | IDENTIFIER SEP_DOT IDENTIFIER OP_EQ Expr SEP_SEMICOLON
+   38       | IDENTIFIER SEP_LBRACKET Expr SEP_RBRACKET OP_EQ Expr SEP_SEMICOLON
+
+   39 Print: KW_PRINT Expr SEP_SEMICOLON
+
+   40 Input: KW_INPUT IDENTIFIER SEP_SEMICOLON
+
+   41 $@2: ε
+
+   42 $@3: ε
+
+   43 If: KW_WHEN Cond KW_THEN $@2 Instrs OptElse $@3 KW_END KW_WHEN SEP_SEMICOLON
+
+   44 OptElse: KW_ELSE Instrs
+   45        | KW_OTHERWISE Instrs
+   46        | ε
+
+   47 $@4: ε
+
+   48 $@5: ε
+
+   49 While: KW_LOOP KW_WHEN Cond $@4 Instrs $@5 KW_END KW_LOOP SEP_SEMICOLON
+
+   50 $@6: ε
+
+   51 $@7: ε
+
+   52 For: KW_LOOP KW_ITERATE IDENTIFIER $@6 KW_FROM Expr KW_TO Expr Instrs $@7 KW_END KW_LOOP SEP_SEMICOLON
+
+   53 $@8: ε
+
+   54 $@9: ε
+
+   55 ForEach: KW_FOREACH IDENTIFIER KW_IN IDENTIFIER $@8 SEP_LBRACE Instrs $@9 SEP_RBRACE
+
+   56 $@10: ε
+
+   57 $@11: ε
+
+   58 Case: KW_CASE CaseList $@10 KW_END KW_CASE $@11 SEP_SEMICOLON
+
+   59 $@12: ε
+
+   60 $@13: ε
+
+   61 Case: KW_CASE CaseList KW_ELSE $@12 Instrs KW_END KW_CASE $@13 SEP_SEMICOLON
+
+   62 CaseList: CaseItem
+   63         | CaseList CaseItem
+
+   64 CaseItem: KW_CASE_WHEN Cond KW_THEN Instrs
+
+   65 Expr: Expr OP_PLUS Term
+   66     | Expr OP_MINUS Term
+   67     | Term
+
+   68 Term: Term OP_MULT Factor
+   69     | Term OP_DIV Factor
+   70     | Term OP_MOD Factor
+   71     | Factor
+
+   72 Factor: INT_LITERAL
+   73       | FLOAT_LITERAL
+   74       | STRING_LITERAL
+   75       | KW_TRUE
+   76       | KW_FALSE
+   77       | IDENTIFIER
+   78       | IDENTIFIER SEP_DOT IDENTIFIER
+   79       | IDENTIFIER SEP_LBRACKET Expr SEP_RBRACKET
+   80       | SEP_LPAREN Expr SEP_RPAREN
+   81       | OP_MINUS Factor
+
+   82 Cond: Cond OP_AND Cond
+   83     | Cond OP_OR Cond
+   84     | OP_NOT Cond
+   85     | Expr OP_EQ Expr
+   86     | Expr OP_NEQ Expr
+   87     | Expr OP_LT Expr
+   88     | Expr OP_GT Expr
+   89     | Expr OP_LTE Expr
+   90     | Expr OP_GTE Expr
+   91     | SEP_LPAREN Cond SEP_RPAREN
 
 
 Terminaux, suivis des règles où ils apparaissent
 
     $end (0) 0
     error (256)
-    IDENTIFIER <str> (258) 2 5 17 32
-    STRING_LITERAL <str> (259) 31
-    INT_LITERAL <ival> (260) 29
-    FLOAT_LITERAL <fval> (261) 30
+    IDENTIFIER <str> (258) 2 3 4 12 15 16 20 36 37 38 40 52 55 77 78 79
+    STRING_LITERAL <str> (259) 74
+    INT_LITERAL <ival> (260) 16 72
+    FLOAT_LITERAL <fval> (261) 73
     KW_BEGIN (262) 2
     KW_PROGRAM (263) 2
-    KW_END (264) 2 20
-    KW_SET (265) 5
-    KW_CREATE (266)
-    KW_RECORD (267)
-    KW_ARRAY (268)
-    KW_DICTIONARY (269)
+    KW_END (264) 2 43 49 52 58 61
+    KW_SET (265) 3 4 16 20
+    KW_CREATE (266) 12
+    KW_RECORD (267) 12
+    KW_ARRAY (268) 16
+    KW_DICTIONARY (269) 20
     KW_INTEGER (270) 8
     KW_STRING (271) 9
     KW_FLOAT (272) 10
     KW_BOOLEAN (273) 11
-    KW_TRUE (274)
-    KW_FALSE (275)
-    KW_WHEN (276) 20
-    KW_THEN (277) 20
-    KW_OTHERWISE (278)
-    KW_CASE (279)
-    KW_ELSE (280) 21
-    KW_LOOP (281)
-    KW_ITERATE (282)
-    KW_FROM (283)
-    KW_TO (284)
-    KW_PRINT (285) 18
-    KW_INPUT (286)
-    OP_AND (287)
-    OP_OR (288)
-    OP_NOT (289)
-    OP_EQ (290) 6 17 34
-    OP_NEQ (291) 35
-    OP_LT (292) 36
-    OP_GT (293) 37
-    OP_LTE (294) 38
-    OP_GTE (295) 39
-    OP_PLUS (296) 23
-    OP_MINUS (297) 24
-    OP_MULT (298) 26
-    OP_DIV (299) 27
-    OP_MOD (300)
-    SEP_LPAREN (301) 33
-    SEP_RPAREN (302) 33
-    SEP_LBRACKET (303)
-    SEP_RBRACKET (304)
-    SEP_LBRACE (305)
-    SEP_RBRACE (306)
-    SEP_COMMA (307)
-    SEP_SEMICOLON (308) 2 5 17 18 20
-    SEP_DOT (309)
-    UMINUS (310)
+    KW_TRUE (274) 75
+    KW_FALSE (275) 76
+    KW_WHEN (276) 43 49
+    KW_CASE_WHEN (277) 64
+    KW_THEN (278) 43 64
+    KW_OTHERWISE (279) 45
+    KW_CASE (280) 58 61
+    KW_ELSE (281) 44 61
+    KW_LOOP (282) 49 52
+    KW_ITERATE (283) 52
+    KW_FROM (284) 52
+    KW_TO (285) 52
+    KW_FOREACH (286) 55
+    KW_IN (287) 55
+    KW_PRINT (288) 39
+    KW_INPUT (289) 40
+    OP_AND (290) 82
+    OP_OR (291) 83
+    OP_NOT (292) 84
+    OP_EQ (293) 17 18 21 36 37 38 85
+    OP_NEQ (294) 86
+    OP_LT (295) 20 87
+    OP_GT (296) 20 88
+    OP_LTE (297) 89
+    OP_GTE (298) 90
+    OP_PLUS (299) 65
+    OP_MINUS (300) 66 81
+    OP_MULT (301) 68
+    OP_DIV (302) 69
+    OP_MOD (303) 70
+    SEP_LPAREN (304) 12 80 91
+    SEP_RPAREN (305) 12 80 91
+    SEP_LBRACKET (306) 16 38 79
+    SEP_RBRACKET (307) 16 38 79
+    SEP_LBRACE (308) 17 55
+    SEP_RBRACE (309) 17 55
+    SEP_COMMA (310) 14 16 20 24
+    SEP_SEMICOLON (311) 2 3 4 12 16 20 36 37 38 39 40 43 49 52 58 61
+    SEP_DOT (312) 37 78
+    UMINUS (313)
 
 
 Non-terminaux, suivis des règles où ils apparaissent
 
-    $accept (56)
+    $accept (59)
         à gauche: 0
-    Program <node> (57)
+    Program <node> (60)
         à gauche: 2
         à droite: 0
-    $@1 (58)
+    $@1 (61)
         à gauche: 1
         à droite: 2
-    Decls <node> (59)
-        à gauche: 3 4
-        à droite: 2 3
-    Decl <node> (60)
-        à gauche: 5
-        à droite: 3
-    OptInit <node> (61)
-        à gauche: 6 7
-        à droite: 5
-    Type <dtype> (62)
+    Decl <node> (62)
+        à gauche: 3 4 5 6 7
+        à droite: 35
+    Type <dtype> (63)
         à gauche: 8 9 10 11
+        à droite: 3 15 16 20
+    RecordDecl <node> (64)
+        à gauche: 12
         à droite: 5
-    Instrs <node> (63)
-        à gauche: 12 13
-        à droite: 2 12 20 21
-    Instr <node> (64)
-        à gauche: 14 15 16
-        à droite: 12
-    Assign <node> (65)
-        à gauche: 17
-        à droite: 14
-    Print <node> (66)
-        à gauche: 18
-        à droite: 15
-    If <node> (67)
-        à gauche: 20
+    FieldList <node> (65)
+        à gauche: 13 14
+        à droite: 12 14
+    Field <node> (66)
+        à gauche: 15
+        à droite: 13 14
+    ArrayDecl <node> (67)
+        à gauche: 16
+        à droite: 6
+    ArrayInit <node> (68)
+        à gauche: 17 18 19
         à droite: 16
-    $@2 (68)
-        à gauche: 19
-        à droite: 20
-    OptElse <node> (69)
+    DictDecl <node> (69)
+        à gauche: 20
+        à droite: 7
+    OptInit <node> (70)
         à gauche: 21 22
-        à droite: 20
-    Expr <node> (70)
-        à gauche: 23 24 25
-        à droite: 6 17 18 23 24 33 34 35 36 37 38 39
-    Term <node> (71)
-        à gauche: 26 27 28
-        à droite: 23 24 25 26 27
-    Factor <node> (72)
-        à gauche: 29 30 31 32 33
-        à droite: 26 27 28
-    Cond <node> (73)
-        à gauche: 34 35 36 37 38 39
-        à droite: 20
+        à droite: 3 4
+    ExprList <node> (71)
+        à gauche: 23 24
+        à droite: 17 24
+    Instrs <node> (72)
+        à gauche: 25 26
+        à droite: 2 26 43 44 45 49 52 55 61 64
+    Instr <node> (73)
+        à gauche: 27 28 29 30 31 32 33 34 35
+        à droite: 26
+    Assign <node> (74)
+        à gauche: 36 37 38
+        à droite: 27
+    Print <node> (75)
+        à gauche: 39
+        à droite: 28
+    Input <node> (76)
+        à gauche: 40
+        à droite: 33
+    If <node> (77)
+        à gauche: 43
+        à droite: 29
+    $@2 (78)
+        à gauche: 41
+        à droite: 43
+    $@3 (79)
+        à gauche: 42
+        à droite: 43
+    OptElse <node> (80)
+        à gauche: 44 45 46
+        à droite: 43
+    While <node> (81)
+        à gauche: 49
+        à droite: 30
+    $@4 (82)
+        à gauche: 47
+        à droite: 49
+    $@5 (83)
+        à gauche: 48
+        à droite: 49
+    For <node> (84)
+        à gauche: 52
+        à droite: 31
+    $@6 (85)
+        à gauche: 50
+        à droite: 52
+    $@7 (86)
+        à gauche: 51
+        à droite: 52
+    ForEach <node> (87)
+        à gauche: 55
+        à droite: 34
+    $@8 (88)
+        à gauche: 53
+        à droite: 55
+    $@9 (89)
+        à gauche: 54
+        à droite: 55
+    Case <node> (90)
+        à gauche: 58 61
+        à droite: 32
+    $@10 (91)
+        à gauche: 56
+        à droite: 58
+    $@11 (92)
+        à gauche: 57
+        à droite: 58
+    $@12 (93)
+        à gauche: 59
+        à droite: 61
+    $@13 (94)
+        à gauche: 60
+        à droite: 61
+    CaseList <node> (95)
+        à gauche: 62 63
+        à droite: 58 61 63
+    CaseItem <node> (96)
+        à gauche: 64
+        à droite: 62 63
+    Expr <node> (97)
+        à gauche: 65 66 67
+        à droite: 18 21 23 24 36 37 38 39 52 65 66 79 80 85 86 87 88 89 90
+    Term <node> (98)
+        à gauche: 68 69 70 71
+        à droite: 65 66 67 68 69 70
+    Factor <node> (99)
+        à gauche: 72 73 74 75 76 77 78 79 80 81
+        à droite: 68 69 70 71 81
+    Cond <node> (100)
+        à gauche: 82 83 84 85 86 87 88 89 90 91
+        à droite: 43 49 64 82 83 84 91
 
 
 État 0
@@ -214,7 +338,7 @@ Non-terminaux, suivis des règles où ils apparaissent
 
 État 1
 
-    2 Program: KW_BEGIN • KW_PROGRAM IDENTIFIER SEP_SEMICOLON $@1 Decls Instrs KW_END KW_PROGRAM SEP_SEMICOLON
+    2 Program: KW_BEGIN • KW_PROGRAM IDENTIFIER SEP_SEMICOLON $@1 Instrs KW_END KW_PROGRAM SEP_SEMICOLON
 
     KW_PROGRAM  décalage et aller à l'état 3
 
@@ -228,7 +352,7 @@ Non-terminaux, suivis des règles où ils apparaissent
 
 État 3
 
-    2 Program: KW_BEGIN KW_PROGRAM • IDENTIFIER SEP_SEMICOLON $@1 Decls Instrs KW_END KW_PROGRAM SEP_SEMICOLON
+    2 Program: KW_BEGIN KW_PROGRAM • IDENTIFIER SEP_SEMICOLON $@1 Instrs KW_END KW_PROGRAM SEP_SEMICOLON
 
     IDENTIFIER  décalage et aller à l'état 5
 
@@ -242,14 +366,14 @@ Non-terminaux, suivis des règles où ils apparaissent
 
 État 5
 
-    2 Program: KW_BEGIN KW_PROGRAM IDENTIFIER • SEP_SEMICOLON $@1 Decls Instrs KW_END KW_PROGRAM SEP_SEMICOLON
+    2 Program: KW_BEGIN KW_PROGRAM IDENTIFIER • SEP_SEMICOLON $@1 Instrs KW_END KW_PROGRAM SEP_SEMICOLON
 
     SEP_SEMICOLON  décalage et aller à l'état 6
 
 
 État 6
 
-    2 Program: KW_BEGIN KW_PROGRAM IDENTIFIER SEP_SEMICOLON • $@1 Decls Instrs KW_END KW_PROGRAM SEP_SEMICOLON
+    2 Program: KW_BEGIN KW_PROGRAM IDENTIFIER SEP_SEMICOLON • $@1 Instrs KW_END KW_PROGRAM SEP_SEMICOLON
 
     $défaut  réduction par utilisation de la règle 1 ($@1)
 
@@ -258,734 +382,2284 @@ Non-terminaux, suivis des règles où ils apparaissent
 
 État 7
 
-    2 Program: KW_BEGIN KW_PROGRAM IDENTIFIER SEP_SEMICOLON $@1 • Decls Instrs KW_END KW_PROGRAM SEP_SEMICOLON
+    2 Program: KW_BEGIN KW_PROGRAM IDENTIFIER SEP_SEMICOLON $@1 • Instrs KW_END KW_PROGRAM SEP_SEMICOLON
 
-    $défaut  réduction par utilisation de la règle 4 (Decls)
+    $défaut  réduction par utilisation de la règle 25 (Instrs)
 
-    Decls  aller à l'état 8
+    Instrs  aller à l'état 8
 
 
 État 8
 
-    2 Program: KW_BEGIN KW_PROGRAM IDENTIFIER SEP_SEMICOLON $@1 Decls • Instrs KW_END KW_PROGRAM SEP_SEMICOLON
-    3 Decls: Decls • Decl
+    2 Program: KW_BEGIN KW_PROGRAM IDENTIFIER SEP_SEMICOLON $@1 Instrs • KW_END KW_PROGRAM SEP_SEMICOLON
+   26 Instrs: Instrs • Instr
 
-    KW_SET  décalage et aller à l'état 9
+    IDENTIFIER  décalage et aller à l'état 9
+    KW_END      décalage et aller à l'état 10
+    KW_SET      décalage et aller à l'état 11
+    KW_CREATE   décalage et aller à l'état 12
+    KW_WHEN     décalage et aller à l'état 13
+    KW_CASE     décalage et aller à l'état 14
+    KW_LOOP     décalage et aller à l'état 15
+    KW_FOREACH  décalage et aller à l'état 16
+    KW_PRINT    décalage et aller à l'état 17
+    KW_INPUT    décalage et aller à l'état 18
 
-    $défaut  réduction par utilisation de la règle 13 (Instrs)
-
-    Decl    aller à l'état 10
-    Instrs  aller à l'état 11
+    Decl        aller à l'état 19
+    RecordDecl  aller à l'état 20
+    ArrayDecl   aller à l'état 21
+    DictDecl    aller à l'état 22
+    Instr       aller à l'état 23
+    Assign      aller à l'état 24
+    Print       aller à l'état 25
+    Input       aller à l'état 26
+    If          aller à l'état 27
+    While       aller à l'état 28
+    For         aller à l'état 29
+    ForEach     aller à l'état 30
+    Case        aller à l'état 31
 
 
 État 9
 
-    5 Decl: KW_SET • IDENTIFIER Type OptInit SEP_SEMICOLON
+   36 Assign: IDENTIFIER • OP_EQ Expr SEP_SEMICOLON
+   37       | IDENTIFIER • SEP_DOT IDENTIFIER OP_EQ Expr SEP_SEMICOLON
+   38       | IDENTIFIER • SEP_LBRACKET Expr SEP_RBRACKET OP_EQ Expr SEP_SEMICOLON
 
-    IDENTIFIER  décalage et aller à l'état 12
+    OP_EQ         décalage et aller à l'état 32
+    SEP_LBRACKET  décalage et aller à l'état 33
+    SEP_DOT       décalage et aller à l'état 34
 
 
 État 10
 
-    3 Decls: Decls Decl •
+    2 Program: KW_BEGIN KW_PROGRAM IDENTIFIER SEP_SEMICOLON $@1 Instrs KW_END • KW_PROGRAM SEP_SEMICOLON
 
-    $défaut  réduction par utilisation de la règle 3 (Decls)
+    KW_PROGRAM  décalage et aller à l'état 35
 
 
 État 11
 
-    2 Program: KW_BEGIN KW_PROGRAM IDENTIFIER SEP_SEMICOLON $@1 Decls Instrs • KW_END KW_PROGRAM SEP_SEMICOLON
-   12 Instrs: Instrs • Instr
+    3 Decl: KW_SET • IDENTIFIER Type OptInit SEP_SEMICOLON
+    4     | KW_SET • IDENTIFIER IDENTIFIER OptInit SEP_SEMICOLON
+   16 ArrayDecl: KW_SET • IDENTIFIER KW_ARRAY SEP_LBRACKET Type SEP_COMMA INT_LITERAL SEP_RBRACKET ArrayInit SEP_SEMICOLON
+   20 DictDecl: KW_SET • IDENTIFIER KW_DICTIONARY OP_LT Type SEP_COMMA Type OP_GT SEP_SEMICOLON
 
-    IDENTIFIER  décalage et aller à l'état 13
-    KW_END      décalage et aller à l'état 14
-    KW_WHEN     décalage et aller à l'état 15
-    KW_PRINT    décalage et aller à l'état 16
-
-    Instr   aller à l'état 17
-    Assign  aller à l'état 18
-    Print   aller à l'état 19
-    If      aller à l'état 20
+    IDENTIFIER  décalage et aller à l'état 36
 
 
 État 12
 
-    5 Decl: KW_SET IDENTIFIER • Type OptInit SEP_SEMICOLON
+   12 RecordDecl: KW_CREATE • KW_RECORD IDENTIFIER SEP_LPAREN FieldList SEP_RPAREN SEP_SEMICOLON
 
-    KW_INTEGER  décalage et aller à l'état 21
-    KW_STRING   décalage et aller à l'état 22
-    KW_FLOAT    décalage et aller à l'état 23
-    KW_BOOLEAN  décalage et aller à l'état 24
-
-    Type  aller à l'état 25
+    KW_RECORD  décalage et aller à l'état 37
 
 
 État 13
 
-   17 Assign: IDENTIFIER • OP_EQ Expr SEP_SEMICOLON
+   43 If: KW_WHEN • Cond KW_THEN $@2 Instrs OptElse $@3 KW_END KW_WHEN SEP_SEMICOLON
 
-    OP_EQ  décalage et aller à l'état 26
+    IDENTIFIER      décalage et aller à l'état 38
+    STRING_LITERAL  décalage et aller à l'état 39
+    INT_LITERAL     décalage et aller à l'état 40
+    FLOAT_LITERAL   décalage et aller à l'état 41
+    KW_TRUE         décalage et aller à l'état 42
+    KW_FALSE        décalage et aller à l'état 43
+    OP_NOT          décalage et aller à l'état 44
+    OP_MINUS        décalage et aller à l'état 45
+    SEP_LPAREN      décalage et aller à l'état 46
+
+    Expr    aller à l'état 47
+    Term    aller à l'état 48
+    Factor  aller à l'état 49
+    Cond    aller à l'état 50
 
 
 État 14
 
-    2 Program: KW_BEGIN KW_PROGRAM IDENTIFIER SEP_SEMICOLON $@1 Decls Instrs KW_END • KW_PROGRAM SEP_SEMICOLON
+   58 Case: KW_CASE • CaseList $@10 KW_END KW_CASE $@11 SEP_SEMICOLON
+   61     | KW_CASE • CaseList KW_ELSE $@12 Instrs KW_END KW_CASE $@13 SEP_SEMICOLON
 
-    KW_PROGRAM  décalage et aller à l'état 27
+    KW_CASE_WHEN  décalage et aller à l'état 51
+
+    CaseList  aller à l'état 52
+    CaseItem  aller à l'état 53
 
 
 État 15
 
-   20 If: KW_WHEN • $@2 Cond KW_THEN Instrs OptElse KW_END KW_WHEN SEP_SEMICOLON
+   49 While: KW_LOOP • KW_WHEN Cond $@4 Instrs $@5 KW_END KW_LOOP SEP_SEMICOLON
+   52 For: KW_LOOP • KW_ITERATE IDENTIFIER $@6 KW_FROM Expr KW_TO Expr Instrs $@7 KW_END KW_LOOP SEP_SEMICOLON
 
-    $défaut  réduction par utilisation de la règle 19 ($@2)
-
-    $@2  aller à l'état 28
+    KW_WHEN     décalage et aller à l'état 54
+    KW_ITERATE  décalage et aller à l'état 55
 
 
 État 16
 
-   18 Print: KW_PRINT • Expr SEP_SEMICOLON
+   55 ForEach: KW_FOREACH • IDENTIFIER KW_IN IDENTIFIER $@8 SEP_LBRACE Instrs $@9 SEP_RBRACE
 
-    IDENTIFIER      décalage et aller à l'état 29
-    STRING_LITERAL  décalage et aller à l'état 30
-    INT_LITERAL     décalage et aller à l'état 31
-    FLOAT_LITERAL   décalage et aller à l'état 32
-    SEP_LPAREN      décalage et aller à l'état 33
-
-    Expr    aller à l'état 34
-    Term    aller à l'état 35
-    Factor  aller à l'état 36
+    IDENTIFIER  décalage et aller à l'état 56
 
 
 État 17
 
-   12 Instrs: Instrs Instr •
+   39 Print: KW_PRINT • Expr SEP_SEMICOLON
 
-    $défaut  réduction par utilisation de la règle 12 (Instrs)
+    IDENTIFIER      décalage et aller à l'état 38
+    STRING_LITERAL  décalage et aller à l'état 39
+    INT_LITERAL     décalage et aller à l'état 40
+    FLOAT_LITERAL   décalage et aller à l'état 41
+    KW_TRUE         décalage et aller à l'état 42
+    KW_FALSE        décalage et aller à l'état 43
+    OP_MINUS        décalage et aller à l'état 45
+    SEP_LPAREN      décalage et aller à l'état 57
+
+    Expr    aller à l'état 58
+    Term    aller à l'état 48
+    Factor  aller à l'état 49
 
 
 État 18
 
-   14 Instr: Assign •
+   40 Input: KW_INPUT • IDENTIFIER SEP_SEMICOLON
 
-    $défaut  réduction par utilisation de la règle 14 (Instr)
+    IDENTIFIER  décalage et aller à l'état 59
 
 
 État 19
 
-   15 Instr: Print •
+   35 Instr: Decl •
 
-    $défaut  réduction par utilisation de la règle 15 (Instr)
+    $défaut  réduction par utilisation de la règle 35 (Instr)
 
 
 État 20
 
-   16 Instr: If •
+    5 Decl: RecordDecl •
 
-    $défaut  réduction par utilisation de la règle 16 (Instr)
+    $défaut  réduction par utilisation de la règle 5 (Decl)
 
 
 État 21
+
+    6 Decl: ArrayDecl •
+
+    $défaut  réduction par utilisation de la règle 6 (Decl)
+
+
+État 22
+
+    7 Decl: DictDecl •
+
+    $défaut  réduction par utilisation de la règle 7 (Decl)
+
+
+État 23
+
+   26 Instrs: Instrs Instr •
+
+    $défaut  réduction par utilisation de la règle 26 (Instrs)
+
+
+État 24
+
+   27 Instr: Assign •
+
+    $défaut  réduction par utilisation de la règle 27 (Instr)
+
+
+État 25
+
+   28 Instr: Print •
+
+    $défaut  réduction par utilisation de la règle 28 (Instr)
+
+
+État 26
+
+   33 Instr: Input •
+
+    $défaut  réduction par utilisation de la règle 33 (Instr)
+
+
+État 27
+
+   29 Instr: If •
+
+    $défaut  réduction par utilisation de la règle 29 (Instr)
+
+
+État 28
+
+   30 Instr: While •
+
+    $défaut  réduction par utilisation de la règle 30 (Instr)
+
+
+État 29
+
+   31 Instr: For •
+
+    $défaut  réduction par utilisation de la règle 31 (Instr)
+
+
+État 30
+
+   34 Instr: ForEach •
+
+    $défaut  réduction par utilisation de la règle 34 (Instr)
+
+
+État 31
+
+   32 Instr: Case •
+
+    $défaut  réduction par utilisation de la règle 32 (Instr)
+
+
+État 32
+
+   36 Assign: IDENTIFIER OP_EQ • Expr SEP_SEMICOLON
+
+    IDENTIFIER      décalage et aller à l'état 38
+    STRING_LITERAL  décalage et aller à l'état 39
+    INT_LITERAL     décalage et aller à l'état 40
+    FLOAT_LITERAL   décalage et aller à l'état 41
+    KW_TRUE         décalage et aller à l'état 42
+    KW_FALSE        décalage et aller à l'état 43
+    OP_MINUS        décalage et aller à l'état 45
+    SEP_LPAREN      décalage et aller à l'état 57
+
+    Expr    aller à l'état 60
+    Term    aller à l'état 48
+    Factor  aller à l'état 49
+
+
+État 33
+
+   38 Assign: IDENTIFIER SEP_LBRACKET • Expr SEP_RBRACKET OP_EQ Expr SEP_SEMICOLON
+
+    IDENTIFIER      décalage et aller à l'état 38
+    STRING_LITERAL  décalage et aller à l'état 39
+    INT_LITERAL     décalage et aller à l'état 40
+    FLOAT_LITERAL   décalage et aller à l'état 41
+    KW_TRUE         décalage et aller à l'état 42
+    KW_FALSE        décalage et aller à l'état 43
+    OP_MINUS        décalage et aller à l'état 45
+    SEP_LPAREN      décalage et aller à l'état 57
+
+    Expr    aller à l'état 61
+    Term    aller à l'état 48
+    Factor  aller à l'état 49
+
+
+État 34
+
+   37 Assign: IDENTIFIER SEP_DOT • IDENTIFIER OP_EQ Expr SEP_SEMICOLON
+
+    IDENTIFIER  décalage et aller à l'état 62
+
+
+État 35
+
+    2 Program: KW_BEGIN KW_PROGRAM IDENTIFIER SEP_SEMICOLON $@1 Instrs KW_END KW_PROGRAM • SEP_SEMICOLON
+
+    SEP_SEMICOLON  décalage et aller à l'état 63
+
+
+État 36
+
+    3 Decl: KW_SET IDENTIFIER • Type OptInit SEP_SEMICOLON
+    4     | KW_SET IDENTIFIER • IDENTIFIER OptInit SEP_SEMICOLON
+   16 ArrayDecl: KW_SET IDENTIFIER • KW_ARRAY SEP_LBRACKET Type SEP_COMMA INT_LITERAL SEP_RBRACKET ArrayInit SEP_SEMICOLON
+   20 DictDecl: KW_SET IDENTIFIER • KW_DICTIONARY OP_LT Type SEP_COMMA Type OP_GT SEP_SEMICOLON
+
+    IDENTIFIER     décalage et aller à l'état 64
+    KW_ARRAY       décalage et aller à l'état 65
+    KW_DICTIONARY  décalage et aller à l'état 66
+    KW_INTEGER     décalage et aller à l'état 67
+    KW_STRING      décalage et aller à l'état 68
+    KW_FLOAT       décalage et aller à l'état 69
+    KW_BOOLEAN     décalage et aller à l'état 70
+
+    Type  aller à l'état 71
+
+
+État 37
+
+   12 RecordDecl: KW_CREATE KW_RECORD • IDENTIFIER SEP_LPAREN FieldList SEP_RPAREN SEP_SEMICOLON
+
+    IDENTIFIER  décalage et aller à l'état 72
+
+
+État 38
+
+   77 Factor: IDENTIFIER •
+   78       | IDENTIFIER • SEP_DOT IDENTIFIER
+   79       | IDENTIFIER • SEP_LBRACKET Expr SEP_RBRACKET
+
+    SEP_LBRACKET  décalage et aller à l'état 73
+    SEP_DOT       décalage et aller à l'état 74
+
+    $défaut  réduction par utilisation de la règle 77 (Factor)
+
+
+État 39
+
+   74 Factor: STRING_LITERAL •
+
+    $défaut  réduction par utilisation de la règle 74 (Factor)
+
+
+État 40
+
+   72 Factor: INT_LITERAL •
+
+    $défaut  réduction par utilisation de la règle 72 (Factor)
+
+
+État 41
+
+   73 Factor: FLOAT_LITERAL •
+
+    $défaut  réduction par utilisation de la règle 73 (Factor)
+
+
+État 42
+
+   75 Factor: KW_TRUE •
+
+    $défaut  réduction par utilisation de la règle 75 (Factor)
+
+
+État 43
+
+   76 Factor: KW_FALSE •
+
+    $défaut  réduction par utilisation de la règle 76 (Factor)
+
+
+État 44
+
+   84 Cond: OP_NOT • Cond
+
+    IDENTIFIER      décalage et aller à l'état 38
+    STRING_LITERAL  décalage et aller à l'état 39
+    INT_LITERAL     décalage et aller à l'état 40
+    FLOAT_LITERAL   décalage et aller à l'état 41
+    KW_TRUE         décalage et aller à l'état 42
+    KW_FALSE        décalage et aller à l'état 43
+    OP_NOT          décalage et aller à l'état 44
+    OP_MINUS        décalage et aller à l'état 45
+    SEP_LPAREN      décalage et aller à l'état 46
+
+    Expr    aller à l'état 47
+    Term    aller à l'état 48
+    Factor  aller à l'état 49
+    Cond    aller à l'état 75
+
+
+État 45
+
+   81 Factor: OP_MINUS • Factor
+
+    IDENTIFIER      décalage et aller à l'état 38
+    STRING_LITERAL  décalage et aller à l'état 39
+    INT_LITERAL     décalage et aller à l'état 40
+    FLOAT_LITERAL   décalage et aller à l'état 41
+    KW_TRUE         décalage et aller à l'état 42
+    KW_FALSE        décalage et aller à l'état 43
+    OP_MINUS        décalage et aller à l'état 45
+    SEP_LPAREN      décalage et aller à l'état 57
+
+    Factor  aller à l'état 76
+
+
+État 46
+
+   80 Factor: SEP_LPAREN • Expr SEP_RPAREN
+   91 Cond: SEP_LPAREN • Cond SEP_RPAREN
+
+    IDENTIFIER      décalage et aller à l'état 38
+    STRING_LITERAL  décalage et aller à l'état 39
+    INT_LITERAL     décalage et aller à l'état 40
+    FLOAT_LITERAL   décalage et aller à l'état 41
+    KW_TRUE         décalage et aller à l'état 42
+    KW_FALSE        décalage et aller à l'état 43
+    OP_NOT          décalage et aller à l'état 44
+    OP_MINUS        décalage et aller à l'état 45
+    SEP_LPAREN      décalage et aller à l'état 46
+
+    Expr    aller à l'état 77
+    Term    aller à l'état 48
+    Factor  aller à l'état 49
+    Cond    aller à l'état 78
+
+
+État 47
+
+   65 Expr: Expr • OP_PLUS Term
+   66     | Expr • OP_MINUS Term
+   85 Cond: Expr • OP_EQ Expr
+   86     | Expr • OP_NEQ Expr
+   87     | Expr • OP_LT Expr
+   88     | Expr • OP_GT Expr
+   89     | Expr • OP_LTE Expr
+   90     | Expr • OP_GTE Expr
+
+    OP_EQ     décalage et aller à l'état 79
+    OP_NEQ    décalage et aller à l'état 80
+    OP_LT     décalage et aller à l'état 81
+    OP_GT     décalage et aller à l'état 82
+    OP_LTE    décalage et aller à l'état 83
+    OP_GTE    décalage et aller à l'état 84
+    OP_PLUS   décalage et aller à l'état 85
+    OP_MINUS  décalage et aller à l'état 86
+
+
+État 48
+
+   67 Expr: Term •
+   68 Term: Term • OP_MULT Factor
+   69     | Term • OP_DIV Factor
+   70     | Term • OP_MOD Factor
+
+    OP_MULT  décalage et aller à l'état 87
+    OP_DIV   décalage et aller à l'état 88
+    OP_MOD   décalage et aller à l'état 89
+
+    $défaut  réduction par utilisation de la règle 67 (Expr)
+
+
+État 49
+
+   71 Term: Factor •
+
+    $défaut  réduction par utilisation de la règle 71 (Term)
+
+
+État 50
+
+   43 If: KW_WHEN Cond • KW_THEN $@2 Instrs OptElse $@3 KW_END KW_WHEN SEP_SEMICOLON
+   82 Cond: Cond • OP_AND Cond
+   83     | Cond • OP_OR Cond
+
+    KW_THEN  décalage et aller à l'état 90
+    OP_AND   décalage et aller à l'état 91
+    OP_OR    décalage et aller à l'état 92
+
+
+État 51
+
+   64 CaseItem: KW_CASE_WHEN • Cond KW_THEN Instrs
+
+    IDENTIFIER      décalage et aller à l'état 38
+    STRING_LITERAL  décalage et aller à l'état 39
+    INT_LITERAL     décalage et aller à l'état 40
+    FLOAT_LITERAL   décalage et aller à l'état 41
+    KW_TRUE         décalage et aller à l'état 42
+    KW_FALSE        décalage et aller à l'état 43
+    OP_NOT          décalage et aller à l'état 44
+    OP_MINUS        décalage et aller à l'état 45
+    SEP_LPAREN      décalage et aller à l'état 46
+
+    Expr    aller à l'état 47
+    Term    aller à l'état 48
+    Factor  aller à l'état 49
+    Cond    aller à l'état 93
+
+
+État 52
+
+   58 Case: KW_CASE CaseList • $@10 KW_END KW_CASE $@11 SEP_SEMICOLON
+   61     | KW_CASE CaseList • KW_ELSE $@12 Instrs KW_END KW_CASE $@13 SEP_SEMICOLON
+   63 CaseList: CaseList • CaseItem
+
+    KW_CASE_WHEN  décalage et aller à l'état 51
+    KW_ELSE       décalage et aller à l'état 94
+
+    $défaut  réduction par utilisation de la règle 56 ($@10)
+
+    $@10      aller à l'état 95
+    CaseItem  aller à l'état 96
+
+
+État 53
+
+   62 CaseList: CaseItem •
+
+    $défaut  réduction par utilisation de la règle 62 (CaseList)
+
+
+État 54
+
+   49 While: KW_LOOP KW_WHEN • Cond $@4 Instrs $@5 KW_END KW_LOOP SEP_SEMICOLON
+
+    IDENTIFIER      décalage et aller à l'état 38
+    STRING_LITERAL  décalage et aller à l'état 39
+    INT_LITERAL     décalage et aller à l'état 40
+    FLOAT_LITERAL   décalage et aller à l'état 41
+    KW_TRUE         décalage et aller à l'état 42
+    KW_FALSE        décalage et aller à l'état 43
+    OP_NOT          décalage et aller à l'état 44
+    OP_MINUS        décalage et aller à l'état 45
+    SEP_LPAREN      décalage et aller à l'état 46
+
+    Expr    aller à l'état 47
+    Term    aller à l'état 48
+    Factor  aller à l'état 49
+    Cond    aller à l'état 97
+
+
+État 55
+
+   52 For: KW_LOOP KW_ITERATE • IDENTIFIER $@6 KW_FROM Expr KW_TO Expr Instrs $@7 KW_END KW_LOOP SEP_SEMICOLON
+
+    IDENTIFIER  décalage et aller à l'état 98
+
+
+État 56
+
+   55 ForEach: KW_FOREACH IDENTIFIER • KW_IN IDENTIFIER $@8 SEP_LBRACE Instrs $@9 SEP_RBRACE
+
+    KW_IN  décalage et aller à l'état 99
+
+
+État 57
+
+   80 Factor: SEP_LPAREN • Expr SEP_RPAREN
+
+    IDENTIFIER      décalage et aller à l'état 38
+    STRING_LITERAL  décalage et aller à l'état 39
+    INT_LITERAL     décalage et aller à l'état 40
+    FLOAT_LITERAL   décalage et aller à l'état 41
+    KW_TRUE         décalage et aller à l'état 42
+    KW_FALSE        décalage et aller à l'état 43
+    OP_MINUS        décalage et aller à l'état 45
+    SEP_LPAREN      décalage et aller à l'état 57
+
+    Expr    aller à l'état 100
+    Term    aller à l'état 48
+    Factor  aller à l'état 49
+
+
+État 58
+
+   39 Print: KW_PRINT Expr • SEP_SEMICOLON
+   65 Expr: Expr • OP_PLUS Term
+   66     | Expr • OP_MINUS Term
+
+    OP_PLUS        décalage et aller à l'état 85
+    OP_MINUS       décalage et aller à l'état 86
+    SEP_SEMICOLON  décalage et aller à l'état 101
+
+
+État 59
+
+   40 Input: KW_INPUT IDENTIFIER • SEP_SEMICOLON
+
+    SEP_SEMICOLON  décalage et aller à l'état 102
+
+
+État 60
+
+   36 Assign: IDENTIFIER OP_EQ Expr • SEP_SEMICOLON
+   65 Expr: Expr • OP_PLUS Term
+   66     | Expr • OP_MINUS Term
+
+    OP_PLUS        décalage et aller à l'état 85
+    OP_MINUS       décalage et aller à l'état 86
+    SEP_SEMICOLON  décalage et aller à l'état 103
+
+
+État 61
+
+   38 Assign: IDENTIFIER SEP_LBRACKET Expr • SEP_RBRACKET OP_EQ Expr SEP_SEMICOLON
+   65 Expr: Expr • OP_PLUS Term
+   66     | Expr • OP_MINUS Term
+
+    OP_PLUS       décalage et aller à l'état 85
+    OP_MINUS      décalage et aller à l'état 86
+    SEP_RBRACKET  décalage et aller à l'état 104
+
+
+État 62
+
+   37 Assign: IDENTIFIER SEP_DOT IDENTIFIER • OP_EQ Expr SEP_SEMICOLON
+
+    OP_EQ  décalage et aller à l'état 105
+
+
+État 63
+
+    2 Program: KW_BEGIN KW_PROGRAM IDENTIFIER SEP_SEMICOLON $@1 Instrs KW_END KW_PROGRAM SEP_SEMICOLON •
+
+    $défaut  réduction par utilisation de la règle 2 (Program)
+
+
+État 64
+
+    4 Decl: KW_SET IDENTIFIER IDENTIFIER • OptInit SEP_SEMICOLON
+
+    OP_EQ  décalage et aller à l'état 106
+
+    $défaut  réduction par utilisation de la règle 22 (OptInit)
+
+    OptInit  aller à l'état 107
+
+
+État 65
+
+   16 ArrayDecl: KW_SET IDENTIFIER KW_ARRAY • SEP_LBRACKET Type SEP_COMMA INT_LITERAL SEP_RBRACKET ArrayInit SEP_SEMICOLON
+
+    SEP_LBRACKET  décalage et aller à l'état 108
+
+
+État 66
+
+   20 DictDecl: KW_SET IDENTIFIER KW_DICTIONARY • OP_LT Type SEP_COMMA Type OP_GT SEP_SEMICOLON
+
+    OP_LT  décalage et aller à l'état 109
+
+
+État 67
 
     8 Type: KW_INTEGER •
 
     $défaut  réduction par utilisation de la règle 8 (Type)
 
 
-État 22
+État 68
 
     9 Type: KW_STRING •
 
     $défaut  réduction par utilisation de la règle 9 (Type)
 
 
-État 23
+État 69
 
    10 Type: KW_FLOAT •
 
     $défaut  réduction par utilisation de la règle 10 (Type)
 
 
-État 24
+État 70
 
    11 Type: KW_BOOLEAN •
 
     $défaut  réduction par utilisation de la règle 11 (Type)
 
 
-État 25
-
-    5 Decl: KW_SET IDENTIFIER Type • OptInit SEP_SEMICOLON
-
-    OP_EQ  décalage et aller à l'état 37
-
-    $défaut  réduction par utilisation de la règle 7 (OptInit)
-
-    OptInit  aller à l'état 38
-
-
-État 26
-
-   17 Assign: IDENTIFIER OP_EQ • Expr SEP_SEMICOLON
-
-    IDENTIFIER      décalage et aller à l'état 29
-    STRING_LITERAL  décalage et aller à l'état 30
-    INT_LITERAL     décalage et aller à l'état 31
-    FLOAT_LITERAL   décalage et aller à l'état 32
-    SEP_LPAREN      décalage et aller à l'état 33
-
-    Expr    aller à l'état 39
-    Term    aller à l'état 35
-    Factor  aller à l'état 36
-
-
-État 27
-
-    2 Program: KW_BEGIN KW_PROGRAM IDENTIFIER SEP_SEMICOLON $@1 Decls Instrs KW_END KW_PROGRAM • SEP_SEMICOLON
-
-    SEP_SEMICOLON  décalage et aller à l'état 40
-
-
-État 28
-
-   20 If: KW_WHEN $@2 • Cond KW_THEN Instrs OptElse KW_END KW_WHEN SEP_SEMICOLON
-
-    IDENTIFIER      décalage et aller à l'état 29
-    STRING_LITERAL  décalage et aller à l'état 30
-    INT_LITERAL     décalage et aller à l'état 31
-    FLOAT_LITERAL   décalage et aller à l'état 32
-    SEP_LPAREN      décalage et aller à l'état 33
-
-    Expr    aller à l'état 41
-    Term    aller à l'état 35
-    Factor  aller à l'état 36
-    Cond    aller à l'état 42
-
-
-État 29
-
-   32 Factor: IDENTIFIER •
-
-    $défaut  réduction par utilisation de la règle 32 (Factor)
-
-
-État 30
-
-   31 Factor: STRING_LITERAL •
-
-    $défaut  réduction par utilisation de la règle 31 (Factor)
-
-
-État 31
-
-   29 Factor: INT_LITERAL •
-
-    $défaut  réduction par utilisation de la règle 29 (Factor)
-
-
-État 32
-
-   30 Factor: FLOAT_LITERAL •
-
-    $défaut  réduction par utilisation de la règle 30 (Factor)
-
-
-État 33
-
-   33 Factor: SEP_LPAREN • Expr SEP_RPAREN
-
-    IDENTIFIER      décalage et aller à l'état 29
-    STRING_LITERAL  décalage et aller à l'état 30
-    INT_LITERAL     décalage et aller à l'état 31
-    FLOAT_LITERAL   décalage et aller à l'état 32
-    SEP_LPAREN      décalage et aller à l'état 33
-
-    Expr    aller à l'état 43
-    Term    aller à l'état 35
-    Factor  aller à l'état 36
-
-
-État 34
-
-   18 Print: KW_PRINT Expr • SEP_SEMICOLON
-   23 Expr: Expr • OP_PLUS Term
-   24     | Expr • OP_MINUS Term
-
-    OP_PLUS        décalage et aller à l'état 44
-    OP_MINUS       décalage et aller à l'état 45
-    SEP_SEMICOLON  décalage et aller à l'état 46
-
-
-État 35
-
-   25 Expr: Term •
-   26 Term: Term • OP_MULT Factor
-   27     | Term • OP_DIV Factor
-
-    OP_MULT  décalage et aller à l'état 47
-    OP_DIV   décalage et aller à l'état 48
-
-    $défaut  réduction par utilisation de la règle 25 (Expr)
-
-
-État 36
-
-   28 Term: Factor •
-
-    $défaut  réduction par utilisation de la règle 28 (Term)
-
-
-État 37
-
-    6 OptInit: OP_EQ • Expr
-
-    IDENTIFIER      décalage et aller à l'état 29
-    STRING_LITERAL  décalage et aller à l'état 30
-    INT_LITERAL     décalage et aller à l'état 31
-    FLOAT_LITERAL   décalage et aller à l'état 32
-    SEP_LPAREN      décalage et aller à l'état 33
-
-    Expr    aller à l'état 49
-    Term    aller à l'état 35
-    Factor  aller à l'état 36
-
-
-État 38
-
-    5 Decl: KW_SET IDENTIFIER Type OptInit • SEP_SEMICOLON
-
-    SEP_SEMICOLON  décalage et aller à l'état 50
-
-
-État 39
-
-   17 Assign: IDENTIFIER OP_EQ Expr • SEP_SEMICOLON
-   23 Expr: Expr • OP_PLUS Term
-   24     | Expr • OP_MINUS Term
-
-    OP_PLUS        décalage et aller à l'état 44
-    OP_MINUS       décalage et aller à l'état 45
-    SEP_SEMICOLON  décalage et aller à l'état 51
-
-
-État 40
-
-    2 Program: KW_BEGIN KW_PROGRAM IDENTIFIER SEP_SEMICOLON $@1 Decls Instrs KW_END KW_PROGRAM SEP_SEMICOLON •
-
-    $défaut  réduction par utilisation de la règle 2 (Program)
-
-
-État 41
-
-   23 Expr: Expr • OP_PLUS Term
-   24     | Expr • OP_MINUS Term
-   34 Cond: Expr • OP_EQ Expr
-   35     | Expr • OP_NEQ Expr
-   36     | Expr • OP_LT Expr
-   37     | Expr • OP_GT Expr
-   38     | Expr • OP_LTE Expr
-   39     | Expr • OP_GTE Expr
-
-    OP_EQ     décalage et aller à l'état 52
-    OP_NEQ    décalage et aller à l'état 53
-    OP_LT     décalage et aller à l'état 54
-    OP_GT     décalage et aller à l'état 55
-    OP_LTE    décalage et aller à l'état 56
-    OP_GTE    décalage et aller à l'état 57
-    OP_PLUS   décalage et aller à l'état 44
-    OP_MINUS  décalage et aller à l'état 45
-
-
-État 42
-
-   20 If: KW_WHEN $@2 Cond • KW_THEN Instrs OptElse KW_END KW_WHEN SEP_SEMICOLON
-
-    KW_THEN  décalage et aller à l'état 58
-
-
-État 43
-
-   23 Expr: Expr • OP_PLUS Term
-   24     | Expr • OP_MINUS Term
-   33 Factor: SEP_LPAREN Expr • SEP_RPAREN
-
-    OP_PLUS     décalage et aller à l'état 44
-    OP_MINUS    décalage et aller à l'état 45
-    SEP_RPAREN  décalage et aller à l'état 59
-
-
-État 44
-
-   23 Expr: Expr OP_PLUS • Term
-
-    IDENTIFIER      décalage et aller à l'état 29
-    STRING_LITERAL  décalage et aller à l'état 30
-    INT_LITERAL     décalage et aller à l'état 31
-    FLOAT_LITERAL   décalage et aller à l'état 32
-    SEP_LPAREN      décalage et aller à l'état 33
-
-    Term    aller à l'état 60
-    Factor  aller à l'état 36
-
-
-État 45
-
-   24 Expr: Expr OP_MINUS • Term
-
-    IDENTIFIER      décalage et aller à l'état 29
-    STRING_LITERAL  décalage et aller à l'état 30
-    INT_LITERAL     décalage et aller à l'état 31
-    FLOAT_LITERAL   décalage et aller à l'état 32
-    SEP_LPAREN      décalage et aller à l'état 33
-
-    Term    aller à l'état 61
-    Factor  aller à l'état 36
-
-
-État 46
-
-   18 Print: KW_PRINT Expr SEP_SEMICOLON •
-
-    $défaut  réduction par utilisation de la règle 18 (Print)
-
-
-État 47
-
-   26 Term: Term OP_MULT • Factor
-
-    IDENTIFIER      décalage et aller à l'état 29
-    STRING_LITERAL  décalage et aller à l'état 30
-    INT_LITERAL     décalage et aller à l'état 31
-    FLOAT_LITERAL   décalage et aller à l'état 32
-    SEP_LPAREN      décalage et aller à l'état 33
-
-    Factor  aller à l'état 62
-
-
-État 48
-
-   27 Term: Term OP_DIV • Factor
-
-    IDENTIFIER      décalage et aller à l'état 29
-    STRING_LITERAL  décalage et aller à l'état 30
-    INT_LITERAL     décalage et aller à l'état 31
-    FLOAT_LITERAL   décalage et aller à l'état 32
-    SEP_LPAREN      décalage et aller à l'état 33
-
-    Factor  aller à l'état 63
-
-
-État 49
-
-    6 OptInit: OP_EQ Expr •
-   23 Expr: Expr • OP_PLUS Term
-   24     | Expr • OP_MINUS Term
-
-    OP_PLUS   décalage et aller à l'état 44
-    OP_MINUS  décalage et aller à l'état 45
-
-    $défaut  réduction par utilisation de la règle 6 (OptInit)
-
-
-État 50
-
-    5 Decl: KW_SET IDENTIFIER Type OptInit SEP_SEMICOLON •
-
-    $défaut  réduction par utilisation de la règle 5 (Decl)
-
-
-État 51
-
-   17 Assign: IDENTIFIER OP_EQ Expr SEP_SEMICOLON •
-
-    $défaut  réduction par utilisation de la règle 17 (Assign)
-
-
-État 52
-
-   34 Cond: Expr OP_EQ • Expr
-
-    IDENTIFIER      décalage et aller à l'état 29
-    STRING_LITERAL  décalage et aller à l'état 30
-    INT_LITERAL     décalage et aller à l'état 31
-    FLOAT_LITERAL   décalage et aller à l'état 32
-    SEP_LPAREN      décalage et aller à l'état 33
-
-    Expr    aller à l'état 64
-    Term    aller à l'état 35
-    Factor  aller à l'état 36
-
-
-État 53
-
-   35 Cond: Expr OP_NEQ • Expr
-
-    IDENTIFIER      décalage et aller à l'état 29
-    STRING_LITERAL  décalage et aller à l'état 30
-    INT_LITERAL     décalage et aller à l'état 31
-    FLOAT_LITERAL   décalage et aller à l'état 32
-    SEP_LPAREN      décalage et aller à l'état 33
-
-    Expr    aller à l'état 65
-    Term    aller à l'état 35
-    Factor  aller à l'état 36
-
-
-État 54
-
-   36 Cond: Expr OP_LT • Expr
-
-    IDENTIFIER      décalage et aller à l'état 29
-    STRING_LITERAL  décalage et aller à l'état 30
-    INT_LITERAL     décalage et aller à l'état 31
-    FLOAT_LITERAL   décalage et aller à l'état 32
-    SEP_LPAREN      décalage et aller à l'état 33
-
-    Expr    aller à l'état 66
-    Term    aller à l'état 35
-    Factor  aller à l'état 36
-
-
-État 55
-
-   37 Cond: Expr OP_GT • Expr
-
-    IDENTIFIER      décalage et aller à l'état 29
-    STRING_LITERAL  décalage et aller à l'état 30
-    INT_LITERAL     décalage et aller à l'état 31
-    FLOAT_LITERAL   décalage et aller à l'état 32
-    SEP_LPAREN      décalage et aller à l'état 33
-
-    Expr    aller à l'état 67
-    Term    aller à l'état 35
-    Factor  aller à l'état 36
-
-
-État 56
-
-   38 Cond: Expr OP_LTE • Expr
-
-    IDENTIFIER      décalage et aller à l'état 29
-    STRING_LITERAL  décalage et aller à l'état 30
-    INT_LITERAL     décalage et aller à l'état 31
-    FLOAT_LITERAL   décalage et aller à l'état 32
-    SEP_LPAREN      décalage et aller à l'état 33
-
-    Expr    aller à l'état 68
-    Term    aller à l'état 35
-    Factor  aller à l'état 36
-
-
-État 57
-
-   39 Cond: Expr OP_GTE • Expr
-
-    IDENTIFIER      décalage et aller à l'état 29
-    STRING_LITERAL  décalage et aller à l'état 30
-    INT_LITERAL     décalage et aller à l'état 31
-    FLOAT_LITERAL   décalage et aller à l'état 32
-    SEP_LPAREN      décalage et aller à l'état 33
-
-    Expr    aller à l'état 69
-    Term    aller à l'état 35
-    Factor  aller à l'état 36
-
-
-État 58
-
-   20 If: KW_WHEN $@2 Cond KW_THEN • Instrs OptElse KW_END KW_WHEN SEP_SEMICOLON
-
-    $défaut  réduction par utilisation de la règle 13 (Instrs)
-
-    Instrs  aller à l'état 70
-
-
-État 59
-
-   33 Factor: SEP_LPAREN Expr SEP_RPAREN •
-
-    $défaut  réduction par utilisation de la règle 33 (Factor)
-
-
-État 60
-
-   23 Expr: Expr OP_PLUS Term •
-   26 Term: Term • OP_MULT Factor
-   27     | Term • OP_DIV Factor
-
-    OP_MULT  décalage et aller à l'état 47
-    OP_DIV   décalage et aller à l'état 48
-
-    $défaut  réduction par utilisation de la règle 23 (Expr)
-
-
-État 61
-
-   24 Expr: Expr OP_MINUS Term •
-   26 Term: Term • OP_MULT Factor
-   27     | Term • OP_DIV Factor
-
-    OP_MULT  décalage et aller à l'état 47
-    OP_DIV   décalage et aller à l'état 48
-
-    $défaut  réduction par utilisation de la règle 24 (Expr)
-
-
-État 62
-
-   26 Term: Term OP_MULT Factor •
-
-    $défaut  réduction par utilisation de la règle 26 (Term)
-
-
-État 63
-
-   27 Term: Term OP_DIV Factor •
-
-    $défaut  réduction par utilisation de la règle 27 (Term)
-
-
-État 64
-
-   23 Expr: Expr • OP_PLUS Term
-   24     | Expr • OP_MINUS Term
-   34 Cond: Expr OP_EQ Expr •
-
-    OP_PLUS   décalage et aller à l'état 44
-    OP_MINUS  décalage et aller à l'état 45
-
-    $défaut  réduction par utilisation de la règle 34 (Cond)
-
-
-État 65
-
-   23 Expr: Expr • OP_PLUS Term
-   24     | Expr • OP_MINUS Term
-   35 Cond: Expr OP_NEQ Expr •
-
-    OP_PLUS   décalage et aller à l'état 44
-    OP_MINUS  décalage et aller à l'état 45
-
-    $défaut  réduction par utilisation de la règle 35 (Cond)
-
-
-État 66
-
-   23 Expr: Expr • OP_PLUS Term
-   24     | Expr • OP_MINUS Term
-   36 Cond: Expr OP_LT Expr •
-
-    OP_PLUS   décalage et aller à l'état 44
-    OP_MINUS  décalage et aller à l'état 45
-
-    $défaut  réduction par utilisation de la règle 36 (Cond)
-
-
-État 67
-
-   23 Expr: Expr • OP_PLUS Term
-   24     | Expr • OP_MINUS Term
-   37 Cond: Expr OP_GT Expr •
-
-    OP_PLUS   décalage et aller à l'état 44
-    OP_MINUS  décalage et aller à l'état 45
-
-    $défaut  réduction par utilisation de la règle 37 (Cond)
-
-
-État 68
-
-   23 Expr: Expr • OP_PLUS Term
-   24     | Expr • OP_MINUS Term
-   38 Cond: Expr OP_LTE Expr •
-
-    OP_PLUS   décalage et aller à l'état 44
-    OP_MINUS  décalage et aller à l'état 45
-
-    $défaut  réduction par utilisation de la règle 38 (Cond)
-
-
-État 69
-
-   23 Expr: Expr • OP_PLUS Term
-   24     | Expr • OP_MINUS Term
-   39 Cond: Expr OP_GTE Expr •
-
-    OP_PLUS   décalage et aller à l'état 44
-    OP_MINUS  décalage et aller à l'état 45
-
-    $défaut  réduction par utilisation de la règle 39 (Cond)
-
-
-État 70
-
-   12 Instrs: Instrs • Instr
-   20 If: KW_WHEN $@2 Cond KW_THEN Instrs • OptElse KW_END KW_WHEN SEP_SEMICOLON
-
-    IDENTIFIER  décalage et aller à l'état 13
-    KW_WHEN     décalage et aller à l'état 15
-    KW_ELSE     décalage et aller à l'état 71
-    KW_PRINT    décalage et aller à l'état 16
-
-    $défaut  réduction par utilisation de la règle 22 (OptElse)
-
-    Instr    aller à l'état 17
-    Assign   aller à l'état 18
-    Print    aller à l'état 19
-    If       aller à l'état 20
-    OptElse  aller à l'état 72
-
-
 État 71
 
-   21 OptElse: KW_ELSE • Instrs
+    3 Decl: KW_SET IDENTIFIER Type • OptInit SEP_SEMICOLON
 
-    $défaut  réduction par utilisation de la règle 13 (Instrs)
+    OP_EQ  décalage et aller à l'état 106
 
-    Instrs  aller à l'état 73
+    $défaut  réduction par utilisation de la règle 22 (OptInit)
+
+    OptInit  aller à l'état 110
 
 
 État 72
 
-   20 If: KW_WHEN $@2 Cond KW_THEN Instrs OptElse • KW_END KW_WHEN SEP_SEMICOLON
+   12 RecordDecl: KW_CREATE KW_RECORD IDENTIFIER • SEP_LPAREN FieldList SEP_RPAREN SEP_SEMICOLON
 
-    KW_END  décalage et aller à l'état 74
+    SEP_LPAREN  décalage et aller à l'état 111
 
 
 État 73
 
-   12 Instrs: Instrs • Instr
-   21 OptElse: KW_ELSE Instrs •
+   79 Factor: IDENTIFIER SEP_LBRACKET • Expr SEP_RBRACKET
 
-    IDENTIFIER  décalage et aller à l'état 13
-    KW_WHEN     décalage et aller à l'état 15
-    KW_PRINT    décalage et aller à l'état 16
+    IDENTIFIER      décalage et aller à l'état 38
+    STRING_LITERAL  décalage et aller à l'état 39
+    INT_LITERAL     décalage et aller à l'état 40
+    FLOAT_LITERAL   décalage et aller à l'état 41
+    KW_TRUE         décalage et aller à l'état 42
+    KW_FALSE        décalage et aller à l'état 43
+    OP_MINUS        décalage et aller à l'état 45
+    SEP_LPAREN      décalage et aller à l'état 57
 
-    $défaut  réduction par utilisation de la règle 21 (OptElse)
-
-    Instr   aller à l'état 17
-    Assign  aller à l'état 18
-    Print   aller à l'état 19
-    If      aller à l'état 20
+    Expr    aller à l'état 112
+    Term    aller à l'état 48
+    Factor  aller à l'état 49
 
 
 État 74
 
-   20 If: KW_WHEN $@2 Cond KW_THEN Instrs OptElse KW_END • KW_WHEN SEP_SEMICOLON
+   78 Factor: IDENTIFIER SEP_DOT • IDENTIFIER
 
-    KW_WHEN  décalage et aller à l'état 75
+    IDENTIFIER  décalage et aller à l'état 113
 
 
 État 75
 
-   20 If: KW_WHEN $@2 Cond KW_THEN Instrs OptElse KW_END KW_WHEN • SEP_SEMICOLON
+   82 Cond: Cond • OP_AND Cond
+   83     | Cond • OP_OR Cond
+   84     | OP_NOT Cond •
 
-    SEP_SEMICOLON  décalage et aller à l'état 76
+    $défaut  réduction par utilisation de la règle 84 (Cond)
 
 
 État 76
 
-   20 If: KW_WHEN $@2 Cond KW_THEN Instrs OptElse KW_END KW_WHEN SEP_SEMICOLON •
+   81 Factor: OP_MINUS Factor •
 
-    $défaut  réduction par utilisation de la règle 20 (If)
+    $défaut  réduction par utilisation de la règle 81 (Factor)
+
+
+État 77
+
+   65 Expr: Expr • OP_PLUS Term
+   66     | Expr • OP_MINUS Term
+   80 Factor: SEP_LPAREN Expr • SEP_RPAREN
+   85 Cond: Expr • OP_EQ Expr
+   86     | Expr • OP_NEQ Expr
+   87     | Expr • OP_LT Expr
+   88     | Expr • OP_GT Expr
+   89     | Expr • OP_LTE Expr
+   90     | Expr • OP_GTE Expr
+
+    OP_EQ       décalage et aller à l'état 79
+    OP_NEQ      décalage et aller à l'état 80
+    OP_LT       décalage et aller à l'état 81
+    OP_GT       décalage et aller à l'état 82
+    OP_LTE      décalage et aller à l'état 83
+    OP_GTE      décalage et aller à l'état 84
+    OP_PLUS     décalage et aller à l'état 85
+    OP_MINUS    décalage et aller à l'état 86
+    SEP_RPAREN  décalage et aller à l'état 114
+
+
+État 78
+
+   82 Cond: Cond • OP_AND Cond
+   83     | Cond • OP_OR Cond
+   91     | SEP_LPAREN Cond • SEP_RPAREN
+
+    OP_AND      décalage et aller à l'état 91
+    OP_OR       décalage et aller à l'état 92
+    SEP_RPAREN  décalage et aller à l'état 115
+
+
+État 79
+
+   85 Cond: Expr OP_EQ • Expr
+
+    IDENTIFIER      décalage et aller à l'état 38
+    STRING_LITERAL  décalage et aller à l'état 39
+    INT_LITERAL     décalage et aller à l'état 40
+    FLOAT_LITERAL   décalage et aller à l'état 41
+    KW_TRUE         décalage et aller à l'état 42
+    KW_FALSE        décalage et aller à l'état 43
+    OP_MINUS        décalage et aller à l'état 45
+    SEP_LPAREN      décalage et aller à l'état 57
+
+    Expr    aller à l'état 116
+    Term    aller à l'état 48
+    Factor  aller à l'état 49
+
+
+État 80
+
+   86 Cond: Expr OP_NEQ • Expr
+
+    IDENTIFIER      décalage et aller à l'état 38
+    STRING_LITERAL  décalage et aller à l'état 39
+    INT_LITERAL     décalage et aller à l'état 40
+    FLOAT_LITERAL   décalage et aller à l'état 41
+    KW_TRUE         décalage et aller à l'état 42
+    KW_FALSE        décalage et aller à l'état 43
+    OP_MINUS        décalage et aller à l'état 45
+    SEP_LPAREN      décalage et aller à l'état 57
+
+    Expr    aller à l'état 117
+    Term    aller à l'état 48
+    Factor  aller à l'état 49
+
+
+État 81
+
+   87 Cond: Expr OP_LT • Expr
+
+    IDENTIFIER      décalage et aller à l'état 38
+    STRING_LITERAL  décalage et aller à l'état 39
+    INT_LITERAL     décalage et aller à l'état 40
+    FLOAT_LITERAL   décalage et aller à l'état 41
+    KW_TRUE         décalage et aller à l'état 42
+    KW_FALSE        décalage et aller à l'état 43
+    OP_MINUS        décalage et aller à l'état 45
+    SEP_LPAREN      décalage et aller à l'état 57
+
+    Expr    aller à l'état 118
+    Term    aller à l'état 48
+    Factor  aller à l'état 49
+
+
+État 82
+
+   88 Cond: Expr OP_GT • Expr
+
+    IDENTIFIER      décalage et aller à l'état 38
+    STRING_LITERAL  décalage et aller à l'état 39
+    INT_LITERAL     décalage et aller à l'état 40
+    FLOAT_LITERAL   décalage et aller à l'état 41
+    KW_TRUE         décalage et aller à l'état 42
+    KW_FALSE        décalage et aller à l'état 43
+    OP_MINUS        décalage et aller à l'état 45
+    SEP_LPAREN      décalage et aller à l'état 57
+
+    Expr    aller à l'état 119
+    Term    aller à l'état 48
+    Factor  aller à l'état 49
+
+
+État 83
+
+   89 Cond: Expr OP_LTE • Expr
+
+    IDENTIFIER      décalage et aller à l'état 38
+    STRING_LITERAL  décalage et aller à l'état 39
+    INT_LITERAL     décalage et aller à l'état 40
+    FLOAT_LITERAL   décalage et aller à l'état 41
+    KW_TRUE         décalage et aller à l'état 42
+    KW_FALSE        décalage et aller à l'état 43
+    OP_MINUS        décalage et aller à l'état 45
+    SEP_LPAREN      décalage et aller à l'état 57
+
+    Expr    aller à l'état 120
+    Term    aller à l'état 48
+    Factor  aller à l'état 49
+
+
+État 84
+
+   90 Cond: Expr OP_GTE • Expr
+
+    IDENTIFIER      décalage et aller à l'état 38
+    STRING_LITERAL  décalage et aller à l'état 39
+    INT_LITERAL     décalage et aller à l'état 40
+    FLOAT_LITERAL   décalage et aller à l'état 41
+    KW_TRUE         décalage et aller à l'état 42
+    KW_FALSE        décalage et aller à l'état 43
+    OP_MINUS        décalage et aller à l'état 45
+    SEP_LPAREN      décalage et aller à l'état 57
+
+    Expr    aller à l'état 121
+    Term    aller à l'état 48
+    Factor  aller à l'état 49
+
+
+État 85
+
+   65 Expr: Expr OP_PLUS • Term
+
+    IDENTIFIER      décalage et aller à l'état 38
+    STRING_LITERAL  décalage et aller à l'état 39
+    INT_LITERAL     décalage et aller à l'état 40
+    FLOAT_LITERAL   décalage et aller à l'état 41
+    KW_TRUE         décalage et aller à l'état 42
+    KW_FALSE        décalage et aller à l'état 43
+    OP_MINUS        décalage et aller à l'état 45
+    SEP_LPAREN      décalage et aller à l'état 57
+
+    Term    aller à l'état 122
+    Factor  aller à l'état 49
+
+
+État 86
+
+   66 Expr: Expr OP_MINUS • Term
+
+    IDENTIFIER      décalage et aller à l'état 38
+    STRING_LITERAL  décalage et aller à l'état 39
+    INT_LITERAL     décalage et aller à l'état 40
+    FLOAT_LITERAL   décalage et aller à l'état 41
+    KW_TRUE         décalage et aller à l'état 42
+    KW_FALSE        décalage et aller à l'état 43
+    OP_MINUS        décalage et aller à l'état 45
+    SEP_LPAREN      décalage et aller à l'état 57
+
+    Term    aller à l'état 123
+    Factor  aller à l'état 49
+
+
+État 87
+
+   68 Term: Term OP_MULT • Factor
+
+    IDENTIFIER      décalage et aller à l'état 38
+    STRING_LITERAL  décalage et aller à l'état 39
+    INT_LITERAL     décalage et aller à l'état 40
+    FLOAT_LITERAL   décalage et aller à l'état 41
+    KW_TRUE         décalage et aller à l'état 42
+    KW_FALSE        décalage et aller à l'état 43
+    OP_MINUS        décalage et aller à l'état 45
+    SEP_LPAREN      décalage et aller à l'état 57
+
+    Factor  aller à l'état 124
+
+
+État 88
+
+   69 Term: Term OP_DIV • Factor
+
+    IDENTIFIER      décalage et aller à l'état 38
+    STRING_LITERAL  décalage et aller à l'état 39
+    INT_LITERAL     décalage et aller à l'état 40
+    FLOAT_LITERAL   décalage et aller à l'état 41
+    KW_TRUE         décalage et aller à l'état 42
+    KW_FALSE        décalage et aller à l'état 43
+    OP_MINUS        décalage et aller à l'état 45
+    SEP_LPAREN      décalage et aller à l'état 57
+
+    Factor  aller à l'état 125
+
+
+État 89
+
+   70 Term: Term OP_MOD • Factor
+
+    IDENTIFIER      décalage et aller à l'état 38
+    STRING_LITERAL  décalage et aller à l'état 39
+    INT_LITERAL     décalage et aller à l'état 40
+    FLOAT_LITERAL   décalage et aller à l'état 41
+    KW_TRUE         décalage et aller à l'état 42
+    KW_FALSE        décalage et aller à l'état 43
+    OP_MINUS        décalage et aller à l'état 45
+    SEP_LPAREN      décalage et aller à l'état 57
+
+    Factor  aller à l'état 126
+
+
+État 90
+
+   43 If: KW_WHEN Cond KW_THEN • $@2 Instrs OptElse $@3 KW_END KW_WHEN SEP_SEMICOLON
+
+    $défaut  réduction par utilisation de la règle 41 ($@2)
+
+    $@2  aller à l'état 127
+
+
+État 91
+
+   82 Cond: Cond OP_AND • Cond
+
+    IDENTIFIER      décalage et aller à l'état 38
+    STRING_LITERAL  décalage et aller à l'état 39
+    INT_LITERAL     décalage et aller à l'état 40
+    FLOAT_LITERAL   décalage et aller à l'état 41
+    KW_TRUE         décalage et aller à l'état 42
+    KW_FALSE        décalage et aller à l'état 43
+    OP_NOT          décalage et aller à l'état 44
+    OP_MINUS        décalage et aller à l'état 45
+    SEP_LPAREN      décalage et aller à l'état 46
+
+    Expr    aller à l'état 47
+    Term    aller à l'état 48
+    Factor  aller à l'état 49
+    Cond    aller à l'état 128
+
+
+État 92
+
+   83 Cond: Cond OP_OR • Cond
+
+    IDENTIFIER      décalage et aller à l'état 38
+    STRING_LITERAL  décalage et aller à l'état 39
+    INT_LITERAL     décalage et aller à l'état 40
+    FLOAT_LITERAL   décalage et aller à l'état 41
+    KW_TRUE         décalage et aller à l'état 42
+    KW_FALSE        décalage et aller à l'état 43
+    OP_NOT          décalage et aller à l'état 44
+    OP_MINUS        décalage et aller à l'état 45
+    SEP_LPAREN      décalage et aller à l'état 46
+
+    Expr    aller à l'état 47
+    Term    aller à l'état 48
+    Factor  aller à l'état 49
+    Cond    aller à l'état 129
+
+
+État 93
+
+   64 CaseItem: KW_CASE_WHEN Cond • KW_THEN Instrs
+   82 Cond: Cond • OP_AND Cond
+   83     | Cond • OP_OR Cond
+
+    KW_THEN  décalage et aller à l'état 130
+    OP_AND   décalage et aller à l'état 91
+    OP_OR    décalage et aller à l'état 92
+
+
+État 94
+
+   61 Case: KW_CASE CaseList KW_ELSE • $@12 Instrs KW_END KW_CASE $@13 SEP_SEMICOLON
+
+    $défaut  réduction par utilisation de la règle 59 ($@12)
+
+    $@12  aller à l'état 131
+
+
+État 95
+
+   58 Case: KW_CASE CaseList $@10 • KW_END KW_CASE $@11 SEP_SEMICOLON
+
+    KW_END  décalage et aller à l'état 132
+
+
+État 96
+
+   63 CaseList: CaseList CaseItem •
+
+    $défaut  réduction par utilisation de la règle 63 (CaseList)
+
+
+État 97
+
+   49 While: KW_LOOP KW_WHEN Cond • $@4 Instrs $@5 KW_END KW_LOOP SEP_SEMICOLON
+   82 Cond: Cond • OP_AND Cond
+   83     | Cond • OP_OR Cond
+
+    OP_AND  décalage et aller à l'état 91
+    OP_OR   décalage et aller à l'état 92
+
+    $défaut  réduction par utilisation de la règle 47 ($@4)
+
+    $@4  aller à l'état 133
+
+
+État 98
+
+   52 For: KW_LOOP KW_ITERATE IDENTIFIER • $@6 KW_FROM Expr KW_TO Expr Instrs $@7 KW_END KW_LOOP SEP_SEMICOLON
+
+    $défaut  réduction par utilisation de la règle 50 ($@6)
+
+    $@6  aller à l'état 134
+
+
+État 99
+
+   55 ForEach: KW_FOREACH IDENTIFIER KW_IN • IDENTIFIER $@8 SEP_LBRACE Instrs $@9 SEP_RBRACE
+
+    IDENTIFIER  décalage et aller à l'état 135
+
+
+État 100
+
+   65 Expr: Expr • OP_PLUS Term
+   66     | Expr • OP_MINUS Term
+   80 Factor: SEP_LPAREN Expr • SEP_RPAREN
+
+    OP_PLUS     décalage et aller à l'état 85
+    OP_MINUS    décalage et aller à l'état 86
+    SEP_RPAREN  décalage et aller à l'état 114
+
+
+État 101
+
+   39 Print: KW_PRINT Expr SEP_SEMICOLON •
+
+    $défaut  réduction par utilisation de la règle 39 (Print)
+
+
+État 102
+
+   40 Input: KW_INPUT IDENTIFIER SEP_SEMICOLON •
+
+    $défaut  réduction par utilisation de la règle 40 (Input)
+
+
+État 103
+
+   36 Assign: IDENTIFIER OP_EQ Expr SEP_SEMICOLON •
+
+    $défaut  réduction par utilisation de la règle 36 (Assign)
+
+
+État 104
+
+   38 Assign: IDENTIFIER SEP_LBRACKET Expr SEP_RBRACKET • OP_EQ Expr SEP_SEMICOLON
+
+    OP_EQ  décalage et aller à l'état 136
+
+
+État 105
+
+   37 Assign: IDENTIFIER SEP_DOT IDENTIFIER OP_EQ • Expr SEP_SEMICOLON
+
+    IDENTIFIER      décalage et aller à l'état 38
+    STRING_LITERAL  décalage et aller à l'état 39
+    INT_LITERAL     décalage et aller à l'état 40
+    FLOAT_LITERAL   décalage et aller à l'état 41
+    KW_TRUE         décalage et aller à l'état 42
+    KW_FALSE        décalage et aller à l'état 43
+    OP_MINUS        décalage et aller à l'état 45
+    SEP_LPAREN      décalage et aller à l'état 57
+
+    Expr    aller à l'état 137
+    Term    aller à l'état 48
+    Factor  aller à l'état 49
+
+
+État 106
+
+   21 OptInit: OP_EQ • Expr
+
+    IDENTIFIER      décalage et aller à l'état 38
+    STRING_LITERAL  décalage et aller à l'état 39
+    INT_LITERAL     décalage et aller à l'état 40
+    FLOAT_LITERAL   décalage et aller à l'état 41
+    KW_TRUE         décalage et aller à l'état 42
+    KW_FALSE        décalage et aller à l'état 43
+    OP_MINUS        décalage et aller à l'état 45
+    SEP_LPAREN      décalage et aller à l'état 57
+
+    Expr    aller à l'état 138
+    Term    aller à l'état 48
+    Factor  aller à l'état 49
+
+
+État 107
+
+    4 Decl: KW_SET IDENTIFIER IDENTIFIER OptInit • SEP_SEMICOLON
+
+    SEP_SEMICOLON  décalage et aller à l'état 139
+
+
+État 108
+
+   16 ArrayDecl: KW_SET IDENTIFIER KW_ARRAY SEP_LBRACKET • Type SEP_COMMA INT_LITERAL SEP_RBRACKET ArrayInit SEP_SEMICOLON
+
+    KW_INTEGER  décalage et aller à l'état 67
+    KW_STRING   décalage et aller à l'état 68
+    KW_FLOAT    décalage et aller à l'état 69
+    KW_BOOLEAN  décalage et aller à l'état 70
+
+    Type  aller à l'état 140
+
+
+État 109
+
+   20 DictDecl: KW_SET IDENTIFIER KW_DICTIONARY OP_LT • Type SEP_COMMA Type OP_GT SEP_SEMICOLON
+
+    KW_INTEGER  décalage et aller à l'état 67
+    KW_STRING   décalage et aller à l'état 68
+    KW_FLOAT    décalage et aller à l'état 69
+    KW_BOOLEAN  décalage et aller à l'état 70
+
+    Type  aller à l'état 141
+
+
+État 110
+
+    3 Decl: KW_SET IDENTIFIER Type OptInit • SEP_SEMICOLON
+
+    SEP_SEMICOLON  décalage et aller à l'état 142
+
+
+État 111
+
+   12 RecordDecl: KW_CREATE KW_RECORD IDENTIFIER SEP_LPAREN • FieldList SEP_RPAREN SEP_SEMICOLON
+
+    IDENTIFIER  décalage et aller à l'état 143
+
+    FieldList  aller à l'état 144
+    Field      aller à l'état 145
+
+
+État 112
+
+   65 Expr: Expr • OP_PLUS Term
+   66     | Expr • OP_MINUS Term
+   79 Factor: IDENTIFIER SEP_LBRACKET Expr • SEP_RBRACKET
+
+    OP_PLUS       décalage et aller à l'état 85
+    OP_MINUS      décalage et aller à l'état 86
+    SEP_RBRACKET  décalage et aller à l'état 146
+
+
+État 113
+
+   78 Factor: IDENTIFIER SEP_DOT IDENTIFIER •
+
+    $défaut  réduction par utilisation de la règle 78 (Factor)
+
+
+État 114
+
+   80 Factor: SEP_LPAREN Expr SEP_RPAREN •
+
+    $défaut  réduction par utilisation de la règle 80 (Factor)
+
+
+État 115
+
+   91 Cond: SEP_LPAREN Cond SEP_RPAREN •
+
+    $défaut  réduction par utilisation de la règle 91 (Cond)
+
+
+État 116
+
+   65 Expr: Expr • OP_PLUS Term
+   66     | Expr • OP_MINUS Term
+   85 Cond: Expr OP_EQ Expr •
+
+    OP_PLUS   décalage et aller à l'état 85
+    OP_MINUS  décalage et aller à l'état 86
+
+    $défaut  réduction par utilisation de la règle 85 (Cond)
+
+
+État 117
+
+   65 Expr: Expr • OP_PLUS Term
+   66     | Expr • OP_MINUS Term
+   86 Cond: Expr OP_NEQ Expr •
+
+    OP_PLUS   décalage et aller à l'état 85
+    OP_MINUS  décalage et aller à l'état 86
+
+    $défaut  réduction par utilisation de la règle 86 (Cond)
+
+
+État 118
+
+   65 Expr: Expr • OP_PLUS Term
+   66     | Expr • OP_MINUS Term
+   87 Cond: Expr OP_LT Expr •
+
+    OP_PLUS   décalage et aller à l'état 85
+    OP_MINUS  décalage et aller à l'état 86
+
+    $défaut  réduction par utilisation de la règle 87 (Cond)
+
+
+État 119
+
+   65 Expr: Expr • OP_PLUS Term
+   66     | Expr • OP_MINUS Term
+   88 Cond: Expr OP_GT Expr •
+
+    OP_PLUS   décalage et aller à l'état 85
+    OP_MINUS  décalage et aller à l'état 86
+
+    $défaut  réduction par utilisation de la règle 88 (Cond)
+
+
+État 120
+
+   65 Expr: Expr • OP_PLUS Term
+   66     | Expr • OP_MINUS Term
+   89 Cond: Expr OP_LTE Expr •
+
+    OP_PLUS   décalage et aller à l'état 85
+    OP_MINUS  décalage et aller à l'état 86
+
+    $défaut  réduction par utilisation de la règle 89 (Cond)
+
+
+État 121
+
+   65 Expr: Expr • OP_PLUS Term
+   66     | Expr • OP_MINUS Term
+   90 Cond: Expr OP_GTE Expr •
+
+    OP_PLUS   décalage et aller à l'état 85
+    OP_MINUS  décalage et aller à l'état 86
+
+    $défaut  réduction par utilisation de la règle 90 (Cond)
+
+
+État 122
+
+   65 Expr: Expr OP_PLUS Term •
+   68 Term: Term • OP_MULT Factor
+   69     | Term • OP_DIV Factor
+   70     | Term • OP_MOD Factor
+
+    OP_MULT  décalage et aller à l'état 87
+    OP_DIV   décalage et aller à l'état 88
+    OP_MOD   décalage et aller à l'état 89
+
+    $défaut  réduction par utilisation de la règle 65 (Expr)
+
+
+État 123
+
+   66 Expr: Expr OP_MINUS Term •
+   68 Term: Term • OP_MULT Factor
+   69     | Term • OP_DIV Factor
+   70     | Term • OP_MOD Factor
+
+    OP_MULT  décalage et aller à l'état 87
+    OP_DIV   décalage et aller à l'état 88
+    OP_MOD   décalage et aller à l'état 89
+
+    $défaut  réduction par utilisation de la règle 66 (Expr)
+
+
+État 124
+
+   68 Term: Term OP_MULT Factor •
+
+    $défaut  réduction par utilisation de la règle 68 (Term)
+
+
+État 125
+
+   69 Term: Term OP_DIV Factor •
+
+    $défaut  réduction par utilisation de la règle 69 (Term)
+
+
+État 126
+
+   70 Term: Term OP_MOD Factor •
+
+    $défaut  réduction par utilisation de la règle 70 (Term)
+
+
+État 127
+
+   43 If: KW_WHEN Cond KW_THEN $@2 • Instrs OptElse $@3 KW_END KW_WHEN SEP_SEMICOLON
+
+    $défaut  réduction par utilisation de la règle 25 (Instrs)
+
+    Instrs  aller à l'état 147
+
+
+État 128
+
+   82 Cond: Cond • OP_AND Cond
+   82     | Cond OP_AND Cond •
+   83     | Cond • OP_OR Cond
+
+    $défaut  réduction par utilisation de la règle 82 (Cond)
+
+
+État 129
+
+   82 Cond: Cond • OP_AND Cond
+   83     | Cond • OP_OR Cond
+   83     | Cond OP_OR Cond •
+
+    OP_AND  décalage et aller à l'état 91
+
+    $défaut  réduction par utilisation de la règle 83 (Cond)
+
+
+État 130
+
+   64 CaseItem: KW_CASE_WHEN Cond KW_THEN • Instrs
+
+    $défaut  réduction par utilisation de la règle 25 (Instrs)
+
+    Instrs  aller à l'état 148
+
+
+État 131
+
+   61 Case: KW_CASE CaseList KW_ELSE $@12 • Instrs KW_END KW_CASE $@13 SEP_SEMICOLON
+
+    $défaut  réduction par utilisation de la règle 25 (Instrs)
+
+    Instrs  aller à l'état 149
+
+
+État 132
+
+   58 Case: KW_CASE CaseList $@10 KW_END • KW_CASE $@11 SEP_SEMICOLON
+
+    KW_CASE  décalage et aller à l'état 150
+
+
+État 133
+
+   49 While: KW_LOOP KW_WHEN Cond $@4 • Instrs $@5 KW_END KW_LOOP SEP_SEMICOLON
+
+    $défaut  réduction par utilisation de la règle 25 (Instrs)
+
+    Instrs  aller à l'état 151
+
+
+État 134
+
+   52 For: KW_LOOP KW_ITERATE IDENTIFIER $@6 • KW_FROM Expr KW_TO Expr Instrs $@7 KW_END KW_LOOP SEP_SEMICOLON
+
+    KW_FROM  décalage et aller à l'état 152
+
+
+État 135
+
+   55 ForEach: KW_FOREACH IDENTIFIER KW_IN IDENTIFIER • $@8 SEP_LBRACE Instrs $@9 SEP_RBRACE
+
+    $défaut  réduction par utilisation de la règle 53 ($@8)
+
+    $@8  aller à l'état 153
+
+
+État 136
+
+   38 Assign: IDENTIFIER SEP_LBRACKET Expr SEP_RBRACKET OP_EQ • Expr SEP_SEMICOLON
+
+    IDENTIFIER      décalage et aller à l'état 38
+    STRING_LITERAL  décalage et aller à l'état 39
+    INT_LITERAL     décalage et aller à l'état 40
+    FLOAT_LITERAL   décalage et aller à l'état 41
+    KW_TRUE         décalage et aller à l'état 42
+    KW_FALSE        décalage et aller à l'état 43
+    OP_MINUS        décalage et aller à l'état 45
+    SEP_LPAREN      décalage et aller à l'état 57
+
+    Expr    aller à l'état 154
+    Term    aller à l'état 48
+    Factor  aller à l'état 49
+
+
+État 137
+
+   37 Assign: IDENTIFIER SEP_DOT IDENTIFIER OP_EQ Expr • SEP_SEMICOLON
+   65 Expr: Expr • OP_PLUS Term
+   66     | Expr • OP_MINUS Term
+
+    OP_PLUS        décalage et aller à l'état 85
+    OP_MINUS       décalage et aller à l'état 86
+    SEP_SEMICOLON  décalage et aller à l'état 155
+
+
+État 138
+
+   21 OptInit: OP_EQ Expr •
+   65 Expr: Expr • OP_PLUS Term
+   66     | Expr • OP_MINUS Term
+
+    OP_PLUS   décalage et aller à l'état 85
+    OP_MINUS  décalage et aller à l'état 86
+
+    $défaut  réduction par utilisation de la règle 21 (OptInit)
+
+
+État 139
+
+    4 Decl: KW_SET IDENTIFIER IDENTIFIER OptInit SEP_SEMICOLON •
+
+    $défaut  réduction par utilisation de la règle 4 (Decl)
+
+
+État 140
+
+   16 ArrayDecl: KW_SET IDENTIFIER KW_ARRAY SEP_LBRACKET Type • SEP_COMMA INT_LITERAL SEP_RBRACKET ArrayInit SEP_SEMICOLON
+
+    SEP_COMMA  décalage et aller à l'état 156
+
+
+État 141
+
+   20 DictDecl: KW_SET IDENTIFIER KW_DICTIONARY OP_LT Type • SEP_COMMA Type OP_GT SEP_SEMICOLON
+
+    SEP_COMMA  décalage et aller à l'état 157
+
+
+État 142
+
+    3 Decl: KW_SET IDENTIFIER Type OptInit SEP_SEMICOLON •
+
+    $défaut  réduction par utilisation de la règle 3 (Decl)
+
+
+État 143
+
+   15 Field: IDENTIFIER • Type
+
+    KW_INTEGER  décalage et aller à l'état 67
+    KW_STRING   décalage et aller à l'état 68
+    KW_FLOAT    décalage et aller à l'état 69
+    KW_BOOLEAN  décalage et aller à l'état 70
+
+    Type  aller à l'état 158
+
+
+État 144
+
+   12 RecordDecl: KW_CREATE KW_RECORD IDENTIFIER SEP_LPAREN FieldList • SEP_RPAREN SEP_SEMICOLON
+   14 FieldList: FieldList • SEP_COMMA Field
+
+    SEP_RPAREN  décalage et aller à l'état 159
+    SEP_COMMA   décalage et aller à l'état 160
+
+
+État 145
+
+   13 FieldList: Field •
+
+    $défaut  réduction par utilisation de la règle 13 (FieldList)
+
+
+État 146
+
+   79 Factor: IDENTIFIER SEP_LBRACKET Expr SEP_RBRACKET •
+
+    $défaut  réduction par utilisation de la règle 79 (Factor)
+
+
+État 147
+
+   26 Instrs: Instrs • Instr
+   43 If: KW_WHEN Cond KW_THEN $@2 Instrs • OptElse $@3 KW_END KW_WHEN SEP_SEMICOLON
+
+    IDENTIFIER    décalage et aller à l'état 9
+    KW_SET        décalage et aller à l'état 11
+    KW_CREATE     décalage et aller à l'état 12
+    KW_WHEN       décalage et aller à l'état 13
+    KW_OTHERWISE  décalage et aller à l'état 161
+    KW_CASE       décalage et aller à l'état 14
+    KW_ELSE       décalage et aller à l'état 162
+    KW_LOOP       décalage et aller à l'état 15
+    KW_FOREACH    décalage et aller à l'état 16
+    KW_PRINT      décalage et aller à l'état 17
+    KW_INPUT      décalage et aller à l'état 18
+
+    $défaut  réduction par utilisation de la règle 46 (OptElse)
+
+    Decl        aller à l'état 19
+    RecordDecl  aller à l'état 20
+    ArrayDecl   aller à l'état 21
+    DictDecl    aller à l'état 22
+    Instr       aller à l'état 23
+    Assign      aller à l'état 24
+    Print       aller à l'état 25
+    Input       aller à l'état 26
+    If          aller à l'état 27
+    OptElse     aller à l'état 163
+    While       aller à l'état 28
+    For         aller à l'état 29
+    ForEach     aller à l'état 30
+    Case        aller à l'état 31
+
+
+État 148
+
+   26 Instrs: Instrs • Instr
+   64 CaseItem: KW_CASE_WHEN Cond KW_THEN Instrs •
+
+    IDENTIFIER  décalage et aller à l'état 9
+    KW_SET      décalage et aller à l'état 11
+    KW_CREATE   décalage et aller à l'état 12
+    KW_WHEN     décalage et aller à l'état 13
+    KW_CASE     décalage et aller à l'état 14
+    KW_LOOP     décalage et aller à l'état 15
+    KW_FOREACH  décalage et aller à l'état 16
+    KW_PRINT    décalage et aller à l'état 17
+    KW_INPUT    décalage et aller à l'état 18
+
+    $défaut  réduction par utilisation de la règle 64 (CaseItem)
+
+    Decl        aller à l'état 19
+    RecordDecl  aller à l'état 20
+    ArrayDecl   aller à l'état 21
+    DictDecl    aller à l'état 22
+    Instr       aller à l'état 23
+    Assign      aller à l'état 24
+    Print       aller à l'état 25
+    Input       aller à l'état 26
+    If          aller à l'état 27
+    While       aller à l'état 28
+    For         aller à l'état 29
+    ForEach     aller à l'état 30
+    Case        aller à l'état 31
+
+
+État 149
+
+   26 Instrs: Instrs • Instr
+   61 Case: KW_CASE CaseList KW_ELSE $@12 Instrs • KW_END KW_CASE $@13 SEP_SEMICOLON
+
+    IDENTIFIER  décalage et aller à l'état 9
+    KW_END      décalage et aller à l'état 164
+    KW_SET      décalage et aller à l'état 11
+    KW_CREATE   décalage et aller à l'état 12
+    KW_WHEN     décalage et aller à l'état 13
+    KW_CASE     décalage et aller à l'état 14
+    KW_LOOP     décalage et aller à l'état 15
+    KW_FOREACH  décalage et aller à l'état 16
+    KW_PRINT    décalage et aller à l'état 17
+    KW_INPUT    décalage et aller à l'état 18
+
+    Decl        aller à l'état 19
+    RecordDecl  aller à l'état 20
+    ArrayDecl   aller à l'état 21
+    DictDecl    aller à l'état 22
+    Instr       aller à l'état 23
+    Assign      aller à l'état 24
+    Print       aller à l'état 25
+    Input       aller à l'état 26
+    If          aller à l'état 27
+    While       aller à l'état 28
+    For         aller à l'état 29
+    ForEach     aller à l'état 30
+    Case        aller à l'état 31
+
+
+État 150
+
+   58 Case: KW_CASE CaseList $@10 KW_END KW_CASE • $@11 SEP_SEMICOLON
+
+    $défaut  réduction par utilisation de la règle 57 ($@11)
+
+    $@11  aller à l'état 165
+
+
+État 151
+
+   26 Instrs: Instrs • Instr
+   49 While: KW_LOOP KW_WHEN Cond $@4 Instrs • $@5 KW_END KW_LOOP SEP_SEMICOLON
+
+    IDENTIFIER  décalage et aller à l'état 9
+    KW_SET      décalage et aller à l'état 11
+    KW_CREATE   décalage et aller à l'état 12
+    KW_WHEN     décalage et aller à l'état 13
+    KW_CASE     décalage et aller à l'état 14
+    KW_LOOP     décalage et aller à l'état 15
+    KW_FOREACH  décalage et aller à l'état 16
+    KW_PRINT    décalage et aller à l'état 17
+    KW_INPUT    décalage et aller à l'état 18
+
+    $défaut  réduction par utilisation de la règle 48 ($@5)
+
+    Decl        aller à l'état 19
+    RecordDecl  aller à l'état 20
+    ArrayDecl   aller à l'état 21
+    DictDecl    aller à l'état 22
+    Instr       aller à l'état 23
+    Assign      aller à l'état 24
+    Print       aller à l'état 25
+    Input       aller à l'état 26
+    If          aller à l'état 27
+    While       aller à l'état 28
+    $@5         aller à l'état 166
+    For         aller à l'état 29
+    ForEach     aller à l'état 30
+    Case        aller à l'état 31
+
+
+État 152
+
+   52 For: KW_LOOP KW_ITERATE IDENTIFIER $@6 KW_FROM • Expr KW_TO Expr Instrs $@7 KW_END KW_LOOP SEP_SEMICOLON
+
+    IDENTIFIER      décalage et aller à l'état 38
+    STRING_LITERAL  décalage et aller à l'état 39
+    INT_LITERAL     décalage et aller à l'état 40
+    FLOAT_LITERAL   décalage et aller à l'état 41
+    KW_TRUE         décalage et aller à l'état 42
+    KW_FALSE        décalage et aller à l'état 43
+    OP_MINUS        décalage et aller à l'état 45
+    SEP_LPAREN      décalage et aller à l'état 57
+
+    Expr    aller à l'état 167
+    Term    aller à l'état 48
+    Factor  aller à l'état 49
+
+
+État 153
+
+   55 ForEach: KW_FOREACH IDENTIFIER KW_IN IDENTIFIER $@8 • SEP_LBRACE Instrs $@9 SEP_RBRACE
+
+    SEP_LBRACE  décalage et aller à l'état 168
+
+
+État 154
+
+   38 Assign: IDENTIFIER SEP_LBRACKET Expr SEP_RBRACKET OP_EQ Expr • SEP_SEMICOLON
+   65 Expr: Expr • OP_PLUS Term
+   66     | Expr • OP_MINUS Term
+
+    OP_PLUS        décalage et aller à l'état 85
+    OP_MINUS       décalage et aller à l'état 86
+    SEP_SEMICOLON  décalage et aller à l'état 169
+
+
+État 155
+
+   37 Assign: IDENTIFIER SEP_DOT IDENTIFIER OP_EQ Expr SEP_SEMICOLON •
+
+    $défaut  réduction par utilisation de la règle 37 (Assign)
+
+
+État 156
+
+   16 ArrayDecl: KW_SET IDENTIFIER KW_ARRAY SEP_LBRACKET Type SEP_COMMA • INT_LITERAL SEP_RBRACKET ArrayInit SEP_SEMICOLON
+
+    INT_LITERAL  décalage et aller à l'état 170
+
+
+État 157
+
+   20 DictDecl: KW_SET IDENTIFIER KW_DICTIONARY OP_LT Type SEP_COMMA • Type OP_GT SEP_SEMICOLON
+
+    KW_INTEGER  décalage et aller à l'état 67
+    KW_STRING   décalage et aller à l'état 68
+    KW_FLOAT    décalage et aller à l'état 69
+    KW_BOOLEAN  décalage et aller à l'état 70
+
+    Type  aller à l'état 171
+
+
+État 158
+
+   15 Field: IDENTIFIER Type •
+
+    $défaut  réduction par utilisation de la règle 15 (Field)
+
+
+État 159
+
+   12 RecordDecl: KW_CREATE KW_RECORD IDENTIFIER SEP_LPAREN FieldList SEP_RPAREN • SEP_SEMICOLON
+
+    SEP_SEMICOLON  décalage et aller à l'état 172
+
+
+État 160
+
+   14 FieldList: FieldList SEP_COMMA • Field
+
+    IDENTIFIER  décalage et aller à l'état 143
+
+    Field  aller à l'état 173
+
+
+État 161
+
+   45 OptElse: KW_OTHERWISE • Instrs
+
+    $défaut  réduction par utilisation de la règle 25 (Instrs)
+
+    Instrs  aller à l'état 174
+
+
+État 162
+
+   44 OptElse: KW_ELSE • Instrs
+
+    $défaut  réduction par utilisation de la règle 25 (Instrs)
+
+    Instrs  aller à l'état 175
+
+
+État 163
+
+   43 If: KW_WHEN Cond KW_THEN $@2 Instrs OptElse • $@3 KW_END KW_WHEN SEP_SEMICOLON
+
+    $défaut  réduction par utilisation de la règle 42 ($@3)
+
+    $@3  aller à l'état 176
+
+
+État 164
+
+   61 Case: KW_CASE CaseList KW_ELSE $@12 Instrs KW_END • KW_CASE $@13 SEP_SEMICOLON
+
+    KW_CASE  décalage et aller à l'état 177
+
+
+État 165
+
+   58 Case: KW_CASE CaseList $@10 KW_END KW_CASE $@11 • SEP_SEMICOLON
+
+    SEP_SEMICOLON  décalage et aller à l'état 178
+
+
+État 166
+
+   49 While: KW_LOOP KW_WHEN Cond $@4 Instrs $@5 • KW_END KW_LOOP SEP_SEMICOLON
+
+    KW_END  décalage et aller à l'état 179
+
+
+État 167
+
+   52 For: KW_LOOP KW_ITERATE IDENTIFIER $@6 KW_FROM Expr • KW_TO Expr Instrs $@7 KW_END KW_LOOP SEP_SEMICOLON
+   65 Expr: Expr • OP_PLUS Term
+   66     | Expr • OP_MINUS Term
+
+    KW_TO     décalage et aller à l'état 180
+    OP_PLUS   décalage et aller à l'état 85
+    OP_MINUS  décalage et aller à l'état 86
+
+
+État 168
+
+   55 ForEach: KW_FOREACH IDENTIFIER KW_IN IDENTIFIER $@8 SEP_LBRACE • Instrs $@9 SEP_RBRACE
+
+    $défaut  réduction par utilisation de la règle 25 (Instrs)
+
+    Instrs  aller à l'état 181
+
+
+État 169
+
+   38 Assign: IDENTIFIER SEP_LBRACKET Expr SEP_RBRACKET OP_EQ Expr SEP_SEMICOLON •
+
+    $défaut  réduction par utilisation de la règle 38 (Assign)
+
+
+État 170
+
+   16 ArrayDecl: KW_SET IDENTIFIER KW_ARRAY SEP_LBRACKET Type SEP_COMMA INT_LITERAL • SEP_RBRACKET ArrayInit SEP_SEMICOLON
+
+    SEP_RBRACKET  décalage et aller à l'état 182
+
+
+État 171
+
+   20 DictDecl: KW_SET IDENTIFIER KW_DICTIONARY OP_LT Type SEP_COMMA Type • OP_GT SEP_SEMICOLON
+
+    OP_GT  décalage et aller à l'état 183
+
+
+État 172
+
+   12 RecordDecl: KW_CREATE KW_RECORD IDENTIFIER SEP_LPAREN FieldList SEP_RPAREN SEP_SEMICOLON •
+
+    $défaut  réduction par utilisation de la règle 12 (RecordDecl)
+
+
+État 173
+
+   14 FieldList: FieldList SEP_COMMA Field •
+
+    $défaut  réduction par utilisation de la règle 14 (FieldList)
+
+
+État 174
+
+   26 Instrs: Instrs • Instr
+   45 OptElse: KW_OTHERWISE Instrs •
+
+    IDENTIFIER  décalage et aller à l'état 9
+    KW_SET      décalage et aller à l'état 11
+    KW_CREATE   décalage et aller à l'état 12
+    KW_WHEN     décalage et aller à l'état 13
+    KW_CASE     décalage et aller à l'état 14
+    KW_LOOP     décalage et aller à l'état 15
+    KW_FOREACH  décalage et aller à l'état 16
+    KW_PRINT    décalage et aller à l'état 17
+    KW_INPUT    décalage et aller à l'état 18
+
+    $défaut  réduction par utilisation de la règle 45 (OptElse)
+
+    Decl        aller à l'état 19
+    RecordDecl  aller à l'état 20
+    ArrayDecl   aller à l'état 21
+    DictDecl    aller à l'état 22
+    Instr       aller à l'état 23
+    Assign      aller à l'état 24
+    Print       aller à l'état 25
+    Input       aller à l'état 26
+    If          aller à l'état 27
+    While       aller à l'état 28
+    For         aller à l'état 29
+    ForEach     aller à l'état 30
+    Case        aller à l'état 31
+
+
+État 175
+
+   26 Instrs: Instrs • Instr
+   44 OptElse: KW_ELSE Instrs •
+
+    IDENTIFIER  décalage et aller à l'état 9
+    KW_SET      décalage et aller à l'état 11
+    KW_CREATE   décalage et aller à l'état 12
+    KW_WHEN     décalage et aller à l'état 13
+    KW_CASE     décalage et aller à l'état 14
+    KW_LOOP     décalage et aller à l'état 15
+    KW_FOREACH  décalage et aller à l'état 16
+    KW_PRINT    décalage et aller à l'état 17
+    KW_INPUT    décalage et aller à l'état 18
+
+    $défaut  réduction par utilisation de la règle 44 (OptElse)
+
+    Decl        aller à l'état 19
+    RecordDecl  aller à l'état 20
+    ArrayDecl   aller à l'état 21
+    DictDecl    aller à l'état 22
+    Instr       aller à l'état 23
+    Assign      aller à l'état 24
+    Print       aller à l'état 25
+    Input       aller à l'état 26
+    If          aller à l'état 27
+    While       aller à l'état 28
+    For         aller à l'état 29
+    ForEach     aller à l'état 30
+    Case        aller à l'état 31
+
+
+État 176
+
+   43 If: KW_WHEN Cond KW_THEN $@2 Instrs OptElse $@3 • KW_END KW_WHEN SEP_SEMICOLON
+
+    KW_END  décalage et aller à l'état 184
+
+
+État 177
+
+   61 Case: KW_CASE CaseList KW_ELSE $@12 Instrs KW_END KW_CASE • $@13 SEP_SEMICOLON
+
+    $défaut  réduction par utilisation de la règle 60 ($@13)
+
+    $@13  aller à l'état 185
+
+
+État 178
+
+   58 Case: KW_CASE CaseList $@10 KW_END KW_CASE $@11 SEP_SEMICOLON •
+
+    $défaut  réduction par utilisation de la règle 58 (Case)
+
+
+État 179
+
+   49 While: KW_LOOP KW_WHEN Cond $@4 Instrs $@5 KW_END • KW_LOOP SEP_SEMICOLON
+
+    KW_LOOP  décalage et aller à l'état 186
+
+
+État 180
+
+   52 For: KW_LOOP KW_ITERATE IDENTIFIER $@6 KW_FROM Expr KW_TO • Expr Instrs $@7 KW_END KW_LOOP SEP_SEMICOLON
+
+    IDENTIFIER      décalage et aller à l'état 38
+    STRING_LITERAL  décalage et aller à l'état 39
+    INT_LITERAL     décalage et aller à l'état 40
+    FLOAT_LITERAL   décalage et aller à l'état 41
+    KW_TRUE         décalage et aller à l'état 42
+    KW_FALSE        décalage et aller à l'état 43
+    OP_MINUS        décalage et aller à l'état 45
+    SEP_LPAREN      décalage et aller à l'état 57
+
+    Expr    aller à l'état 187
+    Term    aller à l'état 48
+    Factor  aller à l'état 49
+
+
+État 181
+
+   26 Instrs: Instrs • Instr
+   55 ForEach: KW_FOREACH IDENTIFIER KW_IN IDENTIFIER $@8 SEP_LBRACE Instrs • $@9 SEP_RBRACE
+
+    IDENTIFIER  décalage et aller à l'état 9
+    KW_SET      décalage et aller à l'état 11
+    KW_CREATE   décalage et aller à l'état 12
+    KW_WHEN     décalage et aller à l'état 13
+    KW_CASE     décalage et aller à l'état 14
+    KW_LOOP     décalage et aller à l'état 15
+    KW_FOREACH  décalage et aller à l'état 16
+    KW_PRINT    décalage et aller à l'état 17
+    KW_INPUT    décalage et aller à l'état 18
+
+    $défaut  réduction par utilisation de la règle 54 ($@9)
+
+    Decl        aller à l'état 19
+    RecordDecl  aller à l'état 20
+    ArrayDecl   aller à l'état 21
+    DictDecl    aller à l'état 22
+    Instr       aller à l'état 23
+    Assign      aller à l'état 24
+    Print       aller à l'état 25
+    Input       aller à l'état 26
+    If          aller à l'état 27
+    While       aller à l'état 28
+    For         aller à l'état 29
+    ForEach     aller à l'état 30
+    $@9         aller à l'état 188
+    Case        aller à l'état 31
+
+
+État 182
+
+   16 ArrayDecl: KW_SET IDENTIFIER KW_ARRAY SEP_LBRACKET Type SEP_COMMA INT_LITERAL SEP_RBRACKET • ArrayInit SEP_SEMICOLON
+
+    OP_EQ  décalage et aller à l'état 189
+
+    $défaut  réduction par utilisation de la règle 19 (ArrayInit)
+
+    ArrayInit  aller à l'état 190
+
+
+État 183
+
+   20 DictDecl: KW_SET IDENTIFIER KW_DICTIONARY OP_LT Type SEP_COMMA Type OP_GT • SEP_SEMICOLON
+
+    SEP_SEMICOLON  décalage et aller à l'état 191
+
+
+État 184
+
+   43 If: KW_WHEN Cond KW_THEN $@2 Instrs OptElse $@3 KW_END • KW_WHEN SEP_SEMICOLON
+
+    KW_WHEN  décalage et aller à l'état 192
+
+
+État 185
+
+   61 Case: KW_CASE CaseList KW_ELSE $@12 Instrs KW_END KW_CASE $@13 • SEP_SEMICOLON
+
+    SEP_SEMICOLON  décalage et aller à l'état 193
+
+
+État 186
+
+   49 While: KW_LOOP KW_WHEN Cond $@4 Instrs $@5 KW_END KW_LOOP • SEP_SEMICOLON
+
+    SEP_SEMICOLON  décalage et aller à l'état 194
+
+
+État 187
+
+   52 For: KW_LOOP KW_ITERATE IDENTIFIER $@6 KW_FROM Expr KW_TO Expr • Instrs $@7 KW_END KW_LOOP SEP_SEMICOLON
+   65 Expr: Expr • OP_PLUS Term
+   66     | Expr • OP_MINUS Term
+
+    OP_PLUS   décalage et aller à l'état 85
+    OP_MINUS  décalage et aller à l'état 86
+
+    $défaut  réduction par utilisation de la règle 25 (Instrs)
+
+    Instrs  aller à l'état 195
+
+
+État 188
+
+   55 ForEach: KW_FOREACH IDENTIFIER KW_IN IDENTIFIER $@8 SEP_LBRACE Instrs $@9 • SEP_RBRACE
+
+    SEP_RBRACE  décalage et aller à l'état 196
+
+
+État 189
+
+   17 ArrayInit: OP_EQ • SEP_LBRACE ExprList SEP_RBRACE
+   18          | OP_EQ • Expr
+
+    IDENTIFIER      décalage et aller à l'état 38
+    STRING_LITERAL  décalage et aller à l'état 39
+    INT_LITERAL     décalage et aller à l'état 40
+    FLOAT_LITERAL   décalage et aller à l'état 41
+    KW_TRUE         décalage et aller à l'état 42
+    KW_FALSE        décalage et aller à l'état 43
+    OP_MINUS        décalage et aller à l'état 45
+    SEP_LPAREN      décalage et aller à l'état 57
+    SEP_LBRACE      décalage et aller à l'état 197
+
+    Expr    aller à l'état 198
+    Term    aller à l'état 48
+    Factor  aller à l'état 49
+
+
+État 190
+
+   16 ArrayDecl: KW_SET IDENTIFIER KW_ARRAY SEP_LBRACKET Type SEP_COMMA INT_LITERAL SEP_RBRACKET ArrayInit • SEP_SEMICOLON
+
+    SEP_SEMICOLON  décalage et aller à l'état 199
+
+
+État 191
+
+   20 DictDecl: KW_SET IDENTIFIER KW_DICTIONARY OP_LT Type SEP_COMMA Type OP_GT SEP_SEMICOLON •
+
+    $défaut  réduction par utilisation de la règle 20 (DictDecl)
+
+
+État 192
+
+   43 If: KW_WHEN Cond KW_THEN $@2 Instrs OptElse $@3 KW_END KW_WHEN • SEP_SEMICOLON
+
+    SEP_SEMICOLON  décalage et aller à l'état 200
+
+
+État 193
+
+   61 Case: KW_CASE CaseList KW_ELSE $@12 Instrs KW_END KW_CASE $@13 SEP_SEMICOLON •
+
+    $défaut  réduction par utilisation de la règle 61 (Case)
+
+
+État 194
+
+   49 While: KW_LOOP KW_WHEN Cond $@4 Instrs $@5 KW_END KW_LOOP SEP_SEMICOLON •
+
+    $défaut  réduction par utilisation de la règle 49 (While)
+
+
+État 195
+
+   26 Instrs: Instrs • Instr
+   52 For: KW_LOOP KW_ITERATE IDENTIFIER $@6 KW_FROM Expr KW_TO Expr Instrs • $@7 KW_END KW_LOOP SEP_SEMICOLON
+
+    IDENTIFIER  décalage et aller à l'état 9
+    KW_SET      décalage et aller à l'état 11
+    KW_CREATE   décalage et aller à l'état 12
+    KW_WHEN     décalage et aller à l'état 13
+    KW_CASE     décalage et aller à l'état 14
+    KW_LOOP     décalage et aller à l'état 15
+    KW_FOREACH  décalage et aller à l'état 16
+    KW_PRINT    décalage et aller à l'état 17
+    KW_INPUT    décalage et aller à l'état 18
+
+    $défaut  réduction par utilisation de la règle 51 ($@7)
+
+    Decl        aller à l'état 19
+    RecordDecl  aller à l'état 20
+    ArrayDecl   aller à l'état 21
+    DictDecl    aller à l'état 22
+    Instr       aller à l'état 23
+    Assign      aller à l'état 24
+    Print       aller à l'état 25
+    Input       aller à l'état 26
+    If          aller à l'état 27
+    While       aller à l'état 28
+    For         aller à l'état 29
+    $@7         aller à l'état 201
+    ForEach     aller à l'état 30
+    Case        aller à l'état 31
+
+
+État 196
+
+   55 ForEach: KW_FOREACH IDENTIFIER KW_IN IDENTIFIER $@8 SEP_LBRACE Instrs $@9 SEP_RBRACE •
+
+    $défaut  réduction par utilisation de la règle 55 (ForEach)
+
+
+État 197
+
+   17 ArrayInit: OP_EQ SEP_LBRACE • ExprList SEP_RBRACE
+
+    IDENTIFIER      décalage et aller à l'état 38
+    STRING_LITERAL  décalage et aller à l'état 39
+    INT_LITERAL     décalage et aller à l'état 40
+    FLOAT_LITERAL   décalage et aller à l'état 41
+    KW_TRUE         décalage et aller à l'état 42
+    KW_FALSE        décalage et aller à l'état 43
+    OP_MINUS        décalage et aller à l'état 45
+    SEP_LPAREN      décalage et aller à l'état 57
+
+    ExprList  aller à l'état 202
+    Expr      aller à l'état 203
+    Term      aller à l'état 48
+    Factor    aller à l'état 49
+
+
+État 198
+
+   18 ArrayInit: OP_EQ Expr •
+   65 Expr: Expr • OP_PLUS Term
+   66     | Expr • OP_MINUS Term
+
+    OP_PLUS   décalage et aller à l'état 85
+    OP_MINUS  décalage et aller à l'état 86
+
+    $défaut  réduction par utilisation de la règle 18 (ArrayInit)
+
+
+État 199
+
+   16 ArrayDecl: KW_SET IDENTIFIER KW_ARRAY SEP_LBRACKET Type SEP_COMMA INT_LITERAL SEP_RBRACKET ArrayInit SEP_SEMICOLON •
+
+    $défaut  réduction par utilisation de la règle 16 (ArrayDecl)
+
+
+État 200
+
+   43 If: KW_WHEN Cond KW_THEN $@2 Instrs OptElse $@3 KW_END KW_WHEN SEP_SEMICOLON •
+
+    $défaut  réduction par utilisation de la règle 43 (If)
+
+
+État 201
+
+   52 For: KW_LOOP KW_ITERATE IDENTIFIER $@6 KW_FROM Expr KW_TO Expr Instrs $@7 • KW_END KW_LOOP SEP_SEMICOLON
+
+    KW_END  décalage et aller à l'état 204
+
+
+État 202
+
+   17 ArrayInit: OP_EQ SEP_LBRACE ExprList • SEP_RBRACE
+   24 ExprList: ExprList • SEP_COMMA Expr
+
+    SEP_RBRACE  décalage et aller à l'état 205
+    SEP_COMMA   décalage et aller à l'état 206
+
+
+État 203
+
+   23 ExprList: Expr •
+   65 Expr: Expr • OP_PLUS Term
+   66     | Expr • OP_MINUS Term
+
+    OP_PLUS   décalage et aller à l'état 85
+    OP_MINUS  décalage et aller à l'état 86
+
+    $défaut  réduction par utilisation de la règle 23 (ExprList)
+
+
+État 204
+
+   52 For: KW_LOOP KW_ITERATE IDENTIFIER $@6 KW_FROM Expr KW_TO Expr Instrs $@7 KW_END • KW_LOOP SEP_SEMICOLON
+
+    KW_LOOP  décalage et aller à l'état 207
+
+
+État 205
+
+   17 ArrayInit: OP_EQ SEP_LBRACE ExprList SEP_RBRACE •
+
+    $défaut  réduction par utilisation de la règle 17 (ArrayInit)
+
+
+État 206
+
+   24 ExprList: ExprList SEP_COMMA • Expr
+
+    IDENTIFIER      décalage et aller à l'état 38
+    STRING_LITERAL  décalage et aller à l'état 39
+    INT_LITERAL     décalage et aller à l'état 40
+    FLOAT_LITERAL   décalage et aller à l'état 41
+    KW_TRUE         décalage et aller à l'état 42
+    KW_FALSE        décalage et aller à l'état 43
+    OP_MINUS        décalage et aller à l'état 45
+    SEP_LPAREN      décalage et aller à l'état 57
+
+    Expr    aller à l'état 208
+    Term    aller à l'état 48
+    Factor  aller à l'état 49
+
+
+État 207
+
+   52 For: KW_LOOP KW_ITERATE IDENTIFIER $@6 KW_FROM Expr KW_TO Expr Instrs $@7 KW_END KW_LOOP • SEP_SEMICOLON
+
+    SEP_SEMICOLON  décalage et aller à l'état 209
+
+
+État 208
+
+   24 ExprList: ExprList SEP_COMMA Expr •
+   65 Expr: Expr • OP_PLUS Term
+   66     | Expr • OP_MINUS Term
+
+    OP_PLUS   décalage et aller à l'état 85
+    OP_MINUS  décalage et aller à l'état 86
+
+    $défaut  réduction par utilisation de la règle 24 (ExprList)
+
+
+État 209
+
+   52 For: KW_LOOP KW_ITERATE IDENTIFIER $@6 KW_FROM Expr KW_TO Expr Instrs $@7 KW_END KW_LOOP SEP_SEMICOLON •
+
+    $défaut  réduction par utilisation de la règle 52 (For)

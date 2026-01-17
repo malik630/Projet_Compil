@@ -13,7 +13,8 @@ typedef enum {
     SEM_ERROR_DIV_BY_ZERO,
     SEM_ERROR_ARRAY_INDEX,
     SEM_ERROR_UNINITIALIZED,
-    SEM_ERROR_CONST_ASSIGNMENT
+    SEM_ERROR_CONST_ASSIGNMENT,
+    SEM_ERROR_FIELD_NOT_FOUND  // AJOUTÉ
 } SemanticErrorType;
 
 // Types d'avertissements (warnings)
@@ -82,5 +83,10 @@ DataType getExpressionType(ASTNode* node);
 const char* semanticErrorTypeToString(SemanticErrorType type);
 const char* semanticWarningTypeToString(SemanticWarningType type);
 void checkUnusedVariables();
+TypeDonnee dataTypeToTypeDonnee(DataType dt);
+int evaluateConstantInt(ASTNode* node, int* result);
+int checkArrayAccessAssignment(ASTNode* node);
+int checkRecordAccessAssignment(ASTNode* node);
+int checkArrayIndex(ASTNode* node);
 
 #endif /* SEMANTIC_H */

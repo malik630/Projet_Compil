@@ -25,39 +25,43 @@ int insererSymbole(TableSymboles* table, Symbole sym) {
     return table->nbSymboles - 1;
 }
 
-// Obtenir un symbole par nom
-Symbole* obtenirSymbole(TableSymboles* table, char* nom) {
-    // Chercher du plus récent au plus ancien (portée locale d'abord)
-    for (int i = table->nbSymboles - 1; i >= 0; i--) {
-        if (strcmp(table->symboles[i].nom, nom) == 0) {
-            return &table->symboles[i];
-        }
-    }
-    return NULL;
-}
+
 
 // Entrer dans une nouvelle portée
 void entrerPortee(TableSymboles* table) {
     table->niveauPortee++;
 }
 
-// Sortir d'une portée
+// Sortir d'une portée 
 void sortirPortee(TableSymboles* table) {
-    // Supprimer tous les symboles de la portée actuelle
-    int i = table->nbSymboles - 1;
-    while (i >= 0 && table->symboles[i].portee == table->niveauPortee) {
-        table->nbSymboles--;
-        i--;
+    // On ne décrémente plus nbSymboles ! 
+    // On baisse juste le niveau pour les prochaines insertions
+    if (table->niveauPortee > 0) {
+        table->niveauPortee--;
     }
-    table->niveauPortee--;
+}
+
+// Obtenir un symbole :
+Symbole* obtenirSymbole(TableSymboles* table, char* nom) {
+    // On cherche du plus récent au plus ancien
+    for (int i = table->nbSymboles - 1; i >= 0; i--) {
+        if (strcmp(table->symboles[i].nom, nom) == 0) {
+            
+            // On ne peut utiliser la variable que si sa portée est <= portée actuelle
+            if (table->symboles[i].portee <= table->niveauPortee) {
+                return &table->symboles[i];
+            }
+        }
+    }
+    return NULL;
 }
 
 // Afficher la table
 void afficherTable(TableSymboles* table) {
     printf("\n========== TABLE DES SYMBOLES ==========\n");
-    printf("%-10s %-10s %-10s %-8s %-8s %-10s %-15s\n", 
+    printf("%-15s %-12s %-15s %-8s %-8s %-10s %-15s\n", 
            "Nom", "Type Sym", "Type Data", "Portée", "Adresse", "Init", "Info");
-    printf("-------------------------------------------------------------------------------\n");
+    printf("----------------------------------------------------------------------------------------\n");
     
     for (int i = 0; i < table->nbSymboles; i++) {
         Symbole s = table->symboles[i];
@@ -73,16 +77,21 @@ void afficherTable(TableSymboles* table) {
         if (s.typeDonnee == DATA_ENTIER) typeData = "Entier";
         else if (s.typeDonnee == DATA_REEL) typeData = "Réel";
         else if (s.typeDonnee == DATA_CHAINE) typeData = "Chaîne";
-        else typeData = "Booléen";
+        else if (s.typeDonnee == DATA_BOOLEEN) typeData = "Booléen";
+        else if (s.typeDonnee == DATA_ENREGISTREMENT) typeData = "Enregistrement";
+        else if (s.typeDonnee == DATA_TABLEAU) typeData = "Tableau";
+        else if (s.typeDonnee == DATA_DICTIONNAIRE) typeData = "Dictionnaire";
+        else typeData = "Inconnu";
         
         // Portée
-        char* portee = (s.portee == PORTEE_GLOBALE) ? "Globale" : "Locale";
+        char porteeStr[10];
+        sprintf(porteeStr, "%d", s.portee);
         
         // Initialisé
         char* init = s.initialise ? "Oui" : "Non";
         
-        printf("%-10s %-10s %-10s %-8s %-8d %-10s ", 
-               s.nom, typeSym, typeData, portee, s.adresse, init);
+        printf("%-15s %-12s %-15s %-8s %-8d %-10s ", 
+               s.nom, typeSym, typeData, porteeStr, s.adresse, init);
         
         // Info supplémentaire
         if (s.typeSymbole == TYPE_CONSTANTE) {
@@ -91,11 +100,11 @@ void afficherTable(TableSymboles* table) {
             } else if (s.typeDonnee == DATA_REEL) {
                 printf("Valeur=%.2f", s.valeur.valeurReel);
             }
-        } else if (s.typeSymbole == TYPE_TABLEAU) {
+        } else if (s.typeSymbole == TYPE_TABLEAU || s.typeDonnee == DATA_TABLEAU) {
             printf("Taille=%d", s.taille);
         }
         
         printf("\n");
     }
-    printf("========================================\n\n");
+    printf("========================================================================================\n\n");
 }

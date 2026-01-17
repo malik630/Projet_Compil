@@ -62,7 +62,7 @@ const char* semanticWarningTypeToString(SemanticWarningType type) {
 // Afficher les erreurs sémantiques
 void printSemanticErrors() {
     if (semanticErrors.count == 0) {
-        printf("\n✓ Aucune erreur sémantique détectée !\n");
+        printf("\nAucune erreur sémantique détectée !\n");
         return;
     }
     
@@ -72,7 +72,7 @@ void printSemanticErrors() {
     
     for (int i = 0; i < semanticErrors.count; i++) {
         SemanticError err = semanticErrors.errors[i];
-        printf("❌ [%s] Ligne %d, Col %d:\n   %s\n\n", 
+        printf(" [%s] Ligne %d, Col %d:\n   %s\n\n", 
                semanticErrorTypeToString(err.type),
                err.line, err.column, err.message);
     }
@@ -92,7 +92,7 @@ void printSemanticWarnings() {
     
     for (int i = 0; i < semanticWarnings.count; i++) {
         SemanticWarning warn = semanticWarnings.warnings[i];
-        printf("⚠️  [%s] Ligne %d, Col %d:\n   %s\n\n", 
+        printf("  [%s] Ligne %d, Col %d:\n   %s\n\n", 
                semanticWarningTypeToString(warn.type),
                warn.line, warn.column, warn.message);
     }
@@ -195,6 +195,190 @@ TypeDonnee dataTypeToTypeDonnee(DataType dt) {
         case TYPE_BOOLEAN: return DATA_BOOLEEN;
         default: return DATA_ENTIER;
     }
+}
+
+int checkArrayIndex(ASTNode* node) {
+    if (node == NULL) return 1;
+    
+    // Vérifier si c'est un accès à un tableau
+    if (node->type == NODE_ARRAY_ACCESS || node->type == NODE_ARRAY_ACCESS_ASSIGN) {
+        char* arrayName = (node->type == NODE_ARRAY_ACCESS) ? 
+                          node->data.arrayAccess.arrayName : 
+                          node->data.arrayAccessAssign.arrayName;
+        
+        ASTNode* indexExpr = (node->type == NODE_ARRAY_ACCESS) ? 
+                             node->data.arrayAccess.index : 
+                             node->data.arrayAccessAssign.index;
+        
+        // Vérifier que le tableau existe
+        Symbole* arraySym = obtenirSymbole(&tableGlobale, arrayName);
+        if (arraySym == NULL) {
+            char msg[256];
+            sprintf(msg, "Tableau '%s' non déclaré", arrayName);
+            reportSemanticError(SEM_ERROR_UNDECLARED, msg, node->line, node->column);
+            return 0;
+        }
+        
+        // Vérifier que c'est bien un tableau
+        if (arraySym->typeDonnee != DATA_TABLEAU) {
+            char msg[256];
+            sprintf(msg, "'%s' n'est pas un tableau", arrayName);
+            reportSemanticError(SEM_ERROR_TYPE_MISMATCH, msg, node->line, node->column);
+            return 0;
+        }
+        
+        // Vérifier le type de l'index
+        DataType indexType;
+        if (!checkExpression(indexExpr, &indexType)) {
+            return 0;
+        }
+        
+        // L'index doit être un entier
+        if (indexType != TYPE_INTEGER) {
+            char msg[256];
+            sprintf(msg, "Index de tableau doit être ENTIER, pas %s", 
+                    dataTypeToString(indexType));
+            reportSemanticError(SEM_ERROR_TYPE_MISMATCH, msg, node->line, node->column);
+            return 0;
+        }
+        
+        // Vérifier le dépassement de limites (si l'index est une constante)
+        int constIndexValue;
+        if (evaluateConstantInt(indexExpr, &constIndexValue)) {
+            if (constIndexValue < 0) {
+                char msg[256];
+                sprintf(msg, "Index négatif non autorisé: %d", constIndexValue);
+                reportSemanticError(SEM_ERROR_ARRAY_INDEX, msg, node->line, node->column);
+                return 0;
+            }
+            
+            if (constIndexValue >= arraySym->taille) {
+                char msg[256];
+                sprintf(msg, "Index %d hors limites (taille du tableau = %d)", 
+                        constIndexValue, arraySym->taille);
+                reportSemanticError(SEM_ERROR_ARRAY_INDEX, msg, node->line, node->column);
+                return 0;
+            }
+        }
+        
+        return 1;
+    }
+    
+    return 1;
+}
+
+int checkArrayAccessAssignment(ASTNode* node) {
+    if (node == NULL) return 1;
+    
+    // Vérifier l'index du tableau
+    if (!checkArrayIndex(node)) {
+        return 0;
+    }
+    
+    // Vérifier l'expression d'affectation
+    DataType exprType;
+    if (!checkExpression(node->data.arrayAccessAssign.expression, &exprType)) {
+        return 0;
+    }
+    
+    // Obtenir le type du tableau
+    char* arrayName = node->data.arrayAccessAssign.arrayName;
+    Symbole* arraySym = obtenirSymbole(&tableGlobale, arrayName);
+    
+    if (arraySym != NULL) {
+        // Convertir TypeDonnee en DataType pour comparaison
+        DataType arrayElementType;
+        switch(arraySym->typeDonnee) {
+            case DATA_TABLEAU:
+                // Pour simplifier, on considère que tous les tableaux sont d'entiers
+                // Dans une version complète, il faudrait stocker le type des éléments
+                arrayElementType = TYPE_INTEGER;
+                break;
+            default:
+                arrayElementType = TYPE_INTEGER;
+        }
+        
+        // Vérifier compatibilité des types
+        if (!areTypesCompatible(arrayElementType, exprType)) {
+            char msg[256];
+            sprintf(msg, "Type incompatible pour l'élément de tableau: %s attendu, %s fourni",
+                    dataTypeToString(arrayElementType), dataTypeToString(exprType));
+            reportSemanticError(SEM_ERROR_TYPE_MISMATCH, msg, node->line, node->column);
+            return 0;
+        }
+    }
+    
+    return 1;
+}
+
+// Fonction pour évaluer une expression constante (si possible)
+int evaluateConstantInt(ASTNode* node, int* result) {
+    if (node == NULL) return 0;
+    
+    // Cas d'un nombre négatif (unary minus)
+    if (node->type == NODE_EXPR_UNARYOP && node->data.unaryOp.op == AST_OP_NEG) {
+        int innerValue;
+        if (evaluateConstantInt(node->data.unaryOp.operand, &innerValue)) {
+            *result = -innerValue;
+            return 1;
+        }
+        return 0;
+    }
+    
+    if (node->type == NODE_EXPR_LITERAL) {
+        if (node->data.literal.literalType == TYPE_INTEGER) {
+            *result = node->data.literal.value.intValue;
+            return 1;
+        }
+        // Pour les floats entiers
+        if (node->data.literal.literalType == TYPE_FLOAT) {
+            float fval = node->data.literal.value.floatValue;
+            if (fval == (int)fval) { // Vérifier si c'est un entier
+                *result = (int)fval;
+                return 1;
+            }
+        }
+    }
+    
+    // Pour les identifiants constants
+    if (node->type == NODE_EXPR_IDENTIFIER) {
+        Symbole* sym = obtenirSymbole(&tableGlobale, node->data.identifier.name);
+        if (sym != NULL && sym->typeSymbole == TYPE_CONSTANTE) {
+            if (sym->typeDonnee == DATA_ENTIER) {
+                *result = sym->valeur.valeurInt;
+                return 1;
+            } else if (sym->typeDonnee == DATA_REEL) {
+                float fval = sym->valeur.valeurReel;
+                if (fval == (int)fval) {
+                    *result = (int)fval;
+                    return 1;
+                }
+            }
+        }
+    }
+    
+    // Pour les opérations binaires
+    if (node->type == NODE_EXPR_BINOP) {
+        int leftVal, rightVal;
+        if (evaluateConstantInt(node->data.binOp.left, &leftVal) &&
+            evaluateConstantInt(node->data.binOp.right, &rightVal)) {
+            
+            switch(node->data.binOp.op) {
+                case AST_OP_ADD: *result = leftVal + rightVal; return 1;
+                case AST_OP_SUB: *result = leftVal - rightVal; return 1;
+                case AST_OP_MUL: *result = leftVal * rightVal; return 1;
+                case AST_OP_DIV: 
+                    if (rightVal != 0) {
+                        *result = leftVal / rightVal; 
+                        return 1;
+                    }
+                    break;
+                default: break;
+            }
+        }
+    }
+    
+    return 0;
 }
 
 // Vérifier une expression
@@ -448,7 +632,7 @@ int checkPrint(ASTNode* node) {
     return checkExpression(node->data.print.expression, &exprType);
 }
 
-// Vérifier une instruction if
+// Vérifier une instruction WHEN
 int checkIfStatement(ASTNode* node) {
     if (node == NULL) return 1;
     
@@ -501,6 +685,8 @@ int checkStatements(ASTNode* node) {
         }
     } else if (node->type == NODE_ASSIGN) {
         if (!checkAssignment(node)) valid = 0;
+    } else if (node->type == NODE_ARRAY_ACCESS_ASSIGN) {
+        if (!checkArrayAccessAssignment(node)) valid = 0;
     } else if (node->type == NODE_PRINT) {
         if (!checkPrint(node)) valid = 0;
     } else if (node->type == NODE_IF) {
@@ -517,8 +703,23 @@ void markVariableAsUsed(ASTNode* node) {
     if (node->type == NODE_EXPR_IDENTIFIER) {
         Symbole* sym = obtenirSymbole(&tableGlobale, node->data.identifier.name);
         if (sym != NULL) {
-            sym->initialise = 2; // 2 = utilisée
+            sym->initialise = 2;
         }
+    } else if (node->type == NODE_ARRAY_ACCESS) {
+        // Marquer le tableau comme utilisé
+        Symbole* sym = obtenirSymbole(&tableGlobale, node->data.arrayAccess.arrayName);
+        if (sym != NULL) {
+            sym->initialise = 2;
+        }
+        // Vérifier l'index aussi
+        markVariableAsUsed(node->data.arrayAccess.index);
+    } else if (node->type == NODE_ARRAY_ACCESS_ASSIGN) {
+        Symbole* sym = obtenirSymbole(&tableGlobale, node->data.arrayAccessAssign.arrayName);
+        if (sym != NULL) {
+            sym->initialise = 2;
+        }
+        markVariableAsUsed(node->data.arrayAccessAssign.index);
+        markVariableAsUsed(node->data.arrayAccessAssign.expression);
     } else if (node->type == NODE_EXPR_BINOP) {
         markVariableAsUsed(node->data.binOp.left);
         markVariableAsUsed(node->data.binOp.right);
@@ -546,7 +747,7 @@ void checkUnusedVariables() {
         if (sym->initialise == 1 || sym->initialise == 0) {
             char msg[256];
             sprintf(msg, "Variable '%s' déclarée mais jamais utilisée", sym->nom);
-            reportSemanticWarning(SEM_WARNING_UNUSED_VAR, msg, 0, 0);
+            reportSemanticWarning(SEM_WARNING_UNUSED_VAR, msg, sym->line, sym->column);
         }
     }
 }
@@ -565,25 +766,25 @@ int performSemanticAnalysis(ASTNode* root) {
     
     if (root->type == NODE_PROGRAM) {
         // Vérifier d'abord les doubles déclarations
-        printf("→ Vérification des doubles déclarations...\n");
+        printf("Vérification des doubles déclarations...\n");
         if (!checkForDuplicateDeclarations(root->data.program.declarations)) {
             valid = 0;
         }
         
         // Vérifier les déclarations (initialiseurs, types)
-        printf("→ Vérification des déclarations...\n");
+        printf("Vérification des déclarations...\n");
         if (!checkDeclaration(root->data.program.declarations)) {
             valid = 0;
         }
         
         // Vérifier les instructions
-        printf("→ Vérification des instructions...\n");
+        printf("Vérification des instructions...\n");
         if (!checkStatements(root->data.program.statements)) {
             valid = 0;
         }
         
         // Marquer les variables utilisées
-        printf("→ Analyse de l'utilisation des variables...\n");
+        printf("Analyse de l'utilisation des variables...\n");
         markVariableAsUsed(root->data.program.statements);
         
         // Vérifier les variables non utilisées
@@ -597,13 +798,13 @@ int performSemanticAnalysis(ASTNode* root) {
     printSemanticWarnings();
     
     if (valid && semanticErrors.count == 0) {
-        printf("\n✓ Analyse sémantique réussie !\n");
+        printf("\nAnalyse sémantique réussie !\n");
         if (semanticWarnings.count > 0) {
             printf("  (avec %d avertissement(s) non bloquant(s))\n", semanticWarnings.count);
         }
         return 1;
     } else {
-        printf("\n✗ Analyse sémantique échouée avec %d erreur(s)\n", semanticErrors.count);
+        printf("\nAnalyse sémantique échouée avec %d erreur(s)\n", semanticErrors.count);
         return 0;
     }
 }
