@@ -1,6 +1,7 @@
 #include "semantic.h"
 #include <stdio.h>
 #include <string.h>
+#include "global.h"
 
 SemanticErrorList semanticErrors;
 SemanticWarningList semanticWarnings;
@@ -72,9 +73,10 @@ void printSemanticErrors() {
     
     for (int i = 0; i < semanticErrors.count; i++) {
         SemanticError err = semanticErrors.errors[i];
-        printf(" [%s] Ligne %d, Col %d:\n   %s\n\n", 
-               semanticErrorTypeToString(err.type),
-               err.line, err.column, err.message);
+        fprintf(stderr, "File \"%s\", line %d, character %d: semantic error\n", 
+                current_filename, err.line, err.column);
+        // Optionnel : afficher aussi le message détaillé
+        fprintf(stderr, "  %s\n", err.message);
     }
     
     printf("Total: %d erreur(s) sémantique(s)\n", semanticErrors.count);

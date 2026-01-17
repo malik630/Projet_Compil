@@ -4,6 +4,7 @@
 #include <string.h>
 #include "ast.h"         
 #include "parser.tab.h"
+#include "global.h"
 
 int line_num = 1;
 int col_num = 1;
@@ -106,7 +107,12 @@ COMMENT_MULTI   \/\*([^*]|\*+[^*/])*\*+\/
 {WHITESPACE}     { col_num += yyleng; }
 {NEWLINE}        { line_num++; col_num = 1; }
 
-.                { col_num++; }
+.                { fprintf(stderr, "File \"%s\", line %d, character %d: lexical error\n", 
+            current_filename, 
+            line_num, 
+            col_num); 
+    col_num++; 
+                }
 
 
 %%

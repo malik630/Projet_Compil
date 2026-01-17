@@ -5,6 +5,7 @@
 #include "ast.h"
 #include "table_symboles_enrichie.h"
 #include "semantic.h"
+#include "global.h"
 
 extern int yylex();
 extern int yyparse();
@@ -611,5 +612,6 @@ Cond:
 %%
 
 void yyerror(const char* s) {
-    fprintf(stderr, "Parse error at line %d, col %d: %s\n", line_num, col_num, s);
+    fprintf(stderr, "File \"%s\", line %d, character %d: syntax error\n", 
+            current_filename, line_num, col_num);
 }

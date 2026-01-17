@@ -561,11 +561,12 @@ char *yytext;
 #include <string.h>
 #include "ast.h"         
 #include "parser.tab.h"
+#include "global.h"
 
 int line_num = 1;
 int col_num = 1;
-#line 568 "lex.yy.c"
 #line 569 "lex.yy.c"
+#line 570 "lex.yy.c"
 
 #define INITIAL 0
 
@@ -782,10 +783,10 @@ YY_DECL
 		}
 
 	{
-#line 25 "lexer_bison.l"
+#line 26 "lexer_bison.l"
 
 
-#line 789 "lex.yy.c"
+#line 790 "lex.yy.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -844,13 +845,13 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 27 "lexer_bison.l"
+#line 28 "lexer_bison.l"
 { /* ignore */ }
 	YY_BREAK
 case 2:
 /* rule 2 can match eol */
 YY_RULE_SETUP
-#line 28 "lexer_bison.l"
+#line 29 "lexer_bison.l"
 { 
                     for (int i = 0; i < yyleng; i++) {
                         if (yytext[i] == '\n') {
@@ -864,277 +865,277 @@ YY_RULE_SETUP
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 39 "lexer_bison.l"
+#line 40 "lexer_bison.l"
 { col_num += yyleng; return KW_BEGIN; }
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 40 "lexer_bison.l"
+#line 41 "lexer_bison.l"
 { col_num += yyleng; return KW_PROGRAM; }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 41 "lexer_bison.l"
+#line 42 "lexer_bison.l"
 { col_num += yyleng; return KW_END; }
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 42 "lexer_bison.l"
+#line 43 "lexer_bison.l"
 { col_num += yyleng; return KW_SET; }
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 43 "lexer_bison.l"
+#line 44 "lexer_bison.l"
 { col_num += yyleng; return KW_CREATE; }
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 44 "lexer_bison.l"
+#line 45 "lexer_bison.l"
 { col_num += yyleng; return KW_RECORD; }
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 45 "lexer_bison.l"
+#line 46 "lexer_bison.l"
 { col_num += yyleng; return KW_ARRAY; }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 46 "lexer_bison.l"
+#line 47 "lexer_bison.l"
 { col_num += yyleng; return KW_DICTIONARY; }
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 47 "lexer_bison.l"
+#line 48 "lexer_bison.l"
 { col_num += yyleng; return KW_INTEGER; }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 48 "lexer_bison.l"
+#line 49 "lexer_bison.l"
 { col_num += yyleng; return KW_STRING; }
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 49 "lexer_bison.l"
+#line 50 "lexer_bison.l"
 { col_num += yyleng; return KW_FLOAT; }
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 50 "lexer_bison.l"
+#line 51 "lexer_bison.l"
 { col_num += yyleng; return KW_BOOLEAN; }
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 51 "lexer_bison.l"
+#line 52 "lexer_bison.l"
 { col_num += yyleng; return KW_TRUE; }
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 52 "lexer_bison.l"
+#line 53 "lexer_bison.l"
 { col_num += yyleng; return KW_FALSE; }
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 54 "lexer_bison.l"
+#line 55 "lexer_bison.l"
 { col_num += yyleng; return KW_WHEN; }
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 55 "lexer_bison.l"
+#line 56 "lexer_bison.l"
 { col_num += yyleng; return KW_CASE_WHEN; }
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 56 "lexer_bison.l"
+#line 57 "lexer_bison.l"
 { col_num += yyleng; return KW_THEN; }
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 57 "lexer_bison.l"
+#line 58 "lexer_bison.l"
 { col_num += yyleng; return KW_OTHERWISE; }
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 58 "lexer_bison.l"
+#line 59 "lexer_bison.l"
 { col_num += yyleng; return KW_CASE; }
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 59 "lexer_bison.l"
+#line 60 "lexer_bison.l"
 { col_num += yyleng; return KW_ELSE; }
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 61 "lexer_bison.l"
+#line 62 "lexer_bison.l"
 { col_num += yyleng; return KW_LOOP; }
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 62 "lexer_bison.l"
+#line 63 "lexer_bison.l"
 { col_num += yyleng; return KW_ITERATE; }
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 63 "lexer_bison.l"
+#line 64 "lexer_bison.l"
 { col_num += yyleng; return KW_FROM; }
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 64 "lexer_bison.l"
+#line 65 "lexer_bison.l"
 { col_num += yyleng; return KW_TO; }
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 65 "lexer_bison.l"
+#line 66 "lexer_bison.l"
 { col_num += yyleng; return KW_FOREACH; }
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 66 "lexer_bison.l"
+#line 67 "lexer_bison.l"
 { col_num += yyleng; return KW_IN; }
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 68 "lexer_bison.l"
+#line 69 "lexer_bison.l"
 { col_num += yyleng; return KW_PRINT; }
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 69 "lexer_bison.l"
+#line 70 "lexer_bison.l"
 { col_num += yyleng; return KW_INPUT; }
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 71 "lexer_bison.l"
+#line 72 "lexer_bison.l"
 { col_num += yyleng; return OP_AND; }
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 72 "lexer_bison.l"
+#line 73 "lexer_bison.l"
 { col_num += yyleng; return OP_OR; }
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 73 "lexer_bison.l"
+#line 74 "lexer_bison.l"
 { col_num += yyleng; return OP_NOT; }
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 75 "lexer_bison.l"
+#line 76 "lexer_bison.l"
 { col_num += yyleng; return OP_NEQ; }
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 76 "lexer_bison.l"
+#line 77 "lexer_bison.l"
 { col_num += yyleng; return OP_LTE; }
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 77 "lexer_bison.l"
+#line 78 "lexer_bison.l"
 { col_num += yyleng; return OP_GTE; }
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 78 "lexer_bison.l"
+#line 79 "lexer_bison.l"
 { col_num += yyleng; return OP_LT; }
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 79 "lexer_bison.l"
+#line 80 "lexer_bison.l"
 { col_num += yyleng; return OP_GT; }
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 80 "lexer_bison.l"
+#line 81 "lexer_bison.l"
 { col_num += yyleng; return OP_EQ; }
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 81 "lexer_bison.l"
+#line 82 "lexer_bison.l"
 { col_num += yyleng; return OP_PLUS; }
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
-#line 82 "lexer_bison.l"
+#line 83 "lexer_bison.l"
 { col_num += yyleng; return OP_MINUS; }
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 83 "lexer_bison.l"
+#line 84 "lexer_bison.l"
 { col_num += yyleng; return OP_MULT; }
 	YY_BREAK
 case 43:
 YY_RULE_SETUP
-#line 84 "lexer_bison.l"
+#line 85 "lexer_bison.l"
 { col_num += yyleng; return OP_DIV; }
 	YY_BREAK
 case 44:
 YY_RULE_SETUP
-#line 85 "lexer_bison.l"
+#line 86 "lexer_bison.l"
 { col_num += yyleng; return OP_MOD; }
 	YY_BREAK
 case 45:
 YY_RULE_SETUP
-#line 87 "lexer_bison.l"
+#line 88 "lexer_bison.l"
 { col_num += yyleng; return SEP_LPAREN; }
 	YY_BREAK
 case 46:
 YY_RULE_SETUP
-#line 88 "lexer_bison.l"
+#line 89 "lexer_bison.l"
 { col_num += yyleng; return SEP_RPAREN; }
 	YY_BREAK
 case 47:
 YY_RULE_SETUP
-#line 89 "lexer_bison.l"
+#line 90 "lexer_bison.l"
 { col_num += yyleng; return SEP_LBRACKET; }
 	YY_BREAK
 case 48:
 YY_RULE_SETUP
-#line 90 "lexer_bison.l"
+#line 91 "lexer_bison.l"
 { col_num += yyleng; return SEP_RBRACKET; }
 	YY_BREAK
 case 49:
 YY_RULE_SETUP
-#line 91 "lexer_bison.l"
+#line 92 "lexer_bison.l"
 { col_num += yyleng; return SEP_LBRACE; }
 	YY_BREAK
 case 50:
 YY_RULE_SETUP
-#line 92 "lexer_bison.l"
+#line 93 "lexer_bison.l"
 { col_num += yyleng; return SEP_RBRACE; }
 	YY_BREAK
 case 51:
 YY_RULE_SETUP
-#line 93 "lexer_bison.l"
+#line 94 "lexer_bison.l"
 { col_num += yyleng; return SEP_COMMA; }
 	YY_BREAK
 case 52:
 YY_RULE_SETUP
-#line 94 "lexer_bison.l"
+#line 95 "lexer_bison.l"
 { col_num += yyleng; return SEP_SEMICOLON; }
 	YY_BREAK
 case 53:
 YY_RULE_SETUP
-#line 95 "lexer_bison.l"
+#line 96 "lexer_bison.l"
 { col_num += yyleng; return SEP_DOT; }
 	YY_BREAK
 case 54:
 YY_RULE_SETUP
-#line 97 "lexer_bison.l"
+#line 98 "lexer_bison.l"
 { yylval.str = strdup(yytext); col_num += yyleng; return IDENTIFIER; }
 	YY_BREAK
 case 55:
 YY_RULE_SETUP
-#line 98 "lexer_bison.l"
+#line 99 "lexer_bison.l"
 { yylval.ival = atoi(yytext); col_num += yyleng; return INT_LITERAL; }
 	YY_BREAK
 case 56:
 YY_RULE_SETUP
-#line 99 "lexer_bison.l"
+#line 100 "lexer_bison.l"
 { yylval.fval = atof(yytext); col_num += yyleng; return FLOAT_LITERAL; }
 	YY_BREAK
 case 57:
 YY_RULE_SETUP
-#line 100 "lexer_bison.l"
+#line 101 "lexer_bison.l"
 { 
                    yylval.str = strdup(yytext);
                    col_num += yyleng; 
@@ -1143,26 +1144,31 @@ YY_RULE_SETUP
 	YY_BREAK
 case 58:
 YY_RULE_SETUP
-#line 106 "lexer_bison.l"
+#line 107 "lexer_bison.l"
 { col_num += yyleng; }
 	YY_BREAK
 case 59:
 /* rule 59 can match eol */
 YY_RULE_SETUP
-#line 107 "lexer_bison.l"
+#line 108 "lexer_bison.l"
 { line_num++; col_num = 1; }
 	YY_BREAK
 case 60:
 YY_RULE_SETUP
-#line 109 "lexer_bison.l"
-{ col_num++; }
+#line 110 "lexer_bison.l"
+{ fprintf(stderr, "File \"%s\", line %d, character %d: lexical error\n", 
+            current_filename, 
+            line_num, 
+            col_num); 
+    col_num++; 
+                }
 	YY_BREAK
 case 61:
 YY_RULE_SETUP
-#line 112 "lexer_bison.l"
+#line 118 "lexer_bison.l"
 ECHO;
 	YY_BREAK
-#line 1166 "lex.yy.c"
+#line 1172 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -2167,5 +2173,5 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 112 "lexer_bison.l"
+#line 118 "lexer_bison.l"
 
