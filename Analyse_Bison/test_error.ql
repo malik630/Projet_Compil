@@ -3,7 +3,7 @@
 -- ============================================
 BEGIN PROGRAM ErrorTest1;
 
-SET x INT = 10
+SET x INTEGER = 10
 SET y INTEGER = 20;
 
 END PROGRAM;

@@ -1,9 +1,11 @@
 #include "ast.h"
 
+
 extern int line_num;
 extern int col_num;
 
 /* ======== NEW NODE CREATION FUNCTIONS ======== */
+
 
 /* Record Declaration */
 ASTNode* createRecordDeclNode(char* name, ASTNode* fields) {
@@ -424,6 +426,7 @@ void printIndent(int indent) {
         printf("  ");
     }
 }
+
 
 void printAST(ASTNode* node, int indent) {
     if (node == NULL) {

@@ -11,8 +11,6 @@ int tempCount = 0;
 void generer_quad(const char* op, char* a1, char* a2, char* res) {
     if (nextQuad >= 2000) return;
 
-    // PROTECTION RADICALE : On ne teste QUE la présence du pointeur
-    // On ne touche pas au contenu (strlen) avant d'être sûr qu'il existe
     const char* s_op  = (op)  ? op  : "UNKNOWN";
     const char* s_a1  = (a1)  ? a1  : "";
     const char* s_a2  = (a2)  ? a2  : "";

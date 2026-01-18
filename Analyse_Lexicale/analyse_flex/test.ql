@@ -29,8 +29,7 @@ SET somme FLOAT = 0.0;
 SET i INTEGER = 0;
 
 LOOP WHEN i < nombre_etudiants
-    SET locale FLOAT = notes[i];
-    somme = somme + locale;
+    somme = somme + notes[i];
     i = i + 1;
 END LOOP;
 
@@ -46,7 +45,6 @@ PRINT moyenne;
 -- Structure conditionnelle
 WHEN moyenne >= 10.0
 THEN
-    SET local INTEGER = 1;
     PRINT 'Classe reussie!';
 OTHERWISE
     PRINT 'Classe echouee!';

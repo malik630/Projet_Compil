@@ -33,8 +33,6 @@ typedef struct {
     Portee portee;              // Globale ou Locale
     int adresse;                // Adresse mémoire
     int initialise;             // 0 = non, 1 = oui
-    int line;
-    int column;      
     
     // Pour les constantes uniquement
     union {
@@ -46,7 +44,6 @@ typedef struct {
     
     // Pour les tableaux uniquement
     int taille;                 // Taille du tableau
-    TypeDonnee typeElement;
     
 } Symbole;
 
@@ -64,5 +61,5 @@ Symbole* obtenirSymbole(TableSymboles* table, char* nom);
 void afficherTable(TableSymboles* table);
 void entrerPortee(TableSymboles* table);
 void sortirPortee(TableSymboles* table);
-Symbole* rechercherSymbolePorteeActuelle(TableSymboles* table, char* nom);
+
 #endif

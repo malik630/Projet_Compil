@@ -108,21 +108,3 @@ void afficherTable(TableSymboles* table) {
     }
     printf("========================================================================================\n\n");
 }
-
-// Rechercher un symbole uniquement dans la portée actuelle
-Symbole* rechercherSymbolePorteeActuelle(TableSymboles* table, char* nom) {
-    // Parcourir du plus récent au plus ancien
-    for (int i = table->nbSymboles - 1; i >= 0; i--) {
-        // Vérifier la portée exacte
-        if (table->symboles[i].portee == table->niveauPortee) {
-            if (strcmp(table->symboles[i].nom, nom) == 0) {
-                return &table->symboles[i];
-            }
-        }
-        // Si on trouve un symbole d'une portée inférieure, on arrête
-        else if (table->symboles[i].portee < table->niveauPortee) {
-            break;
-        }
-    }
-    return NULL;
-}

@@ -41,7 +41,7 @@ int main(int argc, char* argv[]) {
     printf("═══ PHASE 2: LECTURE DU FICHIER SOURCE ═══\n");
     
     source = readFile(argv[1]);
-    printf("Fichier '%s' lu avec succès\n\n", argv[1]);
+    printf("✓ Fichier '%s' lu avec succès\n\n", argv[1]);
     
     printf("=== CODE SOURCE ===\n");
     printf("%s\n", source);

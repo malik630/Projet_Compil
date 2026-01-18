@@ -1,10 +1,14 @@
-BEGIN PROGRAM Test;
-SET arr ARRAY[INTEGER, 5] = {1, 2, 3, 4, 5};
+BEGIN PROGRAM TestTableaux;
 
-arr[10] = 20;          -- ERREUR: index hors limites (taille=5)
-arr[-1] = 30;          -- ERREUR: index négatif
-arr['hello'] = 40;     -- ERREUR: index doit être entier
-arr[0] = 'string';     -- ERREUR: type incompatible (entier attendu)
-arr[2] = 3.14;
+SET notes ARRAY[INTEGER,10];
 
+-- Test 2: Accès valide
+notes[0] = 10;
+notes[4] = 20;
+
+-- Test 3: ERREUR - Indice négatif
+notes[-1] = 5;
+
+-- Test 4: ERREUR - Indice hors limites (> taille)
+notes[10] = 15;
 END PROGRAM;

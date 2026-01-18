@@ -13,8 +13,7 @@ typedef enum {
     SEM_ERROR_DIV_BY_ZERO,
     SEM_ERROR_ARRAY_INDEX,
     SEM_ERROR_UNINITIALIZED,
-    SEM_ERROR_CONST_ASSIGNMENT,
-    SEM_ERROR_FIELD_NOT_FOUND
+    SEM_ERROR_CONST_ASSIGNMENT
 } SemanticErrorType;
 
 // Types d'avertissements (warnings)
@@ -75,12 +74,6 @@ int checkPrint(ASTNode* node);
 int checkIfStatement(ASTNode* node);
 int checkStatements(ASTNode* node);
 
-// NOUVELLES FONCTIONS pour gérer les déclarations dans les instructions
-int checkRecordDeclaration(ASTNode* node);
-int checkRecordInstance(ASTNode* node);
-int checkArrayDeclaration(ASTNode* node);
-int checkDictDeclaration(ASTNode* node);
-
 // Fonctions utilitaires
 int areTypesCompatible(DataType type1, DataType type2);
 int canConvert(DataType from, DataType to);
@@ -89,10 +82,5 @@ DataType getExpressionType(ASTNode* node);
 const char* semanticErrorTypeToString(SemanticErrorType type);
 const char* semanticWarningTypeToString(SemanticWarningType type);
 void checkUnusedVariables();
-TypeDonnee dataTypeToTypeDonnee(DataType dt);
-int evaluateConstantInt(ASTNode* node, int* result);
-int checkArrayAccessAssignment(ASTNode* node);
-int checkRecordAccessAssignment(ASTNode* node);
-int checkArrayIndex(ASTNode* node);
 
 #endif /* SEMANTIC_H */

@@ -3,13 +3,10 @@
 #include "ast.h"
 #include "parser.tab.h"
 #include "semantic.h"
-#include "global.h"
 
 extern FILE* yyin;
 extern int yyparse();
 extern ASTNode* root;
-
-char* current_filename;
 
 int main(int argc, char** argv) {
     printf("╔════════════════════════════════════════════════════════════════╗\n");
@@ -23,7 +20,6 @@ int main(int argc, char** argv) {
             return 1;
         }
         printf("Fichier source : %s\n", argv[1]);
-        current_filename = strdup(argv[1]);
     } else {
         printf("Usage : %s <fichier_source.ql>\n", argv[0]);
         return 1;
