@@ -195,6 +195,9 @@ TypeDonnee dataTypeToTypeDonnee(DataType dt) {
         case TYPE_FLOAT: return DATA_REEL;
         case TYPE_STRING: return DATA_CHAINE;
         case TYPE_BOOLEAN: return DATA_BOOLEEN;
+        case TYPE_RECORD: return DATA_ENREGISTREMENT;
+        case TYPE_ARRAY: return DATA_TABLEAU;
+        case TYPE_DICTIONARY: return DATA_DICTIONNAIRE;
         default: return DATA_ENTIER;
     }
 }

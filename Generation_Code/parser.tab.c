@@ -87,12 +87,40 @@ void yyerror(const char* s);
 
 ASTNode* root = NULL;
 
-/**** ADDED - START ****/
-TableSymboles tableGlobale;
+// TableSymboles tableGlobale est maintenant déclarée dans table_symboles_enrichie.c
+extern TableSymboles tableGlobale;
 int adresseMemoire = 0;
-/**** ADDED - END ****/
 
-#line 96 "parser.tab.c"
+#line 26 "parser.y"
+
+// Table séparée pour les définitions de types de records
+typedef struct {
+    char nom[50];
+    ASTNode* champs;  // Liste des champs
+} TypeRecord;
+
+TypeRecord typesRecords[100];
+int nbTypesRecords = 0;
+
+// Fonction pour enregistrer un type de record
+void enregistrerTypeRecord(char* nom, ASTNode* champs) {
+    strcpy(typesRecords[nbTypesRecords].nom, nom);
+    typesRecords[nbTypesRecords].champs = champs;
+    nbTypesRecords++;
+    printf("[PARSER] Type RECORD '%s' enregistré (non ajouté à la table des symboles)\n", nom);
+}
+
+// Fonction pour vérifier si un type de record existe
+int typeRecordExiste(char* nom) {
+    for (int i = 0; i < nbTypesRecords; i++) {
+        if (strcmp(typesRecords[i].nom, nom) == 0) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+#line 124 "parser.tab.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -612,16 +640,16 @@ static const yytype_int8 yytranslate[] =
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int16 yyrline[] =
 {
-       0,    70,    70,    69,    90,   128,   149,   150,   151,   155,
-     156,   157,   158,   162,   188,   189,   193,   197,   220,   221,
-     222,   226,   250,   251,   255,   256,   260,   261,   265,   266,
-     267,   268,   269,   270,   271,   272,   273,   277,   298,   313,
-     331,   335,   356,   362,   355,   374,   375,   376,   381,   387,
-     380,   400,   420,   399,   434,   461,   433,   475,   481,   474,
-     491,   497,   490,   509,   510,   522,   529,   530,   531,   535,
-     536,   537,   538,   542,   543,   544,   545,   546,   547,   565,
-     580,   595,   596,   600,   601,   602,   603,   604,   605,   606,
-     607,   608,   609
+       0,    99,    99,    98,   113,   137,   166,   167,   168,   172,
+     173,   174,   175,   179,   193,   194,   198,   202,   230,   231,
+     232,   236,   260,   261,   265,   266,   270,   271,   275,   276,
+     277,   278,   279,   280,   281,   282,   283,   287,   306,   320,
+     336,   340,   359,   363,   358,   373,   374,   375,   380,   384,
+     379,   395,   414,   394,   426,   452,   425,   464,   468,   463,
+     476,   480,   475,   490,   491,   503,   510,   511,   512,   516,
+     517,   518,   519,   523,   524,   525,   526,   527,   528,   544,
+     558,   571,   572,   576,   577,   578,   579,   580,   581,   582,
+     583,   584,   585
 };
 #endif
 
@@ -1329,347 +1357,326 @@ yyreduce:
   switch (yyn)
     {
   case 2: /* $@1: %empty  */
-#line 70 "parser.y"
+#line 99 "parser.y"
     {
-        /**** ADDED - START ****/
-        initTable(&tableGlobale);
-        /**** ADDED - END ****/
+        // La table est déjà initialisée dans main.c AVANT yyparse()
+        printf("[PARSER] Début du programme '%s'\n", (yyvsp[-1].str));
     }
-#line 1339 "parser.tab.c"
+#line 1366 "parser.tab.c"
     break;
 
   case 3: /* Program: KW_BEGIN KW_PROGRAM IDENTIFIER SEP_SEMICOLON $@1 Instrs KW_END KW_PROGRAM SEP_SEMICOLON  */
-#line 76 "parser.y"
+#line 104 "parser.y"
     {
         (yyval.node) = createProgramNode((yyvsp[-6].str), NULL, (yyvsp[-3].node)); 
         root = (yyval.node);
-        printf("\n✓ Program '%s' parsed successfully!\n", (yyvsp[-6].str));
-        
-        /**** ADDED - START ****/
-        afficherTable(&tableGlobale);
-        /**** ADDED - END ****/
-        
+        printf("\n✓ Programme '%s' analysé avec succès!\n", (yyvsp[-6].str));
         free((yyvsp[-6].str));
     }
-#line 1355 "parser.tab.c"
+#line 1377 "parser.tab.c"
     break;
 
   case 4: /* Decl: KW_SET IDENTIFIER Type OptInit SEP_SEMICOLON  */
-#line 91 "parser.y"
+#line 114 "parser.y"
     {
-        /**** ADDED - START ****/
-        Symbole sym;
-        strcpy(sym.nom, (yyvsp[-3].str));
-        sym.typeSymbole = TYPE_VARIABLE;
-        sym.line = line_num;      // AJOUTER
-        sym.column = col_num;     // AJOUTER
+        printf("[PARSER] Déclaration de '%s' de type %d\n", (yyvsp[-3].str), (yyvsp[-2].dtype));
         
-        switch((yyvsp[-2].dtype)) {
-            case TYPE_INTEGER:
-                sym.typeDonnee = DATA_ENTIER;
-                break;
-            case TYPE_FLOAT:
-                sym.typeDonnee = DATA_REEL;
-                break;
-            case TYPE_STRING:
-                sym.typeDonnee = DATA_CHAINE;
-                break;
-            case TYPE_BOOLEAN:
-                sym.typeDonnee = DATA_BOOLEEN;
-                break;
+        // L'identificateur existe déjà (ajouté par le lexer)
+        // On le met à jour avec les vraies informations
+        TypeDonnee td = dataTypeToTypeDonnee((yyvsp[-2].dtype));
+        
+        int result = mettreAJourSymbole(
+            &tableGlobale,
+            (yyvsp[-3].str),                  // Nom
+            TYPE_VARIABLE,       // Type symbole
+            td,                  // Type donnée correct
+            ((yyvsp[-1].node) != NULL) ? 1 : 0,// Initialisé si OptInit présent
+            0                    // Pas de taille
+        );
+        
+        if (result >= 0) {
+            tableGlobale.symboles[result].adresse = adresseMemoire++;
         }
-        
-        sym.portee = tableGlobale.niveauPortee;
-        sym.adresse = adresseMemoire++;
-        sym.initialise = ((yyvsp[-1].node) != NULL) ? 1 : 0;
-        
-        if (insererSymbole(&tableGlobale, sym) == -1) {
-            char msg[100];
-            sprintf(msg, "Variable '%s' déjà déclarée", (yyvsp[-3].str));
-            yyerror(msg);
-        }
-        /**** ADDED - END ****/
         
         (yyval.node) = createDeclNode((yyvsp[-3].str), (yyvsp[-2].dtype), (yyvsp[-1].node));
         free((yyvsp[-3].str));
     }
-#line 1397 "parser.tab.c"
+#line 1405 "parser.tab.c"
     break;
 
   case 5: /* Decl: KW_SET IDENTIFIER IDENTIFIER OptInit SEP_SEMICOLON  */
-#line 129 "parser.y"
+#line 138 "parser.y"
     {
-        /**** ADDED - START ****/
-        Symbole sym;
-        strcpy(sym.nom, (yyvsp[-3].str));
-        sym.typeSymbole = TYPE_VARIABLE;
-        sym.typeDonnee = DATA_ENREGISTREMENT;
-        sym.portee = tableGlobale.niveauPortee;
-        sym.adresse = adresseMemoire++;
-        sym.initialise = ((yyvsp[-1].node) != NULL) ? 1 : 0;
+        printf("[PARSER] Instance de record '%s' de type '%s'\n", (yyvsp[-3].str), (yyvsp[-2].str));
         
-        if (insererSymbole(&tableGlobale, sym) == -1) {
+        if (!typeRecordExiste((yyvsp[-2].str))) {
             char msg[100];
-            sprintf(msg, "Variable '%s' déjà déclarée", (yyvsp[-3].str));
+            sprintf(msg, "Type RECORD '%s' non défini", (yyvsp[-2].str));
             yyerror(msg);
         }
-        /**** ADDED - END ****/
+
+        supprimerSymbole(&tableGlobale, (yyvsp[-2].str));
+        
+        // Insérer uniquement l'instance dans la table
+        int result = mettreAJourSymbole(
+            &tableGlobale,
+            (yyvsp[-3].str),                      // Nom de l'instance
+            TYPE_VARIABLE,
+            DATA_ENREGISTREMENT,
+            ((yyvsp[-1].node) != NULL) ? 1 : 0,
+            0
+        );
+        
+        if (result >= 0) {
+            tableGlobale.symboles[result].adresse = adresseMemoire++;
+        }
         
         (yyval.node) = createRecordInstanceNode((yyvsp[-3].str), (yyvsp[-2].str), (yyvsp[-1].node));
         free((yyvsp[-3].str)); free((yyvsp[-2].str));
     }
-#line 1422 "parser.tab.c"
+#line 1438 "parser.tab.c"
     break;
 
   case 6: /* Decl: RecordDecl  */
-#line 149 "parser.y"
+#line 166 "parser.y"
                  { (yyval.node) = (yyvsp[0].node); }
-#line 1428 "parser.tab.c"
+#line 1444 "parser.tab.c"
     break;
 
   case 7: /* Decl: ArrayDecl  */
-#line 150 "parser.y"
+#line 167 "parser.y"
                  { (yyval.node) = (yyvsp[0].node); }
-#line 1434 "parser.tab.c"
+#line 1450 "parser.tab.c"
     break;
 
   case 8: /* Decl: DictDecl  */
-#line 151 "parser.y"
+#line 168 "parser.y"
                  { (yyval.node) = (yyvsp[0].node); }
-#line 1440 "parser.tab.c"
+#line 1456 "parser.tab.c"
     break;
 
   case 9: /* Type: KW_INTEGER  */
-#line 155 "parser.y"
+#line 172 "parser.y"
                  { (yyval.dtype) = TYPE_INTEGER; }
-#line 1446 "parser.tab.c"
+#line 1462 "parser.tab.c"
     break;
 
   case 10: /* Type: KW_STRING  */
-#line 156 "parser.y"
+#line 173 "parser.y"
                  { (yyval.dtype) = TYPE_STRING; }
-#line 1452 "parser.tab.c"
+#line 1468 "parser.tab.c"
     break;
 
   case 11: /* Type: KW_FLOAT  */
-#line 157 "parser.y"
+#line 174 "parser.y"
                  { (yyval.dtype) = TYPE_FLOAT; }
-#line 1458 "parser.tab.c"
+#line 1474 "parser.tab.c"
     break;
 
   case 12: /* Type: KW_BOOLEAN  */
-#line 158 "parser.y"
+#line 175 "parser.y"
                  { (yyval.dtype) = TYPE_BOOLEAN; }
-#line 1464 "parser.tab.c"
+#line 1480 "parser.tab.c"
     break;
 
   case 13: /* RecordDecl: KW_CREATE KW_RECORD IDENTIFIER SEP_LPAREN FieldList SEP_RPAREN SEP_SEMICOLON  */
-#line 163 "parser.y"
+#line 180 "parser.y"
     {
-        /**** ADDED - START ****/
-        Symbole sym;
-        strcpy(sym.nom, (yyvsp[-4].str));
-        sym.typeSymbole = TYPE_VARIABLE;
-        sym.typeDonnee = DATA_ENREGISTREMENT;
-        sym.portee = tableGlobale.niveauPortee;
-        sym.adresse = adresseMemoire++;
-        sym.initialise = 1;
-        sym.line = line_num;
-        sym.column = col_num;
-        
-        if (insererSymbole(&tableGlobale, sym) == -1) {
-            char msg[100];
-            sprintf(msg, "Record '%s' déjà déclaré", (yyvsp[-4].str));
-            yyerror(msg);
-        }
-        /**** ADDED - END ****/
+        printf("[PARSER] Déclaration de record '%s'\n", (yyvsp[-4].str));
+
+        enregistrerTypeRecord((yyvsp[-4].str),(yyvsp[-2].node));
+        supprimerSymbole(&tableGlobale, (yyvsp[-4].str));
+        //nettoyerChampsRecord(&tableGlobale, $5);
         
         (yyval.node) = createRecordDeclNode((yyvsp[-4].str), (yyvsp[-2].node));
         free((yyvsp[-4].str));
     }
-#line 1491 "parser.tab.c"
+#line 1495 "parser.tab.c"
     break;
 
   case 14: /* FieldList: Field  */
-#line 188 "parser.y"
+#line 193 "parser.y"
                                 { (yyval.node) = (yyvsp[0].node); }
-#line 1497 "parser.tab.c"
+#line 1501 "parser.tab.c"
     break;
 
   case 15: /* FieldList: FieldList SEP_COMMA Field  */
-#line 189 "parser.y"
+#line 194 "parser.y"
                                 { (yyval.node) = createFieldListNode((yyvsp[0].node), (yyvsp[-2].node)); }
-#line 1503 "parser.tab.c"
+#line 1507 "parser.tab.c"
     break;
 
   case 16: /* Field: IDENTIFIER Type  */
-#line 193 "parser.y"
+#line 198 "parser.y"
                     { (yyval.node) = createFieldNode((yyvsp[-1].str), (yyvsp[0].dtype)); free((yyvsp[-1].str)); }
-#line 1509 "parser.tab.c"
+#line 1513 "parser.tab.c"
     break;
 
   case 17: /* ArrayDecl: KW_SET IDENTIFIER KW_ARRAY SEP_LBRACKET Type SEP_COMMA INT_LITERAL SEP_RBRACKET ArrayInit SEP_SEMICOLON  */
-#line 198 "parser.y"
+#line 203 "parser.y"
     {
-        Symbole sym;
-        strcpy(sym.nom, (yyvsp[-8].str));
-        sym.typeSymbole = TYPE_VARIABLE;
-        sym.typeDonnee = DATA_TABLEAU;
-        sym.portee = tableGlobale.niveauPortee;
-        sym.adresse = adresseMemoire++;
-        sym.initialise = ((yyvsp[-1].node) != NULL) ? 1 : 0;
-        sym.taille = (yyvsp[-3].ival);
-        sym.typeElement = dataTypeToTypeDonnee((yyvsp[-5].dtype));
+        printf("[PARSER] Déclaration de tableau '%s' de type %d, taille %d\n", 
+               (yyvsp[-8].str), (yyvsp[-5].dtype), (yyvsp[-3].ival));
         
-        if (insererSymbole(&tableGlobale, sym) == -1) {
-            char msg[100];
-            sprintf(msg, "Array '%s' déjà déclaré", (yyvsp[-8].str));
-            yyerror(msg);
+        TypeDonnee td = dataTypeToTypeDonnee((yyvsp[-5].dtype));
+        
+        // Mettre à jour : c'est un tableau
+        int result = mettreAJourSymbole(
+            &tableGlobale,
+            (yyvsp[-8].str),
+            TYPE_TABLEAU,       // Type symbole
+            DATA_TABLEAU,       // Type donnée
+            ((yyvsp[-1].node) != NULL) ? 1 : 0,  // Initialisé si ArrayInit présent
+            (yyvsp[-3].ival)                  // TAILLE
+        );
+        
+        if (result >= 0) {
+            tableGlobale.symboles[result].typeElement = td;
+            tableGlobale.symboles[result].adresse = adresseMemoire++;
         }
         
         (yyval.node) = createArrayDeclNode((yyvsp[-8].str), (yyvsp[-5].dtype), (yyvsp[-3].ival), (yyvsp[-1].node));
         free((yyvsp[-8].str));
     }
-#line 1534 "parser.tab.c"
+#line 1542 "parser.tab.c"
     break;
 
   case 18: /* ArrayInit: OP_EQ SEP_LBRACE ExprList SEP_RBRACE  */
-#line 220 "parser.y"
+#line 230 "parser.y"
                                          { (yyval.node) = (yyvsp[-1].node); }
-#line 1540 "parser.tab.c"
+#line 1548 "parser.tab.c"
     break;
 
   case 19: /* ArrayInit: OP_EQ Expr  */
-#line 221 "parser.y"
+#line 231 "parser.y"
                                          { (yyval.node) = (yyvsp[0].node); }
-#line 1546 "parser.tab.c"
+#line 1554 "parser.tab.c"
     break;
 
   case 20: /* ArrayInit: %empty  */
-#line 222 "parser.y"
+#line 232 "parser.y"
                                          { (yyval.node) = NULL; }
-#line 1552 "parser.tab.c"
+#line 1560 "parser.tab.c"
     break;
 
   case 21: /* DictDecl: KW_SET IDENTIFIER KW_DICTIONARY OP_LT Type SEP_COMMA Type OP_GT SEP_SEMICOLON  */
-#line 227 "parser.y"
+#line 237 "parser.y"
     {
-        /**** ADDED - START ****/
-        Symbole sym;
-        strcpy(sym.nom, (yyvsp[-7].str));
-        sym.typeSymbole = TYPE_VARIABLE;
-        sym.typeDonnee = DATA_DICTIONNAIRE;
-        sym.portee = tableGlobale.niveauPortee;
-        sym.adresse = adresseMemoire++;
-        sym.initialise = 0;
+        printf("[PARSER] Déclaration de dictionnaire '%s'\n", (yyvsp[-7].str));
         
-        if (insererSymbole(&tableGlobale, sym) == -1) {
-            char msg[100];
-            sprintf(msg, "Dictionary '%s' déjà déclaré", (yyvsp[-7].str));
-            yyerror(msg);
+        // Mettre à jour : c'est un dictionnaire
+        int result = mettreAJourSymbole(
+            &tableGlobale,
+            (yyvsp[-7].str),
+            TYPE_VARIABLE,
+            DATA_DICTIONNAIRE,
+            0,
+            0
+        );
+        
+        if (result >= 0) {
+            tableGlobale.symboles[result].adresse = adresseMemoire++;
         }
-        /**** ADDED - END ****/
         
         (yyval.node) = createDictDeclNode((yyvsp[-7].str), (yyvsp[-4].dtype), (yyvsp[-2].dtype));
         free((yyvsp[-7].str));
     }
-#line 1577 "parser.tab.c"
+#line 1585 "parser.tab.c"
     break;
 
   case 22: /* OptInit: OP_EQ Expr  */
-#line 250 "parser.y"
+#line 260 "parser.y"
                   { (yyval.node) = (yyvsp[0].node); }
-#line 1583 "parser.tab.c"
+#line 1591 "parser.tab.c"
     break;
 
   case 23: /* OptInit: %empty  */
-#line 251 "parser.y"
+#line 261 "parser.y"
                   { (yyval.node) = NULL; }
-#line 1589 "parser.tab.c"
+#line 1597 "parser.tab.c"
     break;
 
   case 24: /* ExprList: Expr  */
-#line 255 "parser.y"
+#line 265 "parser.y"
                                 { (yyval.node) = createExprListNode((yyvsp[0].node), NULL); }
-#line 1595 "parser.tab.c"
+#line 1603 "parser.tab.c"
     break;
 
   case 25: /* ExprList: ExprList SEP_COMMA Expr  */
-#line 256 "parser.y"
+#line 266 "parser.y"
                                 { (yyval.node) = createExprListNode((yyvsp[0].node), (yyvsp[-2].node)); }
-#line 1601 "parser.tab.c"
+#line 1609 "parser.tab.c"
     break;
 
   case 26: /* Instrs: %empty  */
-#line 260 "parser.y"
+#line 270 "parser.y"
                     { (yyval.node) = NULL; }
-#line 1607 "parser.tab.c"
+#line 1615 "parser.tab.c"
     break;
 
   case 27: /* Instrs: Instrs Instr  */
-#line 261 "parser.y"
+#line 271 "parser.y"
                     { (yyval.node) = createStmtListNode((yyvsp[0].node), (yyvsp[-1].node)); }
-#line 1613 "parser.tab.c"
+#line 1621 "parser.tab.c"
     break;
 
   case 28: /* Instr: Assign  */
-#line 265 "parser.y"
+#line 275 "parser.y"
                 { (yyval.node) = (yyvsp[0].node); }
-#line 1619 "parser.tab.c"
+#line 1627 "parser.tab.c"
     break;
 
   case 29: /* Instr: Print  */
-#line 266 "parser.y"
+#line 276 "parser.y"
                 { (yyval.node) = (yyvsp[0].node); }
-#line 1625 "parser.tab.c"
+#line 1633 "parser.tab.c"
     break;
 
   case 30: /* Instr: If  */
-#line 267 "parser.y"
+#line 277 "parser.y"
                 { (yyval.node) = (yyvsp[0].node); }
-#line 1631 "parser.tab.c"
+#line 1639 "parser.tab.c"
     break;
 
   case 31: /* Instr: While  */
-#line 268 "parser.y"
+#line 278 "parser.y"
                 { (yyval.node) = (yyvsp[0].node); }
-#line 1637 "parser.tab.c"
+#line 1645 "parser.tab.c"
     break;
 
   case 32: /* Instr: For  */
-#line 269 "parser.y"
+#line 279 "parser.y"
                 { (yyval.node) = (yyvsp[0].node); }
-#line 1643 "parser.tab.c"
+#line 1651 "parser.tab.c"
     break;
 
   case 33: /* Instr: Case  */
-#line 270 "parser.y"
+#line 280 "parser.y"
                 { (yyval.node) = (yyvsp[0].node); }
-#line 1649 "parser.tab.c"
+#line 1657 "parser.tab.c"
     break;
 
   case 34: /* Instr: Input  */
-#line 271 "parser.y"
+#line 281 "parser.y"
                 { (yyval.node) = (yyvsp[0].node); }
-#line 1655 "parser.tab.c"
+#line 1663 "parser.tab.c"
     break;
 
   case 35: /* Instr: ForEach  */
-#line 272 "parser.y"
+#line 282 "parser.y"
                 { (yyval.node) = (yyvsp[0].node); }
-#line 1661 "parser.tab.c"
+#line 1669 "parser.tab.c"
     break;
 
   case 36: /* Instr: Decl  */
-#line 273 "parser.y"
+#line 283 "parser.y"
                 { (yyval.node) = (yyvsp[0].node); }
-#line 1667 "parser.tab.c"
+#line 1675 "parser.tab.c"
     break;
 
   case 37: /* Assign: IDENTIFIER OP_EQ Expr SEP_SEMICOLON  */
-#line 278 "parser.y"
+#line 288 "parser.y"
     {
-        /**** ADDED - START ****/
         Symbole* sym = obtenirSymbole(&tableGlobale, (yyvsp[-3].str));
         
         if (sym == NULL) {
@@ -1683,18 +1690,16 @@ yyreduce:
         } else {
             sym->initialise = 1;
         }
-        /**** ADDED - END ****/
         
         (yyval.node) = createAssignNode((yyvsp[-3].str), (yyvsp[-1].node));
         free((yyvsp[-3].str));
     }
-#line 1692 "parser.tab.c"
+#line 1698 "parser.tab.c"
     break;
 
   case 38: /* Assign: IDENTIFIER SEP_DOT IDENTIFIER OP_EQ Expr SEP_SEMICOLON  */
-#line 299 "parser.y"
+#line 307 "parser.y"
     {
-        /**** ADDED - START ****/
         Symbole* sym = obtenirSymbole(&tableGlobale, (yyvsp[-5].str));
         
         if (sym == NULL) {
@@ -1702,18 +1707,17 @@ yyreduce:
             sprintf(msg, "Record '%s' non déclaré", (yyvsp[-5].str));
             yyerror(msg);
         }
-        /**** ADDED - END ****/
         
+        supprimerSymbole(&tableGlobale, (yyvsp[-3].str));
         (yyval.node) = createRecordAccessAssignNode((yyvsp[-5].str), (yyvsp[-3].str), (yyvsp[-1].node));
         free((yyvsp[-5].str)); free((yyvsp[-3].str));
     }
-#line 1711 "parser.tab.c"
+#line 1716 "parser.tab.c"
     break;
 
   case 39: /* Assign: IDENTIFIER SEP_LBRACKET Expr SEP_RBRACKET OP_EQ Expr SEP_SEMICOLON  */
-#line 314 "parser.y"
+#line 321 "parser.y"
     {
-        /**** ADDED - START ****/
         Symbole* sym = obtenirSymbole(&tableGlobale, (yyvsp[-6].str));
         
         if (sym == NULL) {
@@ -1721,24 +1725,22 @@ yyreduce:
             sprintf(msg, "Array '%s' non déclaré", (yyvsp[-6].str));
             yyerror(msg);
         }
-        /**** ADDED - END ****/
         
         (yyval.node) = createArrayAccessAssignNode((yyvsp[-6].str), (yyvsp[-4].node), (yyvsp[-1].node));
         free((yyvsp[-6].str));
     }
-#line 1730 "parser.tab.c"
+#line 1733 "parser.tab.c"
     break;
 
   case 40: /* Print: KW_PRINT Expr SEP_SEMICOLON  */
-#line 331 "parser.y"
+#line 336 "parser.y"
                                 { (yyval.node) = createPrintNode((yyvsp[-1].node)); }
-#line 1736 "parser.tab.c"
+#line 1739 "parser.tab.c"
     break;
 
   case 41: /* Input: KW_INPUT IDENTIFIER SEP_SEMICOLON  */
-#line 336 "parser.y"
+#line 341 "parser.y"
     { 
-        /**** ADDED - START ****/
         Symbole* sym = obtenirSymbole(&tableGlobale, (yyvsp[-1].str));
         
         if (sym == NULL) {
@@ -1748,135 +1750,122 @@ yyreduce:
         } else {
             sym->initialise = 1;
         }
-        /**** ADDED - END ****/
         
         (yyval.node) = createInputNode((yyvsp[-1].str)); 
         free((yyvsp[-1].str)); 
     }
-#line 1757 "parser.tab.c"
+#line 1758 "parser.tab.c"
     break;
 
   case 42: /* $@2: %empty  */
-#line 356 "parser.y"
+#line 359 "parser.y"
     {
-        /**** ADDED - START ****/
         entrerPortee(&tableGlobale);
-        /**** ADDED - END ****/
     }
-#line 1767 "parser.tab.c"
+#line 1766 "parser.tab.c"
     break;
 
   case 43: /* $@3: %empty  */
-#line 362 "parser.y"
+#line 363 "parser.y"
     {
-        /**** ADDED - START ****/
         sortirPortee(&tableGlobale);
-        /**** ADDED - END ****/
     }
-#line 1777 "parser.tab.c"
+#line 1774 "parser.tab.c"
     break;
 
   case 44: /* If: KW_WHEN Cond KW_THEN $@2 Instrs OptElse $@3 KW_END KW_WHEN SEP_SEMICOLON  */
-#line 368 "parser.y"
+#line 367 "parser.y"
     {
         (yyval.node) = createIfNode((yyvsp[-8].node), (yyvsp[-5].node), (yyvsp[-4].node));
     }
-#line 1785 "parser.tab.c"
+#line 1782 "parser.tab.c"
     break;
 
   case 45: /* OptElse: KW_ELSE Instrs  */
-#line 374 "parser.y"
+#line 373 "parser.y"
                           { (yyval.node) = (yyvsp[0].node); }
-#line 1791 "parser.tab.c"
+#line 1788 "parser.tab.c"
     break;
 
   case 46: /* OptElse: KW_OTHERWISE Instrs  */
-#line 375 "parser.y"
+#line 374 "parser.y"
                           { (yyval.node) = (yyvsp[0].node); }
-#line 1797 "parser.tab.c"
+#line 1794 "parser.tab.c"
     break;
 
   case 47: /* OptElse: %empty  */
-#line 376 "parser.y"
+#line 375 "parser.y"
                           { (yyval.node) = NULL; }
-#line 1803 "parser.tab.c"
+#line 1800 "parser.tab.c"
     break;
 
   case 48: /* $@4: %empty  */
-#line 381 "parser.y"
+#line 380 "parser.y"
     {
-        /**** ADDED - START ****/
         entrerPortee(&tableGlobale);
-        /**** ADDED - END ****/
     }
-#line 1813 "parser.tab.c"
+#line 1808 "parser.tab.c"
     break;
 
   case 49: /* $@5: %empty  */
-#line 387 "parser.y"
+#line 384 "parser.y"
     {
-        /**** ADDED - START ****/
         sortirPortee(&tableGlobale);
-        /**** ADDED - END ****/
     }
-#line 1823 "parser.tab.c"
+#line 1816 "parser.tab.c"
     break;
 
   case 50: /* While: KW_LOOP KW_WHEN Cond $@4 Instrs $@5 KW_END KW_LOOP SEP_SEMICOLON  */
-#line 393 "parser.y"
+#line 388 "parser.y"
     {
         (yyval.node) = createWhileNode((yyvsp[-6].node), (yyvsp[-4].node));
     }
-#line 1831 "parser.tab.c"
+#line 1824 "parser.tab.c"
     break;
 
   case 51: /* $@6: %empty  */
-#line 400 "parser.y"
+#line 395 "parser.y"
     {
-        /**** ADDED - START ****/
         entrerPortee(&tableGlobale);
         
-        Symbole sym;
-        strcpy(sym.nom, (yyvsp[0].str));
-        sym.typeSymbole = TYPE_VARIABLE;
-        sym.typeDonnee = DATA_ENTIER;
-        sym.portee = tableGlobale.niveauPortee;
-        sym.adresse = adresseMemoire++;
-        sym.initialise = 1;
+        // Mettre à jour l'itérateur
+        int result = mettreAJourSymbole(
+            &tableGlobale,
+            (yyvsp[0].str),
+            TYPE_VARIABLE,
+            DATA_ENTIER,
+            1,  // Initialisé automatiquement
+            0
+        );
         
-        if (insererSymbole(&tableGlobale, sym) == -1) {
-            char msg[100];
-            sprintf(msg, "Variable '%s' déjà déclarée", (yyvsp[0].str));
-            yyerror(msg);
+        if (result >= 0) {
+            tableGlobale.symboles[result].portee = tableGlobale.niveauPortee;
+            tableGlobale.symboles[result].adresse = adresseMemoire++;
         }
-        /**** ADDED - END ****/
+    }
+#line 1847 "parser.tab.c"
+    break;
+
+  case 52: /* $@7: %empty  */
+#line 414 "parser.y"
+    {
+        sortirPortee(&tableGlobale);
     }
 #line 1855 "parser.tab.c"
     break;
 
-  case 52: /* $@7: %empty  */
-#line 420 "parser.y"
-    {
-        /**** ADDED - START ****/
-        sortirPortee(&tableGlobale);
-        /**** ADDED - END ****/
-    }
-#line 1865 "parser.tab.c"
-    break;
-
   case 53: /* For: KW_LOOP KW_ITERATE IDENTIFIER $@6 KW_FROM Expr KW_TO Expr Instrs $@7 KW_END KW_LOOP SEP_SEMICOLON  */
-#line 426 "parser.y"
+#line 418 "parser.y"
     {
         (yyval.node) = createForNode((yyvsp[-10].str), (yyvsp[-7].node), (yyvsp[-5].node), (yyvsp[-4].node));
         free((yyvsp[-10].str));
     }
-#line 1874 "parser.tab.c"
+#line 1864 "parser.tab.c"
     break;
 
   case 54: /* $@8: %empty  */
-#line 434 "parser.y"
+#line 426 "parser.y"
     {
-        /**** ADDED - START ****/
         entrerPortee(&tableGlobale);
         
         Symbole* arraySym = obtenirSymbole(&tableGlobale, (yyvsp[0].str));
@@ -1886,107 +1875,97 @@ yyreduce:
             yyerror(msg);
         }
         
-        Symbole sym;
-        strcpy(sym.nom, (yyvsp[-2].str));
-        sym.typeSymbole = TYPE_VARIABLE;
-        sym.typeDonnee = DATA_ENTIER;
-        sym.portee = tableGlobale.niveauPortee;
-        sym.adresse = adresseMemoire++;
-        sym.initialise = 1;
+        // Mettre à jour l'itérateur
+        int result = mettreAJourSymbole(
+            &tableGlobale,
+            (yyvsp[-2].str),
+            TYPE_VARIABLE,
+            DATA_ENTIER,
+            1,
+            0
+        );
         
-        if (insererSymbole(&tableGlobale, sym) == -1) {
-            char msg[100];
-            sprintf(msg, "Variable '%s' déjà déclarée", (yyvsp[-2].str));
-            yyerror(msg);
+        if (result >= 0) {
+            tableGlobale.symboles[result].portee = tableGlobale.niveauPortee;
+            tableGlobale.symboles[result].adresse = adresseMemoire++;
         }
-        /**** ADDED - END ****/
     }
-#line 1905 "parser.tab.c"
+#line 1894 "parser.tab.c"
     break;
 
   case 55: /* $@9: %empty  */
-#line 461 "parser.y"
+#line 452 "parser.y"
     {
-        /**** ADDED - START ****/
         sortirPortee(&tableGlobale);
-        /**** ADDED - END ****/
     }
-#line 1915 "parser.tab.c"
+#line 1902 "parser.tab.c"
     break;
 
   case 56: /* ForEach: KW_FOREACH IDENTIFIER KW_IN IDENTIFIER $@8 SEP_LBRACE Instrs $@9 SEP_RBRACE  */
-#line 467 "parser.y"
+#line 456 "parser.y"
     {
         (yyval.node) = createForEachNode((yyvsp[-7].str), (yyvsp[-5].str), (yyvsp[-2].node));
         free((yyvsp[-7].str)); free((yyvsp[-5].str));
     }
-#line 1924 "parser.tab.c"
+#line 1911 "parser.tab.c"
     break;
 
   case 57: /* $@10: %empty  */
-#line 475 "parser.y"
+#line 464 "parser.y"
     {
-        /**** ADDED - START ****/
         entrerPortee(&tableGlobale);
-        /**** ADDED - END ****/
     }
-#line 1934 "parser.tab.c"
+#line 1919 "parser.tab.c"
     break;
 
   case 58: /* $@11: %empty  */
-#line 481 "parser.y"
+#line 468 "parser.y"
     {
-        /**** ADDED - START ****/
         sortirPortee(&tableGlobale);
-        /**** ADDED - END ****/
     }
-#line 1944 "parser.tab.c"
+#line 1927 "parser.tab.c"
     break;
 
   case 59: /* Case: KW_CASE CaseList $@10 KW_END KW_CASE $@11 SEP_SEMICOLON  */
-#line 487 "parser.y"
+#line 472 "parser.y"
     {
         (yyval.node) = createCaseNode((yyvsp[-5].node), NULL);
     }
-#line 1952 "parser.tab.c"
+#line 1935 "parser.tab.c"
     break;
 
   case 60: /* $@12: %empty  */
-#line 491 "parser.y"
+#line 476 "parser.y"
     {
-        /**** ADDED - START ****/
         entrerPortee(&tableGlobale);
-        /**** ADDED - END ****/
     }
-#line 1962 "parser.tab.c"
+#line 1943 "parser.tab.c"
     break;
 
   case 61: /* $@13: %empty  */
-#line 497 "parser.y"
+#line 480 "parser.y"
     {
-        /**** ADDED - START ****/
         sortirPortee(&tableGlobale);
-        /**** ADDED - END ****/
     }
-#line 1972 "parser.tab.c"
+#line 1951 "parser.tab.c"
     break;
 
   case 62: /* Case: KW_CASE CaseList KW_ELSE $@12 Instrs KW_END KW_CASE $@13 SEP_SEMICOLON  */
-#line 503 "parser.y"
+#line 484 "parser.y"
     {
         (yyval.node) = createCaseNode((yyvsp[-7].node), (yyvsp[-4].node));
     }
-#line 1980 "parser.tab.c"
+#line 1959 "parser.tab.c"
     break;
 
   case 63: /* CaseList: CaseItem  */
-#line 509 "parser.y"
+#line 490 "parser.y"
              { (yyval.node) = (yyvsp[0].node); }
-#line 1986 "parser.tab.c"
+#line 1965 "parser.tab.c"
     break;
 
   case 64: /* CaseList: CaseList CaseItem  */
-#line 511 "parser.y"
+#line 492 "parser.y"
     {
         ASTNode* temp = (yyvsp[-1].node);
         while (temp->data.caseItem.next != NULL) {
@@ -1995,93 +1974,92 @@ yyreduce:
         temp->data.caseItem.next = (yyvsp[0].node);
         (yyval.node) = (yyvsp[-1].node);
     }
-#line 1999 "parser.tab.c"
+#line 1978 "parser.tab.c"
     break;
 
   case 65: /* CaseItem: KW_CASE_WHEN Cond KW_THEN Instrs  */
-#line 523 "parser.y"
+#line 504 "parser.y"
     {
         (yyval.node) = createCaseItemNode((yyvsp[-2].node), (yyvsp[0].node), NULL);
     }
-#line 2007 "parser.tab.c"
+#line 1986 "parser.tab.c"
     break;
 
   case 66: /* Expr: Expr OP_PLUS Term  */
-#line 529 "parser.y"
+#line 510 "parser.y"
                           { (yyval.node) = createBinOpNode(AST_OP_ADD, (yyvsp[-2].node), (yyvsp[0].node)); }
-#line 2013 "parser.tab.c"
+#line 1992 "parser.tab.c"
     break;
 
   case 67: /* Expr: Expr OP_MINUS Term  */
-#line 530 "parser.y"
+#line 511 "parser.y"
                             { (yyval.node) = createBinOpNode(AST_OP_SUB, (yyvsp[-2].node), (yyvsp[0].node)); }
-#line 2019 "parser.tab.c"
+#line 1998 "parser.tab.c"
     break;
 
   case 68: /* Expr: Term  */
-#line 531 "parser.y"
+#line 512 "parser.y"
                             { (yyval.node) = (yyvsp[0].node); }
-#line 2025 "parser.tab.c"
+#line 2004 "parser.tab.c"
     break;
 
   case 69: /* Term: Term OP_MULT Factor  */
-#line 535 "parser.y"
+#line 516 "parser.y"
                           { (yyval.node) = createBinOpNode(AST_OP_MUL, (yyvsp[-2].node), (yyvsp[0].node)); }
-#line 2031 "parser.tab.c"
+#line 2010 "parser.tab.c"
     break;
 
   case 70: /* Term: Term OP_DIV Factor  */
-#line 536 "parser.y"
+#line 517 "parser.y"
                             { (yyval.node) = createBinOpNode(AST_OP_DIV, (yyvsp[-2].node), (yyvsp[0].node)); }
-#line 2037 "parser.tab.c"
+#line 2016 "parser.tab.c"
     break;
 
   case 71: /* Term: Term OP_MOD Factor  */
-#line 537 "parser.y"
+#line 518 "parser.y"
                             { (yyval.node) = createBinOpNode(AST_OP_MOD, (yyvsp[-2].node), (yyvsp[0].node)); }
-#line 2043 "parser.tab.c"
+#line 2022 "parser.tab.c"
     break;
 
   case 72: /* Term: Factor  */
-#line 538 "parser.y"
+#line 519 "parser.y"
                             { (yyval.node) = (yyvsp[0].node); }
-#line 2049 "parser.tab.c"
+#line 2028 "parser.tab.c"
     break;
 
   case 73: /* Factor: INT_LITERAL  */
-#line 542 "parser.y"
+#line 523 "parser.y"
                        { (yyval.node) = createIntLiteralNode((yyvsp[0].ival)); }
-#line 2055 "parser.tab.c"
+#line 2034 "parser.tab.c"
     break;
 
   case 74: /* Factor: FLOAT_LITERAL  */
-#line 543 "parser.y"
+#line 524 "parser.y"
                        { (yyval.node) = createFloatLiteralNode((yyvsp[0].fval)); }
-#line 2061 "parser.tab.c"
+#line 2040 "parser.tab.c"
     break;
 
   case 75: /* Factor: STRING_LITERAL  */
-#line 544 "parser.y"
+#line 525 "parser.y"
                        { (yyval.node) = createStringLiteralNode((yyvsp[0].str)); free((yyvsp[0].str)); }
-#line 2067 "parser.tab.c"
+#line 2046 "parser.tab.c"
     break;
 
   case 76: /* Factor: KW_TRUE  */
-#line 545 "parser.y"
+#line 526 "parser.y"
                        { (yyval.node) = createBoolLiteralNode(1); }
-#line 2073 "parser.tab.c"
+#line 2052 "parser.tab.c"
     break;
 
   case 77: /* Factor: KW_FALSE  */
-#line 546 "parser.y"
+#line 527 "parser.y"
                        { (yyval.node) = createBoolLiteralNode(0); }
-#line 2079 "parser.tab.c"
+#line 2058 "parser.tab.c"
     break;
 
   case 78: /* Factor: IDENTIFIER  */
-#line 548 "parser.y"
+#line 529 "parser.y"
     { 
-        /**** ADDED - START ****/
         Symbole* sym = obtenirSymbole(&tableGlobale, (yyvsp[0].str));
         
         if (sym == NULL) {
@@ -2092,18 +2070,16 @@ yyreduce:
             printf("Attention ligne %d : variable '%s' utilisée sans initialisation\n", 
                    line_num, (yyvsp[0].str));
         }
-        /**** ADDED - END ****/
         
         (yyval.node) = createIdentifierNode((yyvsp[0].str)); 
         free((yyvsp[0].str)); 
     }
-#line 2101 "parser.tab.c"
+#line 2078 "parser.tab.c"
     break;
 
   case 79: /* Factor: IDENTIFIER SEP_DOT IDENTIFIER  */
-#line 566 "parser.y"
+#line 545 "parser.y"
     { 
-        /**** ADDED - START ****/
         Symbole* sym = obtenirSymbole(&tableGlobale, (yyvsp[-2].str));
         
         if (sym == NULL) {
@@ -2111,18 +2087,17 @@ yyreduce:
             sprintf(msg, "Record '%s' non déclaré", (yyvsp[-2].str));
             yyerror(msg);
         }
-        /**** ADDED - END ****/
         
+        supprimerSymbole(&tableGlobale, (yyvsp[0].str));
         (yyval.node) = createRecordAccessNode((yyvsp[-2].str), (yyvsp[0].str)); 
         free((yyvsp[-2].str)); free((yyvsp[0].str)); 
     }
-#line 2120 "parser.tab.c"
+#line 2096 "parser.tab.c"
     break;
 
   case 80: /* Factor: IDENTIFIER SEP_LBRACKET Expr SEP_RBRACKET  */
-#line 581 "parser.y"
+#line 559 "parser.y"
     { 
-        /**** ADDED - START ****/
         Symbole* sym = obtenirSymbole(&tableGlobale, (yyvsp[-3].str));
         
         if (sym == NULL) {
@@ -2130,88 +2105,87 @@ yyreduce:
             sprintf(msg, "Array '%s' non déclaré", (yyvsp[-3].str));
             yyerror(msg);
         }
-        /**** ADDED - END ****/
         
         (yyval.node) = createArrayAccessNode((yyvsp[-3].str), (yyvsp[-1].node)); 
         free((yyvsp[-3].str)); 
     }
-#line 2139 "parser.tab.c"
+#line 2113 "parser.tab.c"
     break;
 
   case 81: /* Factor: SEP_LPAREN Expr SEP_RPAREN  */
-#line 595 "parser.y"
+#line 571 "parser.y"
                                  { (yyval.node) = (yyvsp[-1].node); }
-#line 2145 "parser.tab.c"
+#line 2119 "parser.tab.c"
     break;
 
   case 82: /* Factor: OP_MINUS Factor  */
-#line 596 "parser.y"
+#line 572 "parser.y"
                                    { (yyval.node) = createUnaryOpNode(AST_OP_NEG, (yyvsp[0].node)); }
-#line 2151 "parser.tab.c"
+#line 2125 "parser.tab.c"
     break;
 
   case 83: /* Cond: Cond OP_AND Cond  */
-#line 600 "parser.y"
+#line 576 "parser.y"
                         { (yyval.node) = createBinOpNode(AST_OP_AND, (yyvsp[-2].node), (yyvsp[0].node)); }
-#line 2157 "parser.tab.c"
+#line 2131 "parser.tab.c"
     break;
 
   case 84: /* Cond: Cond OP_OR Cond  */
-#line 601 "parser.y"
+#line 577 "parser.y"
                           { (yyval.node) = createBinOpNode(AST_OP_OR, (yyvsp[-2].node), (yyvsp[0].node)); }
-#line 2163 "parser.tab.c"
+#line 2137 "parser.tab.c"
     break;
 
   case 85: /* Cond: OP_NOT Cond  */
-#line 602 "parser.y"
+#line 578 "parser.y"
                           { (yyval.node) = createUnaryOpNode(AST_OP_NOT, (yyvsp[0].node)); }
-#line 2169 "parser.tab.c"
+#line 2143 "parser.tab.c"
     break;
 
   case 86: /* Cond: Expr OP_EQ Expr  */
-#line 603 "parser.y"
+#line 579 "parser.y"
                           { (yyval.node) = createBinOpNode(AST_OP_EQ, (yyvsp[-2].node), (yyvsp[0].node)); }
-#line 2175 "parser.tab.c"
+#line 2149 "parser.tab.c"
     break;
 
   case 87: /* Cond: Expr OP_NEQ Expr  */
-#line 604 "parser.y"
+#line 580 "parser.y"
                           { (yyval.node) = createBinOpNode(AST_OP_NEQ, (yyvsp[-2].node), (yyvsp[0].node)); }
-#line 2181 "parser.tab.c"
+#line 2155 "parser.tab.c"
     break;
 
   case 88: /* Cond: Expr OP_LT Expr  */
-#line 605 "parser.y"
+#line 581 "parser.y"
                           { (yyval.node) = createBinOpNode(AST_OP_LT, (yyvsp[-2].node), (yyvsp[0].node)); }
-#line 2187 "parser.tab.c"
+#line 2161 "parser.tab.c"
     break;
 
   case 89: /* Cond: Expr OP_GT Expr  */
-#line 606 "parser.y"
+#line 582 "parser.y"
                           { (yyval.node) = createBinOpNode(AST_OP_GT, (yyvsp[-2].node), (yyvsp[0].node)); }
-#line 2193 "parser.tab.c"
+#line 2167 "parser.tab.c"
     break;
 
   case 90: /* Cond: Expr OP_LTE Expr  */
-#line 607 "parser.y"
+#line 583 "parser.y"
                           { (yyval.node) = createBinOpNode(AST_OP_LTE, (yyvsp[-2].node), (yyvsp[0].node)); }
-#line 2199 "parser.tab.c"
+#line 2173 "parser.tab.c"
     break;
 
   case 91: /* Cond: Expr OP_GTE Expr  */
-#line 608 "parser.y"
+#line 584 "parser.y"
                           { (yyval.node) = createBinOpNode(AST_OP_GTE, (yyvsp[-2].node), (yyvsp[0].node)); }
-#line 2205 "parser.tab.c"
+#line 2179 "parser.tab.c"
     break;
 
   case 92: /* Cond: SEP_LPAREN Cond SEP_RPAREN  */
-#line 609 "parser.y"
+#line 585 "parser.y"
                                  { (yyval.node) = (yyvsp[-1].node); }
-#line 2211 "parser.tab.c"
+#line 2185 "parser.tab.c"
     break;
 
 
-#line 2215 "parser.tab.c"
+#line 2189 "parser.tab.c"
 
       default: break;
     }
@@ -2404,7 +2378,7 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 612 "parser.y"
+#line 588 "parser.y"
 
 
 void yyerror(const char* s) {

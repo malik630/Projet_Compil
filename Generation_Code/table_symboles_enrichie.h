@@ -1,6 +1,8 @@
 #ifndef TABLE_SYMBOLES_H
 #define TABLE_SYMBOLES_H
 
+typedef struct ASTNode ASTNode;
+
 // Types de symboles
 typedef enum {
     TYPE_VARIABLE,
@@ -14,9 +16,9 @@ typedef enum {
     DATA_REEL,
     DATA_CHAINE,
     DATA_BOOLEEN,
-    DATA_ENREGISTREMENT,   // ADDED - for records
-    DATA_TABLEAU,          // ADDED - for arrays
-    DATA_DICTIONNAIRE      // ADDED - for dictionaries
+    DATA_ENREGISTREMENT,
+    DATA_TABLEAU,
+    DATA_DICTIONNAIRE
 } TypeDonnee;
 
 // Portée
@@ -28,13 +30,13 @@ typedef enum {
 // Structure d'un symbole
 typedef struct {
     char nom[50];
-    TypeSymbole typeSymbole;    // Variable, Constante ou Tableau
-    TypeDonnee typeDonnee;      // Entier, Réel, Chaîne, Booléen, Enregistrement, Tableau, Dictionnaire
-    Portee portee;              // Globale ou Locale
-    int adresse;                // Adresse mémoire
-    int initialise;             // 0 = non, 1 = oui
+    TypeSymbole typeSymbole;
+    TypeDonnee typeDonnee;
+    Portee portee;
+    int adresse;
+    int initialise;
     int line;
-    int column;      
+    int column;
     
     // Pour les constantes uniquement
     union {
@@ -45,7 +47,7 @@ typedef struct {
     } valeur;
     
     // Pour les tableaux uniquement
-    int taille;                 // Taille du tableau
+    int taille;
     TypeDonnee typeElement;
     
 } Symbole;
@@ -57,12 +59,23 @@ typedef struct {
     int niveauPortee;
 } TableSymboles;
 
-// Fonctions
+// Variable globale partagée entre toutes les phases
+extern TableSymboles tableGlobale;
+
+// Fonctions de base
 void initTable(TableSymboles* table);
 int insererSymbole(TableSymboles* table, Symbole sym);
+int supprimerSymbole(TableSymboles* table, char* nom);
+int mettreAJourSymbole(TableSymboles* table, char* nom, TypeSymbole typeSymbole, 
+                       TypeDonnee typeDonnee, int initialise, int taille);
 Symbole* obtenirSymbole(TableSymboles* table, char* nom);
 void afficherTable(TableSymboles* table);
 void entrerPortee(TableSymboles* table);
 void sortirPortee(TableSymboles* table);
 Symbole* rechercherSymbolePorteeActuelle(TableSymboles* table, char* nom);
+
+// Fonctions de nettoyage
+void nettoyerTypesRecords(TableSymboles* table, char** nomsTypes, int nbTypes);
+void nettoyerChampsRecord(TableSymboles* table, struct ASTNode* champs);
+
 #endif

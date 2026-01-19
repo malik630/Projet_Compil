@@ -90,7 +90,7 @@ LOOP ITERATE i FROM 0 TO 5
     PRINT i;
 END LOOP; -- Mandatory ;
 
--- SECTION 19: Nested Loops (THIS WAS YOUR ERROR SOURCE)
+-- SECTION 19: Nested Loops
 LOOP ITERATE i FROM 0 TO 2
     LOOP ITERATE j FROM 0 TO 2
         PRINT i;

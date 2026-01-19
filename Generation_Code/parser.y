@@ -17,10 +17,39 @@ void yyerror(const char* s);
 
 ASTNode* root = NULL;
 
-/**** ADDED - START ****/
-TableSymboles tableGlobale;
+// TableSymboles tableGlobale est maintenant déclarée dans table_symboles_enrichie.c
+extern TableSymboles tableGlobale;
 int adresseMemoire = 0;
-/**** ADDED - END ****/
+
+%}
+
+%{
+// Table séparée pour les définitions de types de records
+typedef struct {
+    char nom[50];
+    ASTNode* champs;  // Liste des champs
+} TypeRecord;
+
+TypeRecord typesRecords[100];
+int nbTypesRecords = 0;
+
+// Fonction pour enregistrer un type de record
+void enregistrerTypeRecord(char* nom, ASTNode* champs) {
+    strcpy(typesRecords[nbTypesRecords].nom, nom);
+    typesRecords[nbTypesRecords].champs = champs;
+    nbTypesRecords++;
+    printf("[PARSER] Type RECORD '%s' enregistré (non ajouté à la table des symboles)\n", nom);
+}
+
+// Fonction pour vérifier si un type de record existe
+int typeRecordExiste(char* nom) {
+    for (int i = 0; i < nbTypesRecords; i++) {
+        if (strcmp(typesRecords[i].nom, nom) == 0) {
+            return 1;
+        }
+    }
+    return 0;
+}
 %}
 
 %union {
@@ -68,20 +97,14 @@ int adresseMemoire = 0;
 Program:
     KW_BEGIN KW_PROGRAM IDENTIFIER SEP_SEMICOLON 
     {
-        /**** ADDED - START ****/
-        initTable(&tableGlobale);
-        /**** ADDED - END ****/
+        // La table est déjà initialisée dans main.c AVANT yyparse()
+        printf("[PARSER] Début du programme '%s'\n", $3);
     }
     Instrs KW_END KW_PROGRAM SEP_SEMICOLON
     {
         $$ = createProgramNode($3, NULL, $6); 
         root = $$;
-        printf("\n✓ Program '%s' parsed successfully!\n", $3);
-        
-        /**** ADDED - START ****/
-        afficherTable(&tableGlobale);
-        /**** ADDED - END ****/
-        
+        printf("\n✓ Programme '%s' analysé avec succès!\n", $3);
         free($3);
     }
     ;
@@ -89,59 +112,53 @@ Program:
 Decl:
     KW_SET IDENTIFIER Type OptInit SEP_SEMICOLON
     {
-        /**** ADDED - START ****/
-        Symbole sym;
-        strcpy(sym.nom, $2);
-        sym.typeSymbole = TYPE_VARIABLE;
-        sym.line = line_num;      // AJOUTER
-        sym.column = col_num;     // AJOUTER
+        printf("[PARSER] Déclaration de '%s' de type %d\n", $2, $3);
         
-        switch($3) {
-            case TYPE_INTEGER:
-                sym.typeDonnee = DATA_ENTIER;
-                break;
-            case TYPE_FLOAT:
-                sym.typeDonnee = DATA_REEL;
-                break;
-            case TYPE_STRING:
-                sym.typeDonnee = DATA_CHAINE;
-                break;
-            case TYPE_BOOLEAN:
-                sym.typeDonnee = DATA_BOOLEEN;
-                break;
+        // L'identificateur existe déjà (ajouté par le lexer)
+        // On le met à jour avec les vraies informations
+        TypeDonnee td = dataTypeToTypeDonnee($3);
+        
+        int result = mettreAJourSymbole(
+            &tableGlobale,
+            $2,                  // Nom
+            TYPE_VARIABLE,       // Type symbole
+            td,                  // Type donnée correct
+            ($4 != NULL) ? 1 : 0,// Initialisé si OptInit présent
+            0                    // Pas de taille
+        );
+        
+        if (result >= 0) {
+            tableGlobale.symboles[result].adresse = adresseMemoire++;
         }
-        
-        sym.portee = tableGlobale.niveauPortee;
-        sym.adresse = adresseMemoire++;
-        sym.initialise = ($4 != NULL) ? 1 : 0;
-        
-        if (insererSymbole(&tableGlobale, sym) == -1) {
-            char msg[100];
-            sprintf(msg, "Variable '%s' déjà déclarée", $2);
-            yyerror(msg);
-        }
-        /**** ADDED - END ****/
         
         $$ = createDeclNode($2, $3, $4);
         free($2);
     }
     | KW_SET IDENTIFIER IDENTIFIER OptInit SEP_SEMICOLON
     {
-        /**** ADDED - START ****/
-        Symbole sym;
-        strcpy(sym.nom, $2);
-        sym.typeSymbole = TYPE_VARIABLE;
-        sym.typeDonnee = DATA_ENREGISTREMENT;
-        sym.portee = tableGlobale.niveauPortee;
-        sym.adresse = adresseMemoire++;
-        sym.initialise = ($4 != NULL) ? 1 : 0;
+        printf("[PARSER] Instance de record '%s' de type '%s'\n", $2, $3);
         
-        if (insererSymbole(&tableGlobale, sym) == -1) {
+        if (!typeRecordExiste($3)) {
             char msg[100];
-            sprintf(msg, "Variable '%s' déjà déclarée", $2);
+            sprintf(msg, "Type RECORD '%s' non défini", $3);
             yyerror(msg);
         }
-        /**** ADDED - END ****/
+
+        supprimerSymbole(&tableGlobale, $3);
+        
+        // Insérer uniquement l'instance dans la table
+        int result = mettreAJourSymbole(
+            &tableGlobale,
+            $2,                      // Nom de l'instance
+            TYPE_VARIABLE,
+            DATA_ENREGISTREMENT,
+            ($4 != NULL) ? 1 : 0,
+            0
+        );
+        
+        if (result >= 0) {
+            tableGlobale.symboles[result].adresse = adresseMemoire++;
+        }
         
         $$ = createRecordInstanceNode($2, $3, $4);
         free($2); free($3);
@@ -161,23 +178,11 @@ Type:
 RecordDecl:
     KW_CREATE KW_RECORD IDENTIFIER SEP_LPAREN FieldList SEP_RPAREN SEP_SEMICOLON
     {
-        /**** ADDED - START ****/
-        Symbole sym;
-        strcpy(sym.nom, $3);
-        sym.typeSymbole = TYPE_VARIABLE;
-        sym.typeDonnee = DATA_ENREGISTREMENT;
-        sym.portee = tableGlobale.niveauPortee;
-        sym.adresse = adresseMemoire++;
-        sym.initialise = 1;
-        sym.line = line_num;
-        sym.column = col_num;
-        
-        if (insererSymbole(&tableGlobale, sym) == -1) {
-            char msg[100];
-            sprintf(msg, "Record '%s' déjà déclaré", $3);
-            yyerror(msg);
-        }
-        /**** ADDED - END ****/
+        printf("[PARSER] Déclaration de record '%s'\n", $3);
+
+        enregistrerTypeRecord($3,$5);
+        supprimerSymbole(&tableGlobale, $3);
+        //nettoyerChampsRecord(&tableGlobale, $5);
         
         $$ = createRecordDeclNode($3, $5);
         free($3);
@@ -196,25 +201,30 @@ Field:
 ArrayDecl:
     KW_SET IDENTIFIER KW_ARRAY SEP_LBRACKET Type SEP_COMMA INT_LITERAL SEP_RBRACKET ArrayInit SEP_SEMICOLON
     {
-        Symbole sym;
-        strcpy(sym.nom, $2);
-        sym.typeSymbole = TYPE_VARIABLE;
-        sym.typeDonnee = DATA_TABLEAU;
-        sym.portee = tableGlobale.niveauPortee;
-        sym.adresse = adresseMemoire++;
-        sym.initialise = ($9 != NULL) ? 1 : 0;
-        sym.taille = $7;
-        sym.typeElement = dataTypeToTypeDonnee($5);
+        printf("[PARSER] Déclaration de tableau '%s' de type %d, taille %d\n", 
+               $2, $5, $7);
         
-        if (insererSymbole(&tableGlobale, sym) == -1) {
-            char msg[100];
-            sprintf(msg, "Array '%s' déjà déclaré", $2);
-            yyerror(msg);
+        TypeDonnee td = dataTypeToTypeDonnee($5);
+        
+        // Mettre à jour : c'est un tableau
+        int result = mettreAJourSymbole(
+            &tableGlobale,
+            $2,
+            TYPE_TABLEAU,       // Type symbole
+            DATA_TABLEAU,       // Type donnée
+            ($9 != NULL) ? 1 : 0,  // Initialisé si ArrayInit présent
+            $7                  // TAILLE
+        );
+        
+        if (result >= 0) {
+            tableGlobale.symboles[result].typeElement = td;
+            tableGlobale.symboles[result].adresse = adresseMemoire++;
         }
         
         $$ = createArrayDeclNode($2, $5, $7, $9);
         free($2);
     }
+    ;
 
 ArrayInit:
     OP_EQ SEP_LBRACE ExprList SEP_RBRACE { $$ = $3; }
@@ -225,21 +235,21 @@ ArrayInit:
 DictDecl:
     KW_SET IDENTIFIER KW_DICTIONARY OP_LT Type SEP_COMMA Type OP_GT SEP_SEMICOLON
     {
-        /**** ADDED - START ****/
-        Symbole sym;
-        strcpy(sym.nom, $2);
-        sym.typeSymbole = TYPE_VARIABLE;
-        sym.typeDonnee = DATA_DICTIONNAIRE;
-        sym.portee = tableGlobale.niveauPortee;
-        sym.adresse = adresseMemoire++;
-        sym.initialise = 0;
+        printf("[PARSER] Déclaration de dictionnaire '%s'\n", $2);
         
-        if (insererSymbole(&tableGlobale, sym) == -1) {
-            char msg[100];
-            sprintf(msg, "Dictionary '%s' déjà déclaré", $2);
-            yyerror(msg);
+        // Mettre à jour : c'est un dictionnaire
+        int result = mettreAJourSymbole(
+            &tableGlobale,
+            $2,
+            TYPE_VARIABLE,
+            DATA_DICTIONNAIRE,
+            0,
+            0
+        );
+        
+        if (result >= 0) {
+            tableGlobale.symboles[result].adresse = adresseMemoire++;
         }
-        /**** ADDED - END ****/
         
         $$ = createDictDeclNode($2, $5, $7);
         free($2);
@@ -276,7 +286,6 @@ Instr:
 Assign:
     IDENTIFIER OP_EQ Expr SEP_SEMICOLON
     {
-        /**** ADDED - START ****/
         Symbole* sym = obtenirSymbole(&tableGlobale, $1);
         
         if (sym == NULL) {
@@ -290,14 +299,12 @@ Assign:
         } else {
             sym->initialise = 1;
         }
-        /**** ADDED - END ****/
         
         $$ = createAssignNode($1, $3);
         free($1);
     }
     | IDENTIFIER SEP_DOT IDENTIFIER OP_EQ Expr SEP_SEMICOLON
     {
-        /**** ADDED - START ****/
         Symbole* sym = obtenirSymbole(&tableGlobale, $1);
         
         if (sym == NULL) {
@@ -305,14 +312,13 @@ Assign:
             sprintf(msg, "Record '%s' non déclaré", $1);
             yyerror(msg);
         }
-        /**** ADDED - END ****/
         
+        supprimerSymbole(&tableGlobale, $3);
         $$ = createRecordAccessAssignNode($1, $3, $5);
         free($1); free($3);
     }
     | IDENTIFIER SEP_LBRACKET Expr SEP_RBRACKET OP_EQ Expr SEP_SEMICOLON
     {
-        /**** ADDED - START ****/
         Symbole* sym = obtenirSymbole(&tableGlobale, $1);
         
         if (sym == NULL) {
@@ -320,7 +326,6 @@ Assign:
             sprintf(msg, "Array '%s' non déclaré", $1);
             yyerror(msg);
         }
-        /**** ADDED - END ****/
         
         $$ = createArrayAccessAssignNode($1, $3, $6);
         free($1);
@@ -334,7 +339,6 @@ Print:
 Input:
     KW_INPUT IDENTIFIER SEP_SEMICOLON 
     { 
-        /**** ADDED - START ****/
         Symbole* sym = obtenirSymbole(&tableGlobale, $2);
         
         if (sym == NULL) {
@@ -344,7 +348,6 @@ Input:
         } else {
             sym->initialise = 1;
         }
-        /**** ADDED - END ****/
         
         $$ = createInputNode($2); 
         free($2); 
@@ -354,15 +357,11 @@ Input:
 If:
     KW_WHEN Cond KW_THEN 
     {
-        /**** ADDED - START ****/
         entrerPortee(&tableGlobale);
-        /**** ADDED - END ****/
     }
     Instrs OptElse 
     {
-        /**** ADDED - START ****/
         sortirPortee(&tableGlobale);
-        /**** ADDED - END ****/
     }
     KW_END KW_WHEN SEP_SEMICOLON
     {
@@ -379,15 +378,11 @@ OptElse:
 While:
     KW_LOOP KW_WHEN Cond 
     {
-        /**** ADDED - START ****/
         entrerPortee(&tableGlobale);
-        /**** ADDED - END ****/
     }
     Instrs 
     {
-        /**** ADDED - START ****/
         sortirPortee(&tableGlobale);
-        /**** ADDED - END ****/
     }
     KW_END KW_LOOP SEP_SEMICOLON
     {
@@ -398,29 +393,26 @@ While:
 For:
     KW_LOOP KW_ITERATE IDENTIFIER 
     {
-        /**** ADDED - START ****/
         entrerPortee(&tableGlobale);
         
-        Symbole sym;
-        strcpy(sym.nom, $3);
-        sym.typeSymbole = TYPE_VARIABLE;
-        sym.typeDonnee = DATA_ENTIER;
-        sym.portee = tableGlobale.niveauPortee;
-        sym.adresse = adresseMemoire++;
-        sym.initialise = 1;
+        // Mettre à jour l'itérateur
+        int result = mettreAJourSymbole(
+            &tableGlobale,
+            $3,
+            TYPE_VARIABLE,
+            DATA_ENTIER,
+            1,  // Initialisé automatiquement
+            0
+        );
         
-        if (insererSymbole(&tableGlobale, sym) == -1) {
-            char msg[100];
-            sprintf(msg, "Variable '%s' déjà déclarée", $3);
-            yyerror(msg);
+        if (result >= 0) {
+            tableGlobale.symboles[result].portee = tableGlobale.niveauPortee;
+            tableGlobale.symboles[result].adresse = adresseMemoire++;
         }
-        /**** ADDED - END ****/
     }
     KW_FROM Expr KW_TO Expr Instrs 
     {
-        /**** ADDED - START ****/
         sortirPortee(&tableGlobale);
-        /**** ADDED - END ****/
     }
     KW_END KW_LOOP SEP_SEMICOLON
     {
@@ -432,7 +424,6 @@ For:
 ForEach:
     KW_FOREACH IDENTIFIER KW_IN IDENTIFIER 
     {
-        /**** ADDED - START ****/
         entrerPortee(&tableGlobale);
         
         Symbole* arraySym = obtenirSymbole(&tableGlobale, $4);
@@ -442,26 +433,24 @@ ForEach:
             yyerror(msg);
         }
         
-        Symbole sym;
-        strcpy(sym.nom, $2);
-        sym.typeSymbole = TYPE_VARIABLE;
-        sym.typeDonnee = DATA_ENTIER;
-        sym.portee = tableGlobale.niveauPortee;
-        sym.adresse = adresseMemoire++;
-        sym.initialise = 1;
+        // Mettre à jour l'itérateur
+        int result = mettreAJourSymbole(
+            &tableGlobale,
+            $2,
+            TYPE_VARIABLE,
+            DATA_ENTIER,
+            1,
+            0
+        );
         
-        if (insererSymbole(&tableGlobale, sym) == -1) {
-            char msg[100];
-            sprintf(msg, "Variable '%s' déjà déclarée", $2);
-            yyerror(msg);
+        if (result >= 0) {
+            tableGlobale.symboles[result].portee = tableGlobale.niveauPortee;
+            tableGlobale.symboles[result].adresse = adresseMemoire++;
         }
-        /**** ADDED - END ****/
     }
     SEP_LBRACE Instrs 
     {
-        /**** ADDED - START ****/
         sortirPortee(&tableGlobale);
-        /**** ADDED - END ****/
     }
     SEP_RBRACE
     {
@@ -473,15 +462,11 @@ ForEach:
 Case:
     KW_CASE CaseList 
     {
-        /**** ADDED - START ****/
         entrerPortee(&tableGlobale);
-        /**** ADDED - END ****/
     }
     KW_END KW_CASE 
     {
-        /**** ADDED - START ****/
         sortirPortee(&tableGlobale);
-        /**** ADDED - END ****/
     }
     SEP_SEMICOLON
     {
@@ -489,15 +474,11 @@ Case:
     }
     | KW_CASE CaseList KW_ELSE 
     {
-        /**** ADDED - START ****/
         entrerPortee(&tableGlobale);
-        /**** ADDED - END ****/
     }
     Instrs KW_END KW_CASE 
     {
-        /**** ADDED - START ****/
         sortirPortee(&tableGlobale);
-        /**** ADDED - END ****/
     }
     SEP_SEMICOLON
     {
@@ -546,7 +527,6 @@ Factor:
     | KW_FALSE         { $$ = createBoolLiteralNode(0); }
     | IDENTIFIER       
     { 
-        /**** ADDED - START ****/
         Symbole* sym = obtenirSymbole(&tableGlobale, $1);
         
         if (sym == NULL) {
@@ -557,14 +537,12 @@ Factor:
             printf("Attention ligne %d : variable '%s' utilisée sans initialisation\n", 
                    line_num, $1);
         }
-        /**** ADDED - END ****/
         
         $$ = createIdentifierNode($1); 
         free($1); 
     }
     | IDENTIFIER SEP_DOT IDENTIFIER 
     { 
-        /**** ADDED - START ****/
         Symbole* sym = obtenirSymbole(&tableGlobale, $1);
         
         if (sym == NULL) {
@@ -572,14 +550,13 @@ Factor:
             sprintf(msg, "Record '%s' non déclaré", $1);
             yyerror(msg);
         }
-        /**** ADDED - END ****/
         
+        supprimerSymbole(&tableGlobale, $3);
         $$ = createRecordAccessNode($1, $3); 
         free($1); free($3); 
     }
     | IDENTIFIER SEP_LBRACKET Expr SEP_RBRACKET 
     { 
-        /**** ADDED - START ****/
         Symbole* sym = obtenirSymbole(&tableGlobale, $1);
         
         if (sym == NULL) {
@@ -587,7 +564,6 @@ Factor:
             sprintf(msg, "Array '%s' non déclaré", $1);
             yyerror(msg);
         }
-        /**** ADDED - END ****/
         
         $$ = createArrayAccessNode($1, $3); 
         free($1); 

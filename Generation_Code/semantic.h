@@ -53,7 +53,7 @@ typedef struct {
 } SemanticWarningList;
 
 // Variables globales
-extern TableSymboles tableGlobale;
+//extern TableSymboles tableGlobale;
 extern SemanticErrorList semanticErrors;
 extern SemanticWarningList semanticWarnings;
 extern int semanticErrorCount;
@@ -75,7 +75,7 @@ int checkPrint(ASTNode* node);
 int checkIfStatement(ASTNode* node);
 int checkStatements(ASTNode* node);
 
-// NOUVELLES FONCTIONS pour gérer les déclarations dans les instructions
+// Fonctions pour gérer les déclarations dans les instructions
 int checkRecordDeclaration(ASTNode* node);
 int checkRecordInstance(ASTNode* node);
 int checkArrayDeclaration(ASTNode* node);

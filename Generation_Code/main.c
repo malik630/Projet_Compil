@@ -11,6 +11,7 @@
 extern FILE* yyin;
 extern int yyparse();
 extern ASTNode* root;
+extern void print_lexer_statistics();
 
 char* current_filename;
 
@@ -627,12 +628,23 @@ int main(int argc, char** argv) {
         printf("Usage : %s <fichier_source.ql>\n", argv[0]);
         return 1;
     }
+
+    // --- PHASE 0: Initialisation de la Table des Symboles ---
+    printf("PHASE 0: Initialisation de la Table des Symboles\n");
+    printf("════════════════════════════════════════════════\n");
+    
+    initTable(&tableGlobale);
+    printf("Table des symboles initialisée\n");
+    printf("   • Nombre de symboles  : %d\n", tableGlobale.nbSymboles);
+    printf("   • Niveau de portée    : %d\n\n", tableGlobale.niveauPortee);
     
     printf("─────────────────────────────────────────────────────────────────\n\n");
     
     // --- PHASE 1: Analyse lexicale et syntaxique ---
     printf("PHASE 1: Analyse Lexicale et Syntaxique\n");
     printf("═══════════════════════════════════════\n");
+
+    print_lexer_statistics();
     
     int result = yyparse();
     
