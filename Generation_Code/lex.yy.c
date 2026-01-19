@@ -576,6 +576,9 @@ int after_program_keyword = 0;   // Pour ignorer le nom du programme
 int after_record_keyword = 0;    // Pour ignorer le nom du type de record
 int inside_record_decl = 0;      // Pour ignorer les champs du record
 
+// Compteur pour générer des noms uniques pour les constantes
+int constant_counter = 0;
+
 // Fonction pour insérer un identificateur dans la table des symboles
 void lexer_insert_identifier(char* name) {
     if (after_program_keyword) {
@@ -620,8 +623,57 @@ void lexer_insert_identifier(char* name) {
                name, existing->line);
     }
 }
-#line 624 "lex.yy.c"
-#line 625 "lex.yy.c"
+
+// Fonction pour insérer une constante dans la table des symboles
+void lexer_insert_constant(char* name, TypeDonnee type, void* value) {
+    Symbole sym;
+    
+    // Générer un nom unique pour la constante
+    sprintf(sym.nom, "_const_%d", constant_counter++);
+    
+    sym.typeSymbole = TYPE_CONSTANTE;
+    sym.typeDonnee = type;
+    sym.portee = PORTEE_GLOBALE;  // Les constantes sont globales
+    sym.adresse = obtenirProchaineAdresse(&tableGlobale); ;
+    sym.initialise = 1;  // Une constante est toujours initialisée
+    sym.line = line_num;
+    sym.column = col_num;
+    sym.taille = 0;
+    
+    // Stocker la valeur selon le type
+    switch(type) {
+        case DATA_ENTIER:
+            sym.valeur.valeurInt = *((int*)value);
+            break;
+        case DATA_REEL:
+            sym.valeur.valeurReel = *((float*)value);
+            break;
+        case DATA_CHAINE:
+            // Retirer les guillemets si présents
+            if (strlen((char*)value) > 0 && ((char*)value)[0] == '\'') {
+                char temp[100];
+                strncpy(temp, (char*)value + 1, strlen((char*)value) - 2);
+                temp[strlen((char*)value) - 2] = '\0';
+                strcpy(sym.valeur.valeurChaine, temp);
+            } else {
+                strcpy(sym.valeur.valeurChaine, (char*)value);
+            }
+            break;
+        case DATA_BOOLEEN:
+            sym.valeur.valeurBool = *((int*)value);
+            break;
+        default:
+            break;
+    }
+    
+    int result = insererSymbole(&tableGlobale, sym);
+    if (result != -1) {
+        printf("[LEXER] Constante '%s' (valeur: %s) ajoutée à la table (L%d:C%d)\n", 
+               name, name, line_num, col_num);
+    }
+}
+#line 676 "lex.yy.c"
+#line 677 "lex.yy.c"
 
 #define INITIAL 0
 
@@ -838,10 +890,10 @@ YY_DECL
 		}
 
 	{
-#line 81 "lexer_bison.l"
+#line 133 "lexer_bison.l"
 
 
-#line 845 "lex.yy.c"
+#line 897 "lex.yy.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -900,13 +952,13 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 83 "lexer_bison.l"
+#line 135 "lexer_bison.l"
 { /* ignore */ }
 	YY_BREAK
 case 2:
 /* rule 2 can match eol */
 YY_RULE_SETUP
-#line 84 "lexer_bison.l"
+#line 136 "lexer_bison.l"
 { 
                     for (int i = 0; i < yyleng; i++) {
                         if (yytext[i] == '\n') {
@@ -920,7 +972,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 95 "lexer_bison.l"
+#line 147 "lexer_bison.l"
 { 
                     nb_keywords_found++;
                     printf("[LEXER] L%d:C%d - Mot-clé: BEGIN\n", line_num, col_num);
@@ -930,7 +982,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 102 "lexer_bison.l"
+#line 154 "lexer_bison.l"
 { 
                     nb_keywords_found++;
                     printf("[LEXER] L%d:C%d - Mot-clé: PROGRAM\n", line_num, col_num);
@@ -941,7 +993,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 110 "lexer_bison.l"
+#line 162 "lexer_bison.l"
 { 
                     nb_keywords_found++;
                     printf("[LEXER] L%d:C%d - Mot-clé: END\n", line_num, col_num);
@@ -951,7 +1003,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 117 "lexer_bison.l"
+#line 169 "lexer_bison.l"
 { 
                     nb_keywords_found++;
                     printf("[LEXER] L%d:C%d - Mot-clé: SET\n", line_num, col_num);
@@ -961,7 +1013,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 124 "lexer_bison.l"
+#line 176 "lexer_bison.l"
 { 
                     nb_keywords_found++;
                     printf("[LEXER] L%d:C%d - Mot-clé: CREATE\n", line_num, col_num);
@@ -971,7 +1023,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 131 "lexer_bison.l"
+#line 183 "lexer_bison.l"
 { 
                     nb_keywords_found++;
                     printf("[LEXER] L%d:C%d - Mot-clé: RECORD\n", line_num, col_num);
@@ -982,7 +1034,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 139 "lexer_bison.l"
+#line 191 "lexer_bison.l"
 { 
                     nb_keywords_found++;
                     printf("[LEXER] L%d:C%d - Mot-clé: ARRAY\n", line_num, col_num);
@@ -992,7 +1044,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 146 "lexer_bison.l"
+#line 198 "lexer_bison.l"
 { 
                     nb_keywords_found++;
                     printf("[LEXER] L%d:C%d - Mot-clé: DICTIONARY\n", line_num, col_num);
@@ -1002,7 +1054,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 153 "lexer_bison.l"
+#line 205 "lexer_bison.l"
 { 
                     nb_keywords_found++;
                     printf("[LEXER] L%d:C%d - Type: INTEGER\n", line_num, col_num);
@@ -1012,7 +1064,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 160 "lexer_bison.l"
+#line 212 "lexer_bison.l"
 { 
                     nb_keywords_found++;
                     printf("[LEXER] L%d:C%d - Type: STRING\n", line_num, col_num);
@@ -1022,7 +1074,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 167 "lexer_bison.l"
+#line 219 "lexer_bison.l"
 { 
                     nb_keywords_found++;
                     printf("[LEXER] L%d:C%d - Type: FLOAT\n", line_num, col_num);
@@ -1032,7 +1084,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 174 "lexer_bison.l"
+#line 226 "lexer_bison.l"
 { 
                     nb_keywords_found++;
                     printf("[LEXER] L%d:C%d - Type: BOOLEAN\n", line_num, col_num);
@@ -1042,27 +1094,37 @@ YY_RULE_SETUP
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 181 "lexer_bison.l"
+#line 233 "lexer_bison.l"
 { 
                     nb_keywords_found++;
                     printf("[LEXER] L%d:C%d - Booléen: true\n", line_num, col_num);
-                    col_num += yyleng; 
+                    col_num += yyleng;
+                    
+                    // Insérer la constante booléenne true
+                    int value = 1;
+                    lexer_insert_constant("true", DATA_BOOLEEN, &value);
+                    
                     return KW_TRUE; 
                 }
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 188 "lexer_bison.l"
+#line 245 "lexer_bison.l"
 { 
                     nb_keywords_found++;
                     printf("[LEXER] L%d:C%d - Booléen: false\n", line_num, col_num);
                     col_num += yyleng; 
+                    
+                    // Insérer la constante booléenne false
+                    int value = 0;
+                    lexer_insert_constant("false", DATA_BOOLEEN, &value);
+                    
                     return KW_FALSE; 
                 }
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 195 "lexer_bison.l"
+#line 257 "lexer_bison.l"
 { 
                     nb_keywords_found++;
                     printf("[LEXER] L%d:C%d - Mot-clé: WHEN\n", line_num, col_num);
@@ -1072,7 +1134,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 202 "lexer_bison.l"
+#line 264 "lexer_bison.l"
 { 
                     nb_keywords_found++;
                     printf("[LEXER] L%d:C%d - Mot-clé: CASEWHEN\n", line_num, col_num);
@@ -1082,7 +1144,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 209 "lexer_bison.l"
+#line 271 "lexer_bison.l"
 { 
                     nb_keywords_found++;
                     printf("[LEXER] L%d:C%d - Mot-clé: THEN\n", line_num, col_num);
@@ -1092,7 +1154,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 216 "lexer_bison.l"
+#line 278 "lexer_bison.l"
 { 
                     nb_keywords_found++;
                     printf("[LEXER] L%d:C%d - Mot-clé: OTHERWISE\n", line_num, col_num);
@@ -1102,7 +1164,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 223 "lexer_bison.l"
+#line 285 "lexer_bison.l"
 { 
                     nb_keywords_found++;
                     printf("[LEXER] L%d:C%d - Mot-clé: CASE\n", line_num, col_num);
@@ -1112,7 +1174,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 230 "lexer_bison.l"
+#line 292 "lexer_bison.l"
 { 
                     nb_keywords_found++;
                     printf("[LEXER] L%d:C%d - Mot-clé: ELSE\n", line_num, col_num);
@@ -1122,7 +1184,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 237 "lexer_bison.l"
+#line 299 "lexer_bison.l"
 { 
                     nb_keywords_found++;
                     printf("[LEXER] L%d:C%d - Mot-clé: LOOP\n", line_num, col_num);
@@ -1132,7 +1194,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 244 "lexer_bison.l"
+#line 306 "lexer_bison.l"
 { 
                     nb_keywords_found++;
                     printf("[LEXER] L%d:C%d - Mot-clé: ITERATE\n", line_num, col_num);
@@ -1142,7 +1204,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 251 "lexer_bison.l"
+#line 313 "lexer_bison.l"
 { 
                     nb_keywords_found++;
                     printf("[LEXER] L%d:C%d - Mot-clé: FROM\n", line_num, col_num);
@@ -1152,7 +1214,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 258 "lexer_bison.l"
+#line 320 "lexer_bison.l"
 { 
                     nb_keywords_found++;
                     printf("[LEXER] L%d:C%d - Mot-clé: TO\n", line_num, col_num);
@@ -1162,7 +1224,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 265 "lexer_bison.l"
+#line 327 "lexer_bison.l"
 { 
                     nb_keywords_found++;
                     printf("[LEXER] L%d:C%d - Mot-clé: FOREACH\n", line_num, col_num);
@@ -1172,7 +1234,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 272 "lexer_bison.l"
+#line 334 "lexer_bison.l"
 { 
                     nb_keywords_found++;
                     printf("[LEXER] L%d:C%d - Mot-clé: IN\n", line_num, col_num);
@@ -1182,7 +1244,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 279 "lexer_bison.l"
+#line 341 "lexer_bison.l"
 { 
                     nb_keywords_found++;
                     printf("[LEXER] L%d:C%d - Mot-clé: PRINT\n", line_num, col_num);
@@ -1192,7 +1254,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 286 "lexer_bison.l"
+#line 348 "lexer_bison.l"
 { 
                     nb_keywords_found++;
                     printf("[LEXER] L%d:C%d - Mot-clé: INPUT\n", line_num, col_num);
@@ -1202,82 +1264,82 @@ YY_RULE_SETUP
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 293 "lexer_bison.l"
+#line 355 "lexer_bison.l"
 { nb_keywords_found++; col_num += yyleng; return OP_AND; }
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 294 "lexer_bison.l"
+#line 356 "lexer_bison.l"
 { nb_keywords_found++; col_num += yyleng; return OP_OR; }
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 295 "lexer_bison.l"
+#line 357 "lexer_bison.l"
 { nb_keywords_found++; col_num += yyleng; return OP_NOT; }
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 297 "lexer_bison.l"
+#line 359 "lexer_bison.l"
 { col_num += yyleng; return OP_NEQ; }
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 298 "lexer_bison.l"
+#line 360 "lexer_bison.l"
 { col_num += yyleng; return OP_LTE; }
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 299 "lexer_bison.l"
+#line 361 "lexer_bison.l"
 { col_num += yyleng; return OP_GTE; }
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 300 "lexer_bison.l"
+#line 362 "lexer_bison.l"
 { col_num += yyleng; return OP_LT; }
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 301 "lexer_bison.l"
+#line 363 "lexer_bison.l"
 { col_num += yyleng; return OP_GT; }
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 302 "lexer_bison.l"
+#line 364 "lexer_bison.l"
 { col_num += yyleng; return OP_EQ; }
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 303 "lexer_bison.l"
+#line 365 "lexer_bison.l"
 { col_num += yyleng; return OP_PLUS; }
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
-#line 304 "lexer_bison.l"
+#line 366 "lexer_bison.l"
 { col_num += yyleng; return OP_MINUS; }
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 305 "lexer_bison.l"
+#line 367 "lexer_bison.l"
 { col_num += yyleng; return OP_MULT; }
 	YY_BREAK
 case 43:
 YY_RULE_SETUP
-#line 306 "lexer_bison.l"
+#line 368 "lexer_bison.l"
 { col_num += yyleng; return OP_DIV; }
 	YY_BREAK
 case 44:
 YY_RULE_SETUP
-#line 307 "lexer_bison.l"
+#line 369 "lexer_bison.l"
 { col_num += yyleng; return OP_MOD; }
 	YY_BREAK
 case 45:
 YY_RULE_SETUP
-#line 309 "lexer_bison.l"
+#line 371 "lexer_bison.l"
 { col_num += yyleng; return SEP_LPAREN; }
 	YY_BREAK
 case 46:
 YY_RULE_SETUP
-#line 311 "lexer_bison.l"
+#line 373 "lexer_bison.l"
 { 
                     //Fin de la déclaration de record
                     if (inside_record_decl) {
@@ -1290,42 +1352,42 @@ YY_RULE_SETUP
 	YY_BREAK
 case 47:
 YY_RULE_SETUP
-#line 321 "lexer_bison.l"
+#line 383 "lexer_bison.l"
 { col_num += yyleng; return SEP_LBRACKET; }
 	YY_BREAK
 case 48:
 YY_RULE_SETUP
-#line 322 "lexer_bison.l"
+#line 384 "lexer_bison.l"
 { col_num += yyleng; return SEP_RBRACKET; }
 	YY_BREAK
 case 49:
 YY_RULE_SETUP
-#line 323 "lexer_bison.l"
+#line 385 "lexer_bison.l"
 { col_num += yyleng; return SEP_LBRACE; }
 	YY_BREAK
 case 50:
 YY_RULE_SETUP
-#line 324 "lexer_bison.l"
+#line 386 "lexer_bison.l"
 { col_num += yyleng; return SEP_RBRACE; }
 	YY_BREAK
 case 51:
 YY_RULE_SETUP
-#line 325 "lexer_bison.l"
+#line 387 "lexer_bison.l"
 { col_num += yyleng; return SEP_COMMA; }
 	YY_BREAK
 case 52:
 YY_RULE_SETUP
-#line 326 "lexer_bison.l"
+#line 388 "lexer_bison.l"
 { col_num += yyleng; return SEP_SEMICOLON; }
 	YY_BREAK
 case 53:
 YY_RULE_SETUP
-#line 327 "lexer_bison.l"
+#line 389 "lexer_bison.l"
 { col_num += yyleng; return SEP_DOT; }
 	YY_BREAK
 case 54:
 YY_RULE_SETUP
-#line 329 "lexer_bison.l"
+#line 391 "lexer_bison.l"
 { 
                     nb_identifiers_found++;
                     yylval.str = strdup(yytext);
@@ -1339,51 +1401,63 @@ YY_RULE_SETUP
 	YY_BREAK
 case 55:
 YY_RULE_SETUP
-#line 340 "lexer_bison.l"
+#line 402 "lexer_bison.l"
 { 
                     nb_literals_found++;
                     yylval.ival = atoi(yytext);
                     printf("[LEXER] L%d:C%d - Entier: %d\n", line_num, col_num, yylval.ival);
+                    
+                    // Insérer la constante entière
+                    lexer_insert_constant(yytext, DATA_ENTIER, &yylval.ival);
+                    
                     col_num += yyleng; 
                     return INT_LITERAL; 
                 }
 	YY_BREAK
 case 56:
 YY_RULE_SETUP
-#line 348 "lexer_bison.l"
+#line 414 "lexer_bison.l"
 { 
                     nb_literals_found++;
                     yylval.fval = atof(yytext);
                     printf("[LEXER] L%d:C%d - Réel: %.2f\n", line_num, col_num, yylval.fval);
+                    
+                    // Insérer la constante réelle
+                    lexer_insert_constant(yytext, DATA_REEL, &yylval.fval);
+                    
                     col_num += yyleng; 
                     return FLOAT_LITERAL; 
                 }
 	YY_BREAK
 case 57:
 YY_RULE_SETUP
-#line 356 "lexer_bison.l"
+#line 426 "lexer_bison.l"
 { 
                     nb_literals_found++;
                     yylval.str = strdup(yytext);
                     printf("[LEXER] L%d:C%d - Chaîne: %s\n", line_num, col_num, yytext);
+                    
+                    // Insérer la constante chaîne
+                    lexer_insert_constant(yytext, DATA_CHAINE, yytext);
+                    
                     col_num += yyleng; 
                     return STRING_LITERAL; 
                 }
 	YY_BREAK
 case 58:
 YY_RULE_SETUP
-#line 364 "lexer_bison.l"
+#line 438 "lexer_bison.l"
 { col_num += yyleng; }
 	YY_BREAK
 case 59:
 /* rule 59 can match eol */
 YY_RULE_SETUP
-#line 365 "lexer_bison.l"
+#line 439 "lexer_bison.l"
 { line_num++; col_num = 1; }
 	YY_BREAK
 case 60:
 YY_RULE_SETUP
-#line 367 "lexer_bison.l"
+#line 441 "lexer_bison.l"
 { 
                     fprintf(stderr, "File \"%s\", line %d, character %d: lexical error\n", 
                             current_filename, line_num, col_num); 
@@ -1392,10 +1466,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 61:
 YY_RULE_SETUP
-#line 373 "lexer_bison.l"
+#line 447 "lexer_bison.l"
 ECHO;
 	YY_BREAK
-#line 1399 "lex.yy.c"
+#line 1473 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -2400,17 +2474,5 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 373 "lexer_bison.l"
+#line 447 "lexer_bison.l"
 
-
-void print_lexer_statistics() {
-    printf("\n╔════════════════════════════════════════════════════════════════╗\n");
-    printf("║           STATISTIQUES DE L'ANALYSE LEXICALE                  ║\n");
-    printf("╚════════════════════════════════════════════════════════════════╝\n");
-    printf("  • Identificateurs trouvés  : %d\n", nb_identifiers_found);
-    printf("  • Mots-clés trouvés        : %d\n", nb_keywords_found);
-    printf("  • Littéraux trouvés        : %d\n", nb_literals_found);
-    printf("  • Lignes analysées         : %d\n", line_num);
-    printf("  • Entrées créées par lexer : %d\n", tableGlobale.nbSymboles);
-    printf("\n");
-}

@@ -19,7 +19,6 @@ ASTNode* root = NULL;
 
 // TableSymboles tableGlobale est maintenant déclarée dans table_symboles_enrichie.c
 extern TableSymboles tableGlobale;
-int adresseMemoire = 0;
 
 %}
 
@@ -128,7 +127,7 @@ Decl:
         );
         
         if (result >= 0) {
-            tableGlobale.symboles[result].adresse = adresseMemoire++;
+            tableGlobale.symboles[result].adresse = obtenirProchaineAdresse(&tableGlobale);
         }
         
         $$ = createDeclNode($2, $3, $4);
@@ -157,7 +156,7 @@ Decl:
         );
         
         if (result >= 0) {
-            tableGlobale.symboles[result].adresse = adresseMemoire++;
+            tableGlobale.symboles[result].adresse = obtenirProchaineAdresse(&tableGlobale);
         }
         
         $$ = createRecordInstanceNode($2, $3, $4);
@@ -218,7 +217,7 @@ ArrayDecl:
         
         if (result >= 0) {
             tableGlobale.symboles[result].typeElement = td;
-            tableGlobale.symboles[result].adresse = adresseMemoire++;
+            tableGlobale.symboles[result].adresse = obtenirProchaineAdresse(&tableGlobale);
         }
         
         $$ = createArrayDeclNode($2, $5, $7, $9);
@@ -248,7 +247,7 @@ DictDecl:
         );
         
         if (result >= 0) {
-            tableGlobale.symboles[result].adresse = adresseMemoire++;
+            tableGlobale.symboles[result].adresse = obtenirProchaineAdresse(&tableGlobale);
         }
         
         $$ = createDictDeclNode($2, $5, $7);
@@ -407,7 +406,7 @@ For:
         
         if (result >= 0) {
             tableGlobale.symboles[result].portee = tableGlobale.niveauPortee;
-            tableGlobale.symboles[result].adresse = adresseMemoire++;
+            tableGlobale.symboles[result].adresse = obtenirProchaineAdresse(&tableGlobale);
         }
     }
     KW_FROM Expr KW_TO Expr Instrs 
@@ -445,7 +444,7 @@ ForEach:
         
         if (result >= 0) {
             tableGlobale.symboles[result].portee = tableGlobale.niveauPortee;
-            tableGlobale.symboles[result].adresse = adresseMemoire++;
+            tableGlobale.symboles[result].adresse = obtenirProchaineAdresse(&tableGlobale);
         }
     }
     SEP_LBRACE Instrs 

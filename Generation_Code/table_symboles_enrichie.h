@@ -57,6 +57,7 @@ typedef struct {
     Symbole symboles[1000];
     int nbSymboles;
     int niveauPortee;
+    int prochaineAdresse;
 } TableSymboles;
 
 // Variable globale partagée entre toutes les phases
@@ -77,5 +78,8 @@ Symbole* rechercherSymbolePorteeActuelle(TableSymboles* table, char* nom);
 // Fonctions de nettoyage
 void nettoyerTypesRecords(TableSymboles* table, char** nomsTypes, int nbTypes);
 void nettoyerChampsRecord(TableSymboles* table, struct ASTNode* champs);
+
+// Fonction pour obtenir la prochaine adresse
+int obtenirProchaineAdresse(TableSymboles* table);
 
 #endif

@@ -11,7 +11,6 @@
 extern FILE* yyin;
 extern int yyparse();
 extern ASTNode* root;
-extern void print_lexer_statistics();
 
 char* current_filename;
 
@@ -643,8 +642,6 @@ int main(int argc, char** argv) {
     // --- PHASE 1: Analyse lexicale et syntaxique ---
     printf("PHASE 1: Analyse Lexicale et Syntaxique\n");
     printf("═══════════════════════════════════════\n");
-
-    print_lexer_statistics();
     
     int result = yyparse();
     

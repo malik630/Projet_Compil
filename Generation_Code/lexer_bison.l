@@ -19,6 +19,9 @@ int after_program_keyword = 0;   // Pour ignorer le nom du programme
 int after_record_keyword = 0;    // Pour ignorer le nom du type de record
 int inside_record_decl = 0;      // Pour ignorer les champs du record
 
+// Compteur pour générer des noms uniques pour les constantes
+int constant_counter = 0;
+
 // Fonction pour insérer un identificateur dans la table des symboles
 void lexer_insert_identifier(char* name) {
     if (after_program_keyword) {
@@ -61,6 +64,55 @@ void lexer_insert_identifier(char* name) {
     } else {
         printf("[LEXER] Identificateur '%s' déjà dans la table (déclaré L%d)\n", 
                name, existing->line);
+    }
+}
+
+// Fonction pour insérer une constante dans la table des symboles
+void lexer_insert_constant(char* name, TypeDonnee type, void* value) {
+    Symbole sym;
+    
+    // Générer un nom unique pour la constante
+    sprintf(sym.nom, "_const_%d", constant_counter++);
+    
+    sym.typeSymbole = TYPE_CONSTANTE;
+    sym.typeDonnee = type;
+    sym.portee = PORTEE_GLOBALE;  // Les constantes sont globales
+    sym.adresse = obtenirProchaineAdresse(&tableGlobale); ;
+    sym.initialise = 1;  // Une constante est toujours initialisée
+    sym.line = line_num;
+    sym.column = col_num;
+    sym.taille = 0;
+    
+    // Stocker la valeur selon le type
+    switch(type) {
+        case DATA_ENTIER:
+            sym.valeur.valeurInt = *((int*)value);
+            break;
+        case DATA_REEL:
+            sym.valeur.valeurReel = *((float*)value);
+            break;
+        case DATA_CHAINE:
+            // Retirer les guillemets si présents
+            if (strlen((char*)value) > 0 && ((char*)value)[0] == '\'') {
+                char temp[100];
+                strncpy(temp, (char*)value + 1, strlen((char*)value) - 2);
+                temp[strlen((char*)value) - 2] = '\0';
+                strcpy(sym.valeur.valeurChaine, temp);
+            } else {
+                strcpy(sym.valeur.valeurChaine, (char*)value);
+            }
+            break;
+        case DATA_BOOLEEN:
+            sym.valeur.valeurBool = *((int*)value);
+            break;
+        default:
+            break;
+    }
+    
+    int result = insererSymbole(&tableGlobale, sym);
+    if (result != -1) {
+        printf("[LEXER] Constante '%s' (valeur: %s) ajoutée à la table (L%d:C%d)\n", 
+               name, name, line_num, col_num);
     }
 }
 %}
@@ -181,7 +233,12 @@ COMMENT_MULTI   \/\*([^*]|\*+[^*/])*\*+\/
 "true"           { 
                     nb_keywords_found++;
                     printf("[LEXER] L%d:C%d - Booléen: true\n", line_num, col_num);
-                    col_num += yyleng; 
+                    col_num += yyleng;
+                    
+                    // Insérer la constante booléenne true
+                    int value = 1;
+                    lexer_insert_constant("true", DATA_BOOLEEN, &value);
+                    
                     return KW_TRUE; 
                 }
 
@@ -189,6 +246,11 @@ COMMENT_MULTI   \/\*([^*]|\*+[^*/])*\*+\/
                     nb_keywords_found++;
                     printf("[LEXER] L%d:C%d - Booléen: false\n", line_num, col_num);
                     col_num += yyleng; 
+                    
+                    // Insérer la constante booléenne false
+                    int value = 0;
+                    lexer_insert_constant("false", DATA_BOOLEEN, &value);
+                    
                     return KW_FALSE; 
                 }
 
@@ -341,6 +403,10 @@ COMMENT_MULTI   \/\*([^*]|\*+[^*/])*\*+\/
                     nb_literals_found++;
                     yylval.ival = atoi(yytext);
                     printf("[LEXER] L%d:C%d - Entier: %d\n", line_num, col_num, yylval.ival);
+                    
+                    // Insérer la constante entière
+                    lexer_insert_constant(yytext, DATA_ENTIER, &yylval.ival);
+                    
                     col_num += yyleng; 
                     return INT_LITERAL; 
                 }
@@ -349,6 +415,10 @@ COMMENT_MULTI   \/\*([^*]|\*+[^*/])*\*+\/
                     nb_literals_found++;
                     yylval.fval = atof(yytext);
                     printf("[LEXER] L%d:C%d - Réel: %.2f\n", line_num, col_num, yylval.fval);
+                    
+                    // Insérer la constante réelle
+                    lexer_insert_constant(yytext, DATA_REEL, &yylval.fval);
+                    
                     col_num += yyleng; 
                     return FLOAT_LITERAL; 
                 }
@@ -357,6 +427,10 @@ COMMENT_MULTI   \/\*([^*]|\*+[^*/])*\*+\/
                     nb_literals_found++;
                     yylval.str = strdup(yytext);
                     printf("[LEXER] L%d:C%d - Chaîne: %s\n", line_num, col_num, yytext);
+                    
+                    // Insérer la constante chaîne
+                    lexer_insert_constant(yytext, DATA_CHAINE, yytext);
+                    
                     col_num += yyleng; 
                     return STRING_LITERAL; 
                 }
@@ -371,15 +445,3 @@ COMMENT_MULTI   \/\*([^*]|\*+[^*/])*\*+\/
                 }
 
 %%
-
-void print_lexer_statistics() {
-    printf("\n╔════════════════════════════════════════════════════════════════╗\n");
-    printf("║           STATISTIQUES DE L'ANALYSE LEXICALE                  ║\n");
-    printf("╚════════════════════════════════════════════════════════════════╝\n");
-    printf("  • Identificateurs trouvés  : %d\n", nb_identifiers_found);
-    printf("  • Mots-clés trouvés        : %d\n", nb_keywords_found);
-    printf("  • Littéraux trouvés        : %d\n", nb_literals_found);
-    printf("  • Lignes analysées         : %d\n", line_num);
-    printf("  • Entrées créées par lexer : %d\n", tableGlobale.nbSymboles);
-    printf("\n");
-}

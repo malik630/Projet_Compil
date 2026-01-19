@@ -10,6 +10,7 @@ TableSymboles tableGlobale;
 void initTable(TableSymboles* table) {
     table->nbSymboles = 0;
     table->niveauPortee = 0;
+    table->prochaineAdresse = 0;
     printf("\n[TABLE SYMBOLES] Initialisation de la table des symboles\n");
 }
 
@@ -50,6 +51,12 @@ int supprimerSymbole(TableSymboles* table, char* nom) {
         }
     }
     return 0; // Non trouvé
+}
+
+int obtenirProchaineAdresse(TableSymboles* table) {
+    int adresse = table->prochaineAdresse;
+    table->prochaineAdresse++;
+    return adresse;
 }
 
 // Nettoyer les noms de types de records de la table
@@ -167,6 +174,10 @@ void afficherTable(TableSymboles* table) {
                 printf("Valeur=%d", s.valeur.valeurInt);
             } else if (s.typeDonnee == DATA_REEL) {
                 printf("Valeur=%.2f", s.valeur.valeurReel);
+            } else if (s.typeDonnee == DATA_CHAINE) {
+                printf("Valeur='%s'", s.valeur.valeurChaine);
+            } else if (s.typeDonnee == DATA_BOOLEEN) {
+                printf("Valeur=%s", s.valeur.valeurBool ? "true" : "false");
             }
         } else if (s.typeSymbole == TYPE_TABLEAU || s.typeDonnee == DATA_TABLEAU) {
             printf("Taille=%d", s.taille);
