@@ -3,7 +3,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include "ast.h"
-#include "table_symboles_enrichie.h"  /**** ADDED ****/
+#include "table_symboles_enrichie.h"
+#include "semantic.h"
+#include "global.h"
 
 extern int yylex();
 extern int yyparse();
@@ -91,6 +93,8 @@ Decl:
         Symbole sym;
         strcpy(sym.nom, $2);
         sym.typeSymbole = TYPE_VARIABLE;
+        sym.line = line_num;      // AJOUTER
+        sym.column = col_num;     // AJOUTER
         
         switch($3) {
             case TYPE_INTEGER:
@@ -160,11 +164,13 @@ RecordDecl:
         /**** ADDED - START ****/
         Symbole sym;
         strcpy(sym.nom, $3);
-        sym.typeSymbole = TYPE_CONSTANTE;
+        sym.typeSymbole = TYPE_VARIABLE;
         sym.typeDonnee = DATA_ENREGISTREMENT;
         sym.portee = tableGlobale.niveauPortee;
         sym.adresse = adresseMemoire++;
         sym.initialise = 1;
+        sym.line = line_num;
+        sym.column = col_num;
         
         if (insererSymbole(&tableGlobale, sym) == -1) {
             char msg[100];
@@ -197,9 +203,8 @@ ArrayDecl:
         sym.portee = tableGlobale.niveauPortee;
         sym.adresse = adresseMemoire++;
         sym.initialise = ($9 != NULL) ? 1 : 0;
-        
-        // AJOUTEZ CETTE LIGNE :
-        sym.taille = $7; 
+        sym.taille = $7;
+        sym.typeElement = dataTypeToTypeDonnee($5);
         
         if (insererSymbole(&tableGlobale, sym) == -1) {
             char msg[100];
@@ -607,5 +612,6 @@ Cond:
 %%
 
 void yyerror(const char* s) {
-    fprintf(stderr, "Parse error at line %d, col %d: %s\n", line_num, col_num, s);
+    fprintf(stderr, "File \"%s\", line %d, character %d: syntax error\n", 
+            current_filename, line_num, col_num);
 }
