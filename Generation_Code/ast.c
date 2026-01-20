@@ -421,122 +421,250 @@ const char* dataTypeToString(DataType type) {
     }
 }
 
-void printIndent(int indent) {
-    for (int i = 0; i < indent; i++) {
-        printf("  ");
+
+
+
+
+// Helper for tree visualization
+void printBranch(const char* prefix, int isLast, const char* label, const char* info) {
+    printf("%s", prefix);
+    if (isLast) printf("└── ");
+    else printf("├── ");
+    
+    if (label) printf("\033[1;33m%s\033[0m: ", label);
+    printf("%s\033[0m\n", info);
+}
+
+// Recursive function for pretty printing
+void printASTRecursive(ASTNode* node, char* prefix, int isLast, const char* label) {
+    if (node == NULL) return;
+
+    char displayStr[1024] = "";
+    char childPrefix[2048];
+    strcpy(childPrefix, prefix);
+    if (isLast) strcat(childPrefix, "    ");
+    else strcat(childPrefix, "│   ");
+
+    // Formatter le nœud courant
+    switch(node->type) {
+        case NODE_PROGRAM:
+            sprintf(displayStr, "\033[1;36mPROGRAMME\033[0m \033[1m%s\033[0m", node->data.program.name);
+            printBranch(prefix, isLast, label, displayStr);
+            
+            printASTRecursive(node->data.program.declarations, childPrefix, 0, "Déclarations");
+            printASTRecursive(node->data.program.statements, childPrefix, 1, "Instructions");
+            break;
+
+        case NODE_DECL:
+            sprintf(displayStr, "\033[1;32mDÉCL\033[0m \033[1m%s\033[0m (%s)", 
+                    node->data.declaration.identifier, 
+                    dataTypeToString(node->data.declaration.dataType));
+            printBranch(prefix, isLast, label, displayStr);
+            
+            int hasNextDecl = (node->data.declaration.next != NULL);
+            int hasInit = (node->data.declaration.initializer != NULL);
+            
+            if (hasInit) {
+                printASTRecursive(node->data.declaration.initializer, childPrefix, !hasNextDecl, "Init");
+            }
+            if (hasNextDecl) {
+                printASTRecursive(node->data.declaration.next, childPrefix, 1, NULL);
+            }
+            break;
+
+        case NODE_ASSIGN:
+            sprintf(displayStr, "\033[1;32mAFFECTATION\033[0m \033[1m%s\033[0m", node->data.assignment.identifier);
+            printBranch(prefix, isLast, label, displayStr);
+            printASTRecursive(node->data.assignment.expression, childPrefix, 1, "Expr");
+            break;
+
+        case NODE_PRINT:
+            sprintf(displayStr, "\033[1;35mIMPRESSION\033[0m");
+            printBranch(prefix, isLast, label, displayStr);
+            printASTRecursive(node->data.print.expression, childPrefix, 1, "Expr");
+            break;
+            
+        case NODE_INPUT:
+            sprintf(displayStr, "\033[1;35mENTRÉE\033[0m dans \033[1m%s\033[0m", node->data.input.identifier);
+            printBranch(prefix, isLast, label, displayStr);
+            break;
+
+        case NODE_IF:
+            sprintf(displayStr, "\033[1;35mSI\033[0m");
+            printBranch(prefix, isLast, label, displayStr);
+            int hasElse = (node->data.ifStmt.else_block != NULL);
+            printASTRecursive(node->data.ifStmt.condition, childPrefix, 0, "Cond");
+            printASTRecursive(node->data.ifStmt.then_block, childPrefix, hasElse ? 0 : 1, "Alors");
+            if (hasElse) printASTRecursive(node->data.ifStmt.else_block, childPrefix, 1, "Sinon");
+            break;
+            
+        case NODE_WHILE:
+            sprintf(displayStr, "\033[1;35mTANT_QUE\033[0m");
+            printBranch(prefix, isLast, label, displayStr);
+            printASTRecursive(node->data.whileStmt.condition, childPrefix, 0, "Cond");
+            printASTRecursive(node->data.whileStmt.body, childPrefix, 1, "Faire");
+            break;
+
+        case NODE_FOR:
+            sprintf(displayStr, "\033[1;35mPOUR\033[0m \033[1m%s\033[0m", node->data.forStmt.iterator);
+            printBranch(prefix, isLast, label, displayStr);
+            printASTRecursive(node->data.forStmt.from, childPrefix, 0, "De");
+            printASTRecursive(node->data.forStmt.to, childPrefix, 0, "À");
+            printASTRecursive(node->data.forStmt.body, childPrefix, 1, "Faire");
+            break;
+            
+        case NODE_STMT_LIST:
+            // Pour les listes, on n'affiche pas le nœud conteneur pour alléger, 
+            // ou on l'affiche simplement comme "SEQ"
+            // Ici on va 'transparently' afficher le statement, puis le next
+            // Mais pour préserver l'indentation structurelle, mieux vaut l'afficher si c'est un bloc.
+            // Sauf si c'est juste un lien.
+            // Affichons un indicateur '.' pour la séquence ou rien.
+            // Option choisie: afficher "Instruction"
+            
+            // Correction: Si on est dans un "bloc" (alors/sinon), on veut voir la liste.
+            // Mais afficher "LISTE_INSTR" à chaque ligne est lourd.
+            // On va afficher le contenu.
+            
+            if (node->data.stmtList.statement) {
+                int hasNext = (node->data.stmtList.next != NULL);
+                // On affiche le statement courant
+                printASTRecursive(node->data.stmtList.statement, prefix, isLast && !hasNext, label);
+                // Et on enchaîne sur le suivant (même niveau d'indentation si c'est une liste linéaire)
+                if (hasNext) {
+                    printASTRecursive(node->data.stmtList.next, prefix, isLast, NULL);
+                }
+            } else {
+                // Cas liste vide ou fin
+                if (node->data.stmtList.next) {
+                     printASTRecursive(node->data.stmtList.next, prefix, isLast, NULL);
+                }
+            }
+            // NOTE: This logic for LIST flattens the list visually (siblings), which is nicer.
+            // The 'label' is only applied to the distinct head if passed.
+            break;
+
+        case NODE_EXPR_BINOP:
+            sprintf(displayStr, "\033[1m%s\033[0m", operatorToString(node->data.binOp.op));
+            printBranch(prefix, isLast, label, displayStr);
+            printASTRecursive(node->data.binOp.left, childPrefix, 0, NULL);
+            printASTRecursive(node->data.binOp.right, childPrefix, 1, NULL);
+            break;
+
+        case NODE_EXPR_UNARYOP:
+            sprintf(displayStr, "UNAIRE \033[1m%s\033[0m", operatorToString(node->data.unaryOp.op));
+            printBranch(prefix, isLast, label, displayStr);
+            printASTRecursive(node->data.unaryOp.operand, childPrefix, 1, NULL);
+            break;
+
+        case NODE_EXPR_LITERAL:
+            if (node->data.literal.literalType == TYPE_INTEGER)
+                sprintf(displayStr, "\033[36m%d\033[0m", node->data.literal.value.intValue);
+            else if (node->data.literal.literalType == TYPE_FLOAT)
+                sprintf(displayStr, "\033[36m%.2f\033[0m", node->data.literal.value.floatValue);
+            else if (node->data.literal.literalType == TYPE_STRING)
+                sprintf(displayStr, "\033[32m\"%s\"\033[0m", node->data.literal.value.stringValue);
+            else if (node->data.literal.literalType == TYPE_BOOLEAN)
+                sprintf(displayStr, "\033[36m%s\033[0m", node->data.literal.value.boolValue ? "true" : "false");
+            
+            printBranch(prefix, isLast, label, displayStr);
+            break;
+
+        case NODE_EXPR_IDENTIFIER:
+            sprintf(displayStr, "ID: \033[33m%s\033[0m", node->data.identifier.name);
+            printBranch(prefix, isLast, label, displayStr);
+            break;
+
+        case NODE_RECORD_INSTANCE:
+            sprintf(displayStr, "INSTANCE \033[1m%s\033[0m : %s", node->data.recordInstance.instanceName, node->data.recordInstance.typeName);
+            printBranch(prefix, isLast, label, displayStr);
+            if (node->data.recordInstance.initializer) {
+                printASTRecursive(node->data.recordInstance.initializer, childPrefix, 1, "Init");
+            }
+            break;
+            
+        case NODE_FIELD_LIST:
+             // Similar layout to STMT_LIST
+            {
+                int hasNext = (node->data.field.next != NULL);
+                char fieldStr[256];
+                sprintf(fieldStr, "CHAMP \033[1m%s\033[0m : %s", node->data.field.name, dataTypeToString(node->data.field.type));
+                printBranch(prefix, isLast && !hasNext, label, fieldStr);
+                if (hasNext) {
+                    printASTRecursive(node->data.field.next, prefix, isLast, NULL);
+                }
+            }
+            break;
+            
+        case NODE_RECORD_DECL:
+            sprintf(displayStr, "RECORD \033[1m%s\033[0m", node->data.recordDecl.name);
+            printBranch(prefix, isLast, label, displayStr);
+            printASTRecursive(node->data.recordDecl.fields, childPrefix, 1, "Champs");
+            break;
+
+        case NODE_ARRAY_DECL:
+            sprintf(displayStr, "ARRAY \033[1m%s\033[0m [%d] of %s", 
+                    node->data.arrayDecl.name,
+                    node->data.arrayDecl.size,
+                    dataTypeToString(node->data.arrayDecl.elementType));
+            printBranch(prefix, isLast, label, displayStr);
+            if (node->data.arrayDecl.initializer) {
+                printASTRecursive(node->data.arrayDecl.initializer, childPrefix, 1, "Init");
+            }
+            break;
+            
+        case NODE_REPEAT:
+            sprintf(displayStr, "\033[1;35mRÉPÉTER\033[0m");
+            printBranch(prefix, isLast, label, displayStr);
+            printASTRecursive(node->data.repeatStmt.body, childPrefix, 0, "Faire");
+            printASTRecursive(node->data.repeatStmt.condition, childPrefix, 1, "Jusqu'à");
+            break;
+            
+        case NODE_CASE:
+            sprintf(displayStr, "\033[1;35mCAS\033[0m");
+            printBranch(prefix, isLast, label, displayStr);
+            int hasElseBlock = (node->data.caseStmt.else_block != NULL);
+            printASTRecursive(node->data.caseStmt.cases, childPrefix, hasElseBlock ? 0 : 1, NULL);
+            if (hasElseBlock) 
+                printASTRecursive(node->data.caseStmt.else_block, childPrefix, 1, "Sinon");
+            break;
+            
+        case NODE_CASE_ITEM:
+             // Similar list logic
+            {
+                int hasNext = (node->data.caseItem.next != NULL);
+                printBranch(prefix, isLast && !hasNext, label, "OPTION");
+                
+                // Need a sub-child-prefix since we printed a branch for OPTION
+                // Using 'childPrefix' which includes indentation for current level children
+                
+                // Wait, if I print "OPTION", I introduce a node.
+                // Its children are Condition and Body.
+                printASTRecursive(node->data.caseItem.condition, childPrefix, 0, "Si");
+                printASTRecursive(node->data.caseItem.body, childPrefix, 1, "Alors");
+                
+                // And print next item at SAME level as OPTION
+                if (hasNext) {
+                    printASTRecursive(node->data.caseItem.next, prefix, isLast, NULL);
+                }
+            }
+            break;
+
+        default:
+            sprintf(displayStr, "NODE [%s]", nodeTypeToString(node->type));
+            printBranch(prefix, isLast, label, displayStr);
+            break;
     }
 }
 
 void printAST(ASTNode* node, int indent) {
+    // Ignore indent parameter, always start fresh
     if (node == NULL) {
-        printIndent(indent);
-        printf("(nul)\n");
+        printf("(Arbre vide)\n");
         return;
     }
-    
-    printIndent(indent);
-    
-    switch(node->type) {
-        case NODE_PROGRAM:
-            printf("PROGRAMME: %s\n", node->data.program.name);
-            printIndent(indent);
-            printf("├─ Déclarations:\n");
-            printAST(node->data.program.declarations, indent + 1);
-            printIndent(indent);
-            printf("└─ Instructions:\n");
-            printAST(node->data.program.statements, indent + 1);
-            break;
-            
-        case NODE_DECL:
-            printf("DÉCL: %s : %s\n", 
-                   node->data.declaration.identifier,
-                   dataTypeToString(node->data.declaration.dataType));
-            if (node->data.declaration.initializer) {
-                printIndent(indent);
-                printf("└─ Initialiseur:\n");
-                printAST(node->data.declaration.initializer, indent + 1);
-            }
-            if (node->data.declaration.next) {
-                printAST(node->data.declaration.next, indent);
-            }
-            break;
-            
-        case NODE_ASSIGN:
-            printf("AFFECTATION: %s\n", node->data.assignment.identifier);
-            printIndent(indent);
-            printf("└─ Expression:\n");
-            printAST(node->data.assignment.expression, indent + 1);
-            break;
-            
-        case NODE_PRINT:
-            printf("IMPRESSION\n");
-            printIndent(indent);
-            printf("└─ Expression:\n");
-            printAST(node->data.print.expression, indent + 1);
-            break;
-            
-        case NODE_IF:
-            printf("SI\n");
-            printIndent(indent);
-            printf("├─ Condition:\n");
-            printAST(node->data.ifStmt.condition, indent + 1);
-            printIndent(indent);
-            printf("├─ Alors:\n");
-            printAST(node->data.ifStmt.then_block, indent + 1);
-            if (node->data.ifStmt.else_block) {
-                printIndent(indent);
-                printf("└─ Sinon:\n");
-                printAST(node->data.ifStmt.else_block, indent + 1);
-            }
-            break;
-            
-        case NODE_EXPR_BINOP:
-            printf("OP_BINAIRE: %s\n", operatorToString(node->data.binOp.op));
-            printIndent(indent);
-            printf("├─ Gauche:\n");
-            printAST(node->data.binOp.left, indent + 1);
-            printIndent(indent);
-            printf("└─ Droite:\n");
-            printAST(node->data.binOp.right, indent + 1);
-            break;
-            
-        case NODE_EXPR_LITERAL:
-            printf("LITTÉRALE: ");
-            if (node->data.literal.literalType == TYPE_INTEGER) {
-                printf("%d (ENTIER)\n", node->data.literal.value.intValue);
-            } else if (node->data.literal.literalType == TYPE_FLOAT) {
-                printf("%f (RÉEL)\n", node->data.literal.value.floatValue);
-            } else if (node->data.literal.literalType == TYPE_STRING) {
-                printf("%s (CHAÎNE)\n", node->data.literal.value.stringValue);
-            }
-            break;
-            
-        case NODE_EXPR_IDENTIFIER:
-            printf("IDENTIFIANT: %s\n", node->data.identifier.name);
-            break;
-            
-        case NODE_STMT_LIST:
-            if (node->data.stmtList.statement) {
-                printAST(node->data.stmtList.statement, indent);
-            }
-            if (node->data.stmtList.next) {
-                printAST(node->data.stmtList.next, indent);
-            }
-            break;
-        case NODE_RECORD_INSTANCE:
-            printf("INSTANCE_RECORD: %s de type %s\n", 
-                node->data.recordInstance.instanceName,
-                node->data.recordInstance.typeName);
-            if (node->data.recordInstance.initializer) {
-                printIndent(indent);
-                printf("└─ Initialiseur:\n");
-                printAST(node->data.recordInstance.initializer, indent + 1);
-            }
-            break;
-            
-        default:
-            printf("TYPE DE NŒUD: %s\n", nodeTypeToString(node->type));
-    }
+    printf("\n"); // Spacing before tree
+    printASTRecursive(node, "", 1, NULL);
 }
 
 void freeAST(ASTNode* node) {
