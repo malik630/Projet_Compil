@@ -30,17 +30,13 @@ LL1Parser* createLL1Parser(Token* tokens, int count) {
 
 void freeLL1Parser(LL1Parser* parser) {
     if (parser) {
-        // L'AST sera libéré séparément si nécessaire
         free(parser);
     }
 }
 
 bool parseLL1(LL1Parser* parser) {
-    
-    printf("║       ANALYSE SYNTAXIQUE LL(1) Manuelle - QueryLang                   ║\n");
+    printf("║        ANALYSE SYNTAXIQUE LL(1) Manuelle - QueryLang                    ║\n");
    
-    
-    
     StackSymbol eof_symbol;
     eof_symbol.kind = SYMBOL_EOF;
     pushStack(&parser->stack, eof_symbol);
@@ -51,157 +47,79 @@ bool parseLL1(LL1Parser* parser) {
     pushStack(&parser->stack, start_symbol);
     
     Token current_token = parser->tokens[parser->current_token];
-    
-    printf("Début de l'analyse...\n\n");
-    
+    Token first_error_token;
+    bool has_error = false;
     int step = 0;
+
+    printf("Début de l'analyse...\n\n");
     
     while (!isStackEmpty(&parser->stack)) {
         step++;
         
-        // Affichage pour débogage
-        if (step % 10 == 1 || step < 20) {  // Afficher les premiers pas et tous les 10 pas
+        if (step % 10 == 1 || step < 20) {  
             printf("─── Étape %d ───\n", step);
             printStack(&parser->stack);
             printf("Token courant: %s ('%s') à ligne %d, colonne %d\n", 
-                   tokenTypeToString(current_token.type),
-                   current_token.lexeme,
-                   current_token.line,
-                   current_token.column);
+                   tokenTypeToString(current_token.type), current_token.lexeme, current_token.line, current_token.column);
         }
         
         StackSymbol top = peekStack(&parser->stack);
         
-        // Cas 1: Symbole de fin $
         if (top.kind == SYMBOL_EOF) {
-            if (current_token.type == END_OF_FILE) {
-                printf("\n✓ Analyse syntaxique terminée avec succès!\n");
-                printf("  Total d'étapes: %d\n", step);
-                printf("  Erreurs syntaxiques: %d\n", parser->parse_errors);
-                return parser->parse_errors == 0;
-            } else {
-                reportSyntaxError(parser, "Symboles supplémentaires après la fin du programme");
-                return false;
+            if (current_token.type == END_OF_FILE) break;
+            else {
+                if(!has_error) { first_error_token = current_token; has_error = true; }
+                reportSyntaxError(parser, "Symboles en trop");
+                break;
             }
         }
         
-        // Cas 2: Terminal sur la pile
         if (top.kind == SYMBOL_TERMINAL) {
             if (top.value.terminal == current_token.type) {
-                // Match!
-                if (step % 10 == 1 || step < 20) {
-                    printf("✓ Match terminal: %s\n\n", tokenTypeToString(top.value.terminal));
-                }
-                
                 popStack(&parser->stack);
-                
-                // Avancer au token suivant
                 parser->current_token++;
-                if (parser->current_token < parser->token_count) {
+                if (parser->current_token < parser->token_count) 
                     current_token = parser->tokens[parser->current_token];
-                }
             } else {
-                // Erreur: terminal attendu différent du token courant
-                char error_msg[512];
-                snprintf(error_msg, sizeof(error_msg),
-                        "Token inattendu. Attendu: %s, Reçu: %s",
-                        tokenTypeToString(top.value.terminal),
-                        tokenTypeToString(current_token.type));
-                reportSyntaxError(parser, error_msg);
-                
-                // Récupération d'erreur simple: sauter le token
+                if(!has_error) { first_error_token = current_token; has_error = true; }
+                reportSyntaxError(parser, "Mismatch terminal");
                 parser->current_token++;
-                if (parser->current_token < parser->token_count) {
+                if (parser->current_token < parser->token_count) 
                     current_token = parser->tokens[parser->current_token];
-                }
             }
             continue;
         }
         
-        // Cas 3: Non-terminal sur la pile
         if (top.kind == SYMBOL_NONTERMINAL) {
             NonTerminal nt = top.value.non_terminal;
-            
-            // Consulter la table LL(1)
             LL1TableEntry* entry = lookupLL1Table(parser, nt, current_token.type);
             
             if (!entry) {
-                // Erreur: pas de production dans la table
-                char error_msg[512];
-                snprintf(error_msg, sizeof(error_msg),
-                        "Erreur syntaxique au non-terminal %s avec token %s",
-                        nonTerminalToString(nt),
-                        tokenTypeToString(current_token.type));
-                reportSyntaxError(parser, error_msg);
-                
-                // Récupération: dépiler le non-terminal
+                if(!has_error) { first_error_token = current_token; has_error = true; }
+                reportSyntaxError(parser, "Pas de production");
                 popStack(&parser->stack);
                 continue;
             }
             
-            // Appliquer la production
-            if (step % 10 == 1 || step < 20) {
-                printf("→ Applique règle (%d): %s → %s\n\n",
-                       entry->rule_number,
-                       nonTerminalToString(nt),
-                       entry->production);
-            }
-            
             popStack(&parser->stack);
-            
-            // Empiler la partie droite de la production (en ordre inverse)
-            // Sauf si c'est epsilon
-            if (strcmp(entry->production, "ε") != 0) {
-                // Parser la production et empiler les symboles
+            if (strcmp(entry->production, "ε") != 0 && strcmp(entry->production, "epsilon") != 0) {
                 pushProduction(&parser->stack, entry->production);
             }
-            
-            // Exécuter l'action sémantique associée
             executeSemanticAction(parser, entry->rule_number);
         }
     }
     
-    return false;  // Ne devrait pas arriver ici
-}
+    printf("\n✓ Analyse syntaxique terminée!\n");
+    printf("  Total d'étapes: %d\n", step);
+    printf("  Erreurs syntaxiques: %d\n", parser->parse_errors);
 
-// empiler une production
-void pushProduction(ParseStack* stack, const char* production) {
-    // Parser la chaîne de production et empiler en ordre inverse
-    char prod_copy[256];
-    strncpy(prod_copy, production, sizeof(prod_copy) - 1);
-    
-    // Diviser par espaces
-    char* symbols[50];
-    int symbol_count = 0;
-    
-    char* token = strtok(prod_copy, " ");
-    while (token != NULL && symbol_count < 50) {
-        symbols[symbol_count++] = token;
-        token = strtok(NULL, " ");
+    if (has_error) {
+        printf("\nParsing FAILED at word '%s' (Token: %s)\n", 
+               first_error_token.lexeme, 
+               tokenTypeToString(first_error_token.type));
+        return false;
     }
-    
-    // Empiler en ordre inverse
-    for (int i = symbol_count - 1; i >= 0; i--) {
-        StackSymbol sym = stringToSymbol(symbols[i]);
-        pushStack(stack, sym);
-    }
-}
 
-StackSymbol stringToSymbol(const char* str) {
-    StackSymbol sym;
-    
-    // Verifier si c'est un terminal
-    if (strncmp(str, "KW_", 3) == 0 || strncmp(str, "OP_", 3) == 0 ||
-        strncmp(str, "SEP_", 4) == 0 || strcmp(str, "IDENTIFIER") == 0 ||
-        strcmp(str, "INT_LITERAL") == 0 || strcmp(str, "FLOAT_LITERAL") == 0 ||
-        strcmp(str, "STRING_LITERAL") == 0) {
-        sym.kind = SYMBOL_TERMINAL;
-        sym.value.terminal = stringToTokenType(str);
-    } else {
-        // C'est un non-terminal
-        sym.kind = SYMBOL_NONTERMINAL;
-        sym.value.non_terminal = stringToNonTerminal(str);
-    }
-    
-    return sym;
+    printf("\nParsing SUCCESS\n");
+    return true; 
 }
