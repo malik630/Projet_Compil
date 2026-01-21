@@ -4,10 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 
-/**
- * Tokenizes a source file by initializing the required AFDs and 
- * running the lexer's getNextToken loop.
- */
+
 Token* tokenizeFile(const char* filename, int* count) {
     printf("[WRAPPER] Reading file: %s\n", filename);
     
@@ -21,8 +18,7 @@ Token* tokenizeFile(const char* filename, int* count) {
     
     printf("[WRAPPER] File loaded, size: %zu bytes\n", strlen(source));
     
-    // CRITICAL: Initialize global AFD objects (identifier_afd, integer_afd, float_afd)
-    // defined in afd_builder.c. This prevents the segfault from uninitialized pointers.
+   
     printf("[WRAPPER] Building AFDs...\n");
     initializeAFDs();
     printf("[WRAPPER] AFDs built successfully\n");
