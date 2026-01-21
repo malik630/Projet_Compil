@@ -7,11 +7,11 @@
 #include "symbol_table.h"
 #include "error_manager.h"
 #include "lexer.h"
+#include "../Analyse_Syntaxique_Manuelle/ll1_parser.h"
 
 int main(int argc, char* argv[]) {
     printf("╔═══════════════════════════════════════════════════════════════╗\n");
-    printf("║   ANALYSEUR LEXICAL COMPLET - QueryLang                      ║\n");
-    printf("║   Avec Transformations Regex → AFN → AFD                     ║\n");
+    printf("║   ANALYSEUR LEXICAL ET SYNTAXIQUE MANUEL - QueryLang          ║\n");
     printf("╚═══════════════════════════════════════════════════════════════╝\n\n");
     
     // Options de ligne de commande
@@ -52,33 +52,64 @@ int main(int argc, char* argv[]) {
     
     printf("\n═══ PHASE 3: ANALYSE LEXICALE ═══\n\n");
     
-    initSymbolTable();
-    initErrorManager();
-    
+    Token* tokens = (Token*)malloc(1000 * sizeof(Token));
     int token_count = 0;
-    
+
     Token token;
     do {
         token = getNextToken();
+
+        tokens[token_count] = token;
         token_count++;
-        
+    
         if (token.type != COMMENT && token.type != ERROR_TOK) {
             printToken(token);
         } else if (token.type == ERROR_TOK) {
             printToken(token);
         }
-        
+    
         if (token.type == IDENTIFIER) {
             insertSymbol(token.lexeme, "IDENTIFIER", token.line);
         }
+    
+    } while (token.type != END_OF_FILE && token_count < 1000);
+    // ========================================================================
+    // PHASE 4: ANALYSE SYNTAXIQUE
+    // ========================================================================
+    
+    if (errorMgr.count == 0) {
+        printf("\n═══ PHASE 4: ANALYSE SYNTAXIQUE LL(1) ═══\n\n");
+
+        LL1Parser* parser = createLL1Parser(tokens, token_count);
         
-    } while (token.type != END_OF_FILE);
+        if (parser == NULL) {
+            fprintf(stderr, "Erreur: Impossible de créer le parser\n");
+            free(tokens);
+            free(source);
+            return EXIT_FAILURE;
+        }
+
+        bool parse_success = parseLL1(parser);
+
+        printf("\n═══ RÉSULTATS DE L'ANALYSE SYNTAXIQUE ═══\n");
+        if (parse_success) {
+            printf("  Analyse syntaxique réussie!\n");
+            printf("  Erreurs de parsing: 0\n");
+        } else {
+            printf("  Analyse syntaxique échouée\n");
+            printf("  Erreurs de parsing: %d\n", parser->parse_errors);
+        }
+
+        freeLL1Parser(parser);
+    } else {
+        printf("\n✗ Analyse lexicale échouée - analyse syntaxique ignorée\n");
+    }
     
     // ========================================================================
-    // PHASE 4: AFFICHAGE DES RÉSULTATS
+    // PHASE 5: AFFICHAGE DES RÉSULTATS
     // ========================================================================
     
-    printf("\n═══ PHASE 4: RÉSULTATS ═══\n");
+    printf("\n═══ PHASE 5: RÉSULTATS ═══\n");
     
     displaySymbolTable();
     displayErrorSummary();
@@ -95,6 +126,7 @@ int main(int argc, char* argv[]) {
         printf("Analyse lexicale terminée avec %d erreur(s).\n\n", errorMgr.count);
     }
     
+    free(tokens);
     free(source);
     
     return errorMgr.count > 0 ? 1 : 0;

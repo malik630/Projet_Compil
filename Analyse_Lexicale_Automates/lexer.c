@@ -269,14 +269,13 @@ const char* tokenTypeToString(TokenType type) {
         case KW_INTEGER: return "KW_INTEGER";
         case KW_STRING: return "KW_STRING";
         case KW_FLOAT: return "KW_FLOAT";
-        case KW_PRINT: return "KW_PRINT";
-        case IDENTIFIER: return "IDENTIFIER";
-        case INT_LITERAL: return "INT_LITERAL";
-        case FLOAT_LITERAL: return "FLOAT_LITERAL";
-        case STRING_LITERAL: return "STRING_LITERAL";
-        case OP_EQ_TOK: return "OP_EQ";
-        case OP_PLUS: return "OP_PLUS";
-        case SEP_SEMICOLON: return "SEP_SEMICOLON";
+        case KW_BOOLEAN: return "KW_BOOLEAN";
+        case KW_TRUE: return "KW_TRUE";
+        case KW_FALSE: return "KW_FALSE";
+        case KW_CREATE: return "KW_CREATE";
+        case KW_RECORD: return "KW_RECORD";
+        case KW_ARRAY: return "KW_ARRAY";
+        case KW_DICTIONARY: return "KW_DICTIONARY";
         case KW_WHEN: return "KW_WHEN";
         case KW_THEN: return "KW_THEN";
         case KW_OTHERWISE: return "KW_OTHERWISE";
@@ -289,19 +288,22 @@ const char* tokenTypeToString(TokenType type) {
         case KW_ITERATE: return "KW_ITERATE";
         case KW_FROM: return "KW_FROM";
         case KW_TO: return "KW_TO";
+        case KW_PRINT: return "KW_PRINT";
         case KW_INPUT: return "KW_INPUT";
         case KW_AND: return "KW_AND";
         case KW_OR: return "KW_OR";
         case KW_NOT: return "KW_NOT";
-        case OP_NEQ_TOK: return "OP_NEQ";
-        case OP_LT_TOK: return "OP_LT";
-        case OP_GT_TOK: return "OP_GT";
-        case OP_LTE_TOK: return "OP_LTE";
-        case OP_GTE_TOK: return "OP_GTE";
+        case OP_PLUS: return "OP_PLUS";
         case OP_MINUS: return "OP_MINUS";
         case OP_MULT: return "OP_MULT";
         case OP_DIV: return "OP_DIV";
         case OP_MOD: return "OP_MOD";
+        case OP_EQ_TOK: return "OP_EQ_TOK";
+        case OP_NEQ_TOK: return "OP_NEQ_TOK";
+        case OP_LT_TOK: return "OP_LT_TOK";
+        case OP_GT_TOK: return "OP_GT_TOK"; 
+        case OP_LTE_TOK: return "OP_LTE_TOK";  
+        case OP_GTE_TOK: return "OP_GTE_TOK";  
         case SEP_LPAREN: return "SEP_LPAREN";
         case SEP_RPAREN: return "SEP_RPAREN";
         case SEP_LBRACKET: return "SEP_LBRACKET";
@@ -309,10 +311,16 @@ const char* tokenTypeToString(TokenType type) {
         case SEP_LBRACE: return "SEP_LBRACE";
         case SEP_RBRACE: return "SEP_RBRACE";
         case SEP_COMMA: return "SEP_COMMA";
+        case SEP_SEMICOLON: return "SEP_SEMICOLON";
         case SEP_DOT: return "SEP_DOT";
+        case IDENTIFIER: return "IDENTIFIER";
+        case INT_LITERAL: return "INT_LITERAL";
+        case FLOAT_LITERAL: return "FLOAT_LITERAL";
+        case STRING_LITERAL: return "STRING_LITERAL";
         case COMMENT: return "COMMENT";
         case END_OF_FILE: return "END_OF_FILE";
-        case ERROR_TOK: return "ERROR";
+        case ERROR_TOK: return "ERROR_TOK";
+        
         default: return "UNKNOWN";
     }
 }

@@ -56,6 +56,8 @@ TokenType stringToTokenType(const char* str) {
     if (strcmp(str, "SEP_SEMICOLON") == 0) return SEP_SEMICOLON;
     if (strcmp(str, "SEP_LPAREN") == 0) return SEP_LPAREN;
     if (strcmp(str, "SEP_RPAREN") == 0) return SEP_RPAREN;
+    if (strcmp(str, "OP_EQ") == 0) return OP_EQ_TOK; 
+    if (strcmp(str, "OP_NEQ") == 0) return OP_NEQ_TOK;
     return ERROR_TOK;
 }
 
@@ -88,5 +90,50 @@ void reportSyntaxError(LL1Parser* parser, const char* message) {
     parser->parse_errors++;
 }
 
-void pushProduction(ParseStack* stack, const char* production);
-StackSymbol stringToSymbol(const char* str);
+void pushProduction(ParseStack* stack, const char* production) {
+    if (strcmp(production, "ε") == 0 || strcmp(production, "epsilon") == 0) {
+        // Si epsilon on n'empile rien
+        return;
+    }
+
+    char prod_copy[512];
+    strncpy(prod_copy, production, 511);
+    prod_copy[511] = '\0';
+
+    char* tokens[50]; 
+    int token_count = 0;
+    
+    char* token = strtok(prod_copy, " ");
+    while (token != NULL && token_count < 50) {
+        if (strcmp(token, "ε") != 0 && strcmp(token, "epsilon") != 0) {
+            tokens[token_count++] = token;
+        }
+        token = strtok(NULL, " ");
+    }
+
+    for (int i = token_count - 1; i >= 0; i--) {
+        StackSymbol sym = stringToSymbol(tokens[i]);
+        pushStack(stack, sym);
+    }
+}
+
+StackSymbol stringToSymbol(const char* str) {
+    StackSymbol sym;
+    
+    if (strcmp(str, "ε") == 0 || strcmp(str, "epsilon") == 0) {
+        sym.kind = SYMBOL_EOF;
+        return sym;
+    }
+
+    TokenType terminal = stringToTokenType(str);
+    if (terminal != ERROR_TOK) {
+        sym.kind = SYMBOL_TERMINAL;
+        sym.value.terminal = terminal;
+        return sym;
+    }
+
+    NonTerminal nt = stringToNonTerminal(str);
+    sym.kind = SYMBOL_NONTERMINAL;
+    sym.value.non_terminal = nt;
+    return sym;
+}

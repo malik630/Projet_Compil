@@ -38,7 +38,7 @@ void printSymbolSet(SymbolSet* set) {
 }
 
 // Check if a single symbol can derive epsilon
-bool canDeriveEpsilo(Grammar* grammar, GrammarSymbol symbol, bool* nullable) {
+bool canDeriveEpsilon(Grammar* grammar, GrammarSymbol symbol, bool* nullable) {
     if (symbol.type == SYM_EPSILON) {
         return true;
     }

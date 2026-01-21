@@ -67,7 +67,7 @@ bool parseLL1(LL1Parser* parser) {
         
         if (top.kind == SYMBOL_EOF) {
             if (current_token.type == END_OF_FILE) {
-                printf("\n✓ Analyse syntaxique terminée avec succès!\n");
+                printf("\n Analyse syntaxique terminée avec succès!\n");
                 printf("  Total d'étapes: %d\n", step);
                 printf("  Erreurs syntaxiques: %d\n", parser->parse_errors);
                 return parser->parse_errors == 0;
@@ -79,9 +79,8 @@ bool parseLL1(LL1Parser* parser) {
         
         if (top.kind == SYMBOL_TERMINAL) {
             if (top.value.terminal == current_token.type) {
-                // Match!
                 if (step % 10 == 1 || step < 20) {
-                    printf("✓ Match terminal: %s\n\n", tokenTypeToString(top.value.terminal));
+                    printf(" Match terminal: %s\n\n", tokenTypeToString(top.value.terminal));
                 }
                 
                 popStack(&parser->stack);
@@ -117,7 +116,7 @@ bool parseLL1(LL1Parser* parser) {
         }
     }
     
-    printf("\n✓ Analyse syntaxique terminée!\n");
+    printf("\n  Analyse syntaxique terminée!\n");
     printf("  Total d'étapes: %d\n", step);
     printf("  Erreurs syntaxiques: %d\n", parser->parse_errors);
 

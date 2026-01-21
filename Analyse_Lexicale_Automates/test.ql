@@ -1,4 +1,4 @@
-BEGIN PROGRAM TestRapide
+BEGIN PROGRAM TestRapide;
 SET x INTEGER = 42;
 SET nom STRING = 'Ahmed';
 PRINT 'Resultat: ';

@@ -2,6 +2,7 @@
 #include "grammar.h"
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 // Updated initLL1Table to use automatic generation
 void initLL1Table(LL1Parser* parser) {
